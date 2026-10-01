@@ -16,13 +16,23 @@ final class HabitThemePickerTests: KadoUITestCase {
             .firstMatch
     }
 
+    /// Settings → Appearance, where the picker lives.
+    @MainActor
+    private func openAppearance(in app: XCUIApplication) {
+        tapTab(.settings, in: app)
+        let row = app.descendants(matching: .any)[AccessibilityID.Settings.appearanceRow].firstMatch
+        scrollTo(row, in: app)
+        capture(app, "settings-appearance-row")
+        row.tap()
+    }
+
     @MainActor
     func testChoosingClassicRecoloursTheAppWithoutARelaunch() {
         let app = launchApp(seedProduction: true, seedForScreenshots: true)
         waitForTodayRows(in: app)
         capture(app, "habit-theme-today-kado")
 
-        tapTab(.settings, in: app)
+        openAppearance(in: app)
         let kado = themeRow("kado", in: app)
         let classic = themeRow("classic", in: app)
         scrollTo(classic, in: app)
@@ -47,12 +57,12 @@ final class HabitThemePickerTests: KadoUITestCase {
 
     /// A paid theme without the pack (#113) opens the pack instead of
     /// being picked. The routing is the half a unit test can't see:
-    /// the destination sits on `SettingsView`'s `Form`, and a
+    /// the destination sits on `AppearanceView`'s `Form`, and a
     /// `navigationDestination` in the wrong place is silently ignored.
     @MainActor
     func testTappingALockedThemeOpensTheSupporterPack() {
         let app = launchApp()
-        tapTab(.settings, in: app)
+        openAppearance(in: app)
         let vivid = themeRow("vivid", in: app)
         scrollTo(vivid, in: app)
         scrollClearOfTabBar(vivid, in: app)

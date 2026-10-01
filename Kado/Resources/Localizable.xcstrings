@@ -1,9 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "" : {
-
-    },
+    "" : {},
     ", has note" : {
       "comment" : "Appended to the calendar cell accessibility label when the day has a note attached.",
       "localizations" : {
@@ -661,7 +659,7 @@
       }
     },
     "A little extra, once" : {
-      "comment" : "Headline of the Supporter pack screen.",
+      "comment" : "Small caps tagline under the Supporter pack screen's title.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -798,7 +796,7 @@
       }
     },
     "Appearance" : {
-      "comment" : "Section header in the new-habit form grouping the color + icon pickers.",
+      "comment" : "New-habit form section grouping color + icon pickers; Settings row and screen title for themes.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2079,7 +2077,7 @@
       }
     },
     "If Kadō earns a place in your day" : {
-      "comment" : "Tip Jar screen title (large serif). Warm, no-pressure tone.",
+      "comment" : "Small caps tagline under the tip jar screen's title.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4073,23 +4071,6 @@
         }
       }
     },
-    "SUPPORT" : {
-      "comment" : "Eyebrow label above the Tip Jar screen title. Displayed uppercased.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SUPPORT"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SOUTIEN"
-          }
-        }
-      }
-    },
     "Support Kadō" : {
       "comment" : "Tip Jar navigation title and the Settings section header for tipping.",
       "localizations" : {
@@ -4120,23 +4101,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pack de soutien"
-          }
-        }
-      }
-    },
-    "SUPPORTER PACK" : {
-      "comment" : "Eyebrow above the Supporter pack screen's headline.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "SUPPORTER PACK"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PACK DE SOUTIEN"
           }
         }
       }

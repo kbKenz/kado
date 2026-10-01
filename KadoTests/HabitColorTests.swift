@@ -16,6 +16,8 @@ struct HabitColorTests {
 
     private let schemes: [UIUserInterfaceStyle] = [.light, .dark]
 
+    init() { ResolvedColor.warmUp() }
+
     // MARK: - Shape
 
     @Test("Palette exposes eight distinct cases")
@@ -45,6 +47,26 @@ struct HabitColorTests {
     func themeRawValuesStable() {
         #expect(HabitTheme.kado.rawValue == "kado")
         #expect(HabitTheme.classic.rawValue == "classic")
+        #expect(HabitTheme.muted.rawValue == "muted")
+        #expect(HabitTheme.vivid.rawValue == "vivid")
+        #expect(HabitTheme.autumn.rawValue == "autumn")
+        #expect(HabitTheme.monochromeSage.rawValue == "monochromeSage")
+    }
+
+    /// Kadō and Classic are the free themes; everything else is the
+    /// Supporter pack's, and falls back to Kadō without it.
+    @Test("Only Kadō and Classic are free, and a locked theme renders as Kadō")
+    func themeGating() {
+        let free: Set<HabitTheme> = [.kado, .classic]
+        #expect(HabitTheme.freeFallback == .kado)
+        for theme in HabitTheme.allCases {
+            #expect(theme.requiresSupporterPack == !free.contains(theme), "\(theme)")
+            #expect(HabitTheme.effective(preferred: theme, isSupporter: true) == theme)
+            #expect(
+                HabitTheme.effective(preferred: theme, isSupporter: false) == (free.contains(theme) ? theme : .kado),
+                "\(theme)"
+            )
+        }
     }
 
     // MARK: - Kadō's look
@@ -152,7 +174,10 @@ struct HabitColorTests {
         }
     }
 
-    @Test("Hues are spaced at least 15° apart", arguments: HabitTheme.allCases)
+    /// Only for themes spread around the hue wheel — Monochrome sage
+    /// and Autumn cluster their hues by design and are held to
+    /// `monochromeLadder` / `autumnFamilies` instead.
+    @Test("Hues are spaced at least 15° apart", arguments: HabitTheme.allCases.filter(\.spansHueWheel))
     func hueSpacing(theme: HabitTheme) {
         for scheme in schemes {
             let hues = HabitColor.allCases.map {
@@ -165,6 +190,63 @@ struct HabitColorTests {
                     #expect(distance >= 15, "\(theme) \(scheme): \(a) and \(b) are \(distance)° apart")
                 }
             }
+        }
+    }
+
+    /// Two habits sharing a look is the one real failure mode of a
+    /// palette: hue spacing alone can't see it (two hues 15° apart at
+    /// low chroma are closer than two 15° apart at high chroma) and
+    /// can't see a monochrome palette at all. This measures what the
+    /// eye does — Euclidean distance in Oklab, on the 8-bit colours
+    /// that actually reach the screen.
+    ///
+    /// The floor sits under the closest pair Kadō has shipped since
+    /// #89 — dark mint and teal, 0.029 apart — so it rejects anything
+    /// tighter than what people already tell apart, and a JND-sized
+    /// 0.02 would be too lenient for eight small dots in a row. Every
+    /// paid palette clears it by a wide margin (Muted, the tightest,
+    /// at 0.038).
+    @Test("Every pair of slots is at least ΔE 0.025 apart in Oklab", arguments: HabitTheme.allCases)
+    func minimumPairwiseDistance(theme: HabitTheme) {
+        for scheme in schemes {
+            let colors = HabitColor.allCases.map { ($0, oklab(color: $0, in: theme, scheme)) }
+            for (i, (a, labA)) in colors.enumerated() {
+                for (b, labB) in colors[(i + 1)...] {
+                    let distance = labA.distance(to: labB)
+                    #expect(distance >= 0.025, "\(theme) \(scheme): \(a) and \(b) are ΔE \(distance)")
+                }
+            }
+        }
+    }
+
+    /// Monochrome sage's slots share the brand hue and are a lightness
+    /// ladder instead: in slot order, darkest first, in both schemes,
+    /// each rung a clear step above the last.
+    @Test("Monochrome sage is one hue on an evenly spaced lightness ladder")
+    func monochromeLadder() {
+        for dark in [false, true] {
+            let bases = HabitColor.allCases.map {
+                dark ? $0.darkBase(in: .monochromeSage) : $0.base(in: .monochromeSage)
+            }
+            #expect(Set(bases.map(\.h)).count == 1, "dark: \(dark)")
+            for (lower, upper) in zip(bases, bases.dropFirst()) {
+                #expect(upper.l - lower.l >= 0.05, "dark: \(dark), \(lower.l) → \(upper.l)")
+            }
+        }
+    }
+
+    /// Autumn is oranges and greens and nothing else — the concept the
+    /// maintainer asked for — four of each, so no later tuning drifts
+    /// a slot into yellow, red or blue.
+    @Test("Autumn is four oranges and four greens, in both schemes")
+    func autumnFamilies() {
+        let orange = 30.0...75.0, green = 115.0...165.0
+        for dark in [false, true] {
+            let hues = HabitColor.allCases.map {
+                (dark ? $0.darkBase(in: .autumn) : $0.base(in: .autumn)).h
+            }
+            #expect(hues.filter(orange.contains).count == 4, "dark: \(dark), \(hues)")
+            #expect(hues.filter(green.contains).count == 4, "dark: \(dark), \(hues)")
         }
     }
 
@@ -291,8 +373,7 @@ struct HabitColorTests {
     // MARK: - Helpers
 
     private func srgb(_ color: Color, _ scheme: UIUserInterfaceStyle) -> SRGB {
-        let resolved = UIColor(color)
-            .resolvedColor(with: UITraitCollection(userInterfaceStyle: scheme))
+        let resolved = ResolvedColor.resolved(color, scheme)
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         resolved.getRed(&r, green: &g, blue: &b, alpha: &a)
         return SRGB(red: r, green: g, blue: b)
@@ -306,6 +387,23 @@ struct HabitColorTests {
     private func oklab(_ color: Color, _ scheme: UIUserInterfaceStyle) -> Oklab {
         let c = srgb(color, scheme)
         return Oklab(srgbRed: c.red, green: c.green, blue: c.blue)
+    }
+
+    /// The slot's base as rendered — rounded to 8 bits per channel, as
+    /// the display gets it — back in Oklab.
+    private func oklab(color: HabitColor, in theme: HabitTheme, _ scheme: UIUserInterfaceStyle) -> Oklab {
+        let c = srgb(color.color(in: theme), scheme)
+        func byte(_ x: Double) -> Double { (x * 255).rounded() / 255 }
+        return Oklab(srgbRed: byte(c.red), green: byte(c.green), blue: byte(c.blue))
+    }
+}
+
+private extension Oklab {
+    /// ΔE in Oklab: plain Euclidean distance, which the space is built
+    /// to make perceptually uniform.
+    func distance(to other: Oklab) -> Double {
+        let dl = l - other.l, da = a - other.a, db = b - other.b
+        return (dl * dl + da * da + db * db).squareRoot()
     }
 }
 

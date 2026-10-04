@@ -269,8 +269,11 @@ Suggested: Professor outreach email
 ## Changes during build
 
 - Duration tie-break dropped: there is no duration data to rank on.
-- Quick start added to "Start something", from user feedback: create a
-  task (the default) or a habit and start it at once.
+- "Start something" (user feedback): **New task** and **New habit** open
+  the same forms as Today. A new task defaults to today at the quarter
+  hour nearest to now (15:33 → 15:30). Save starts a session at once.
+  Below them, **Recent** lists open tasks and pending habits, most
+  recent activity first (a session, a habit log, or an edit).
 - "Also running" row for a second synced open session deferred. The
   earliest open session is shown first.
 - "min left" / "min over" counts the worked-time budget against the

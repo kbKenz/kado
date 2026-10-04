@@ -2,11 +2,6 @@ import Foundation
 import SwiftData
 import KadoCore
 
-/// What the Now tab's quick start creates.
-enum QuickStartKind: Hashable, CaseIterable {
-    case task, habit
-}
-
 /// Every write to tracked time. Views call these with records they
 /// resolved by UUID from their own `@Query`, then forget them.
 @MainActor
@@ -14,7 +9,6 @@ struct WorkSessionTracker {
     enum TrackerError: Error, Equatable {
         case sessionAlreadyOpen
         case noOpenSession
-        case emptyTitle
     }
 
     let boundary: DayBoundary
@@ -46,30 +40,6 @@ struct WorkSessionTracker {
         let now = now()
         try requireNoOpenSession(in: context)
         context.insert(WorkSessionRecord(startedAt: now, habit: habit, scheduleBlock: block))
-        try commit(context)
-    }
-
-    /// Creates a task (unscheduled) or a daily yes/no habit, with the
-    /// defaults the New Task and New Habit forms use, and starts a
-    /// session on it. One save: a failure leaves nothing behind.
-    func startNew(title: String, kind: QuickStartKind, in context: ModelContext) throws {
-        let now = now()
-        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { throw TrackerError.emptyTitle }
-        try requireNoOpenSession(in: context)
-        switch kind {
-        case .task:
-            let task = TaskRecord(title: trimmed)
-            context.insert(task)
-            context.insert(WorkSessionRecord(startedAt: now, task: task))
-        case .habit:
-            let form = NewHabitFormModel()
-            form.name = trimmed
-            let habit = form.build(createdAt: now)
-            habit.sortOrder = HabitSortOrder.nextSortOrder(in: context)
-            context.insert(habit)
-            context.insert(WorkSessionRecord(startedAt: now, habit: habit))
-        }
         try commit(context)
     }
 

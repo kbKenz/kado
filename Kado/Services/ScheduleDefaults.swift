@@ -18,6 +18,17 @@ nonisolated enum ScheduleDefaults {
         return calendar.date(bySettingHour: hour, minute: 0, second: 0, of: dayStart) ?? dayStart
     }
 
+    /// `now` rounded to the nearest quarter hour (14:07 → 14:00,
+    /// 14:08 → 14:15), for work that starts now. Capped at 23:45 so it
+    /// stays on `now`'s day.
+    static func nearestQuarterHour(to now: Date, calendar: Calendar) -> Date {
+        let dayStart = calendar.startOfDay(for: now)
+        let parts = calendar.dateComponents([.hour, .minute], from: now)
+        let minutes = (parts.hour ?? 0) * 60 + (parts.minute ?? 0)
+        let rounded = min(Int((Double(minutes) / 15).rounded()) * 15, 23 * 60 + 45)
+        return calendar.date(bySettingHour: rounded / 60, minute: rounded % 60, second: 0, of: dayStart) ?? now
+    }
+
     /// One hour after `start` (or after the default start), capped at
     /// 23:59 on the same day.
     static func endTime(on day: Date, start: Date?, now: Date, calendar: Calendar) -> Date {

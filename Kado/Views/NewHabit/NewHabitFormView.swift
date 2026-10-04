@@ -6,6 +6,8 @@ import KadoCore
 /// draft values; the current store resolves identities when saving.
 struct NewHabitFormView: View {
     @Bindable var model: NewHabitFormModel
+    /// Called with the habit's ID after a successful save, before the form closes.
+    var onSaved: ((UUID) -> Void)?
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -210,8 +212,9 @@ struct NewHabitFormView: View {
                 }
             }
             do {
-                try model.save(in: modelContext, createdAt: dayBoundary.loggingInstant(for: .now))
+                let record = try model.save(in: modelContext, createdAt: dayBoundary.loggingInstant(for: .now))
                 saveTick += 1
+                onSaved?(record.id)
                 dismiss()
             } catch {
                 saveError = error.localizedDescription

@@ -10,6 +10,7 @@ struct NowInputBuilder {
     struct Input: Equatable {
         var blocks: [NowBlock]
         var openSession: OpenSession?
+        /// Most recent activity first: a Now session, a habit log, or an edit.
         var startCandidates: [NowItem]
     }
 
@@ -58,9 +59,22 @@ struct NowInputBuilder {
             return OpenSession(id: record.id, item: item, session: record.snapshot, blockID: record.scheduleBlock?.id)
         }
 
-        let candidates = workableTasks.map { NowItem.task(id: $0.id, title: $0.title) }
-            + workableHabits.map { NowItem.habit(id: $0.id, name: $0.name) }
+        // The sorts above settle ties, because `sorted` is stable.
+        let recentTasks = workableTasks.map { (item: NowItem.task(id: $0.id, title: $0.title), last: Self.lastActivity(of: $0)) }
+        let recentHabits = workableHabits.map { (item: NowItem.habit(id: $0.id, name: $0.name), last: Self.lastActivity(of: $0)) }
+        let candidates = (recentTasks + recentHabits).sorted { $0.last > $1.last }.map(\.item)
         return Input(blocks: blocks, openSession: open, startCandidates: candidates)
+    }
+
+    private static func lastActivity(of task: TaskRecord) -> Date {
+        let sessions = (task.workSessions ?? []).map(\.startedAt)
+        return ([task.updatedAt] + sessions).max() ?? task.updatedAt
+    }
+
+    private static func lastActivity(of habit: HabitRecord) -> Date {
+        let sessions = (habit.workSessions ?? []).map(\.startedAt)
+        let logs = (habit.completions ?? []).map(\.date)
+        return ([habit.createdAt] + sessions + logs).max() ?? habit.createdAt
     }
 
     private static func taskPrecedes(_ lhs: TaskRecord, _ rhs: TaskRecord) -> Bool {

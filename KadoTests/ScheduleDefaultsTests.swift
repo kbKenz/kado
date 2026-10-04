@@ -50,6 +50,27 @@ struct ScheduleDefaultsTests {
         #expect(cal.isDate(start, inSameDayAs: TestCalendar.day(0)))
     }
 
+    // MARK: - Nearest quarter hour
+
+    @Test("Now rounds to the nearest quarter hour", arguments: [
+        (15, 33, [15, 30]), (15, 37, [15, 30]), (15, 38, [15, 45]),
+        (15, 0, [15, 0]), (15, 53, [16, 0]), (0, 5, [0, 0]),
+    ])
+    func nearestQuarterHour(hour: Int, minute: Int, expected: [Int]) {
+        let now = at(TestCalendar.day(0), hour, minute)
+        let start = ScheduleDefaults.nearestQuarterHour(to: now, calendar: cal)
+        #expect(clock(start) == expected)
+        #expect(cal.isDate(start, inSameDayAs: now))
+    }
+
+    @Test("Just before midnight stays on the same day at 23:45")
+    func nearestQuarterHourBeforeMidnight() {
+        let now = at(TestCalendar.day(0), 23, 55)
+        let start = ScheduleDefaults.nearestQuarterHour(to: now, calendar: cal)
+        #expect(clock(start) == [23, 45])
+        #expect(cal.isDate(start, inSameDayAs: now))
+    }
+
     // MARK: - End
 
     @Test("End is one hour after the start")

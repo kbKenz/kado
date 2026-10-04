@@ -38,68 +38,6 @@ struct WorkSessionTrackerTests {
         #expect(try context.fetchCount(FetchDescriptor<WorkSessionRecord>()) == 1)
     }
 
-    @Test("Starting a new task inserts it unscheduled and opens a session")
-    func startNewTask() throws {
-        let context = try context()
-        try tracker(now: start).startNew(title: "  Write report \n", kind: .task, in: context)
-        let tasks = try context.fetch(FetchDescriptor<TaskRecord>())
-        let task = try #require(tasks.first)
-        #expect(tasks.count == 1)
-        #expect(task.title == "Write report")
-        #expect(task.dueDate == nil)
-        #expect(task.completedAt == nil)
-        let session = try #require(try WorkSessionTracker.openSession(in: context))
-        #expect(session.task?.id == task.id)
-        #expect(session.startedAt == start)
-        #expect(try context.fetchCount(FetchDescriptor<WorkSessionRecord>()) == 1)
-    }
-
-    @Test("Starting a new habit uses the New Habit defaults and the next sort order")
-    func startNewHabit() throws {
-        let context = try context()
-        context.insert(HabitRecord(name: "Existing", sortOrder: 4))
-        let defaults = NewHabitFormModel()
-        try tracker(now: start).startNew(title: "Stretch", kind: .habit, in: context)
-        let habits = try context.fetch(FetchDescriptor<HabitRecord>(sortBy: [SortDescriptor(\.sortOrder)]))
-        let habit = try #require(habits.last)
-        #expect(habits.count == 2)
-        #expect(habit.name == "Stretch")
-        #expect(habit.frequency == .daily)
-        #expect(habit.type == .binary)
-        #expect(habit.color == defaults.color)
-        #expect(habit.icon == defaults.icon)
-        #expect(habit.sortOrder == 5)
-        #expect(habit.remindersEnabled == false)
-        let session = try #require(try WorkSessionTracker.openSession(in: context))
-        #expect(session.habit?.id == habit.id)
-        #expect(session.startedAt == start)
-    }
-
-    @Test("A blank title is rejected and nothing is inserted", arguments: [QuickStartKind.task, .habit])
-    func startNewBlankTitle(kind: QuickStartKind) throws {
-        let context = try context()
-        #expect(throws: WorkSessionTracker.TrackerError.emptyTitle) {
-            try tracker(now: start).startNew(title: " \n\t ", kind: kind, in: context)
-        }
-        #expect(try context.fetchCount(FetchDescriptor<TaskRecord>()) == 0)
-        #expect(try context.fetchCount(FetchDescriptor<HabitRecord>()) == 0)
-        #expect(try context.fetchCount(FetchDescriptor<WorkSessionRecord>()) == 0)
-    }
-
-    @Test("Starting a new item is refused while a session is open and inserts nothing", arguments: [QuickStartKind.task, .habit])
-    func startNewRefusedWhenOpen(kind: QuickStartKind) throws {
-        let context = try context()
-        let task = TaskRecord(title: "Research")
-        context.insert(task)
-        try tracker(now: start).start(task: task, block: nil, in: context)
-        #expect(throws: WorkSessionTracker.TrackerError.sessionAlreadyOpen) {
-            try tracker(now: start).startNew(title: "Another", kind: kind, in: context)
-        }
-        #expect(try context.fetchCount(FetchDescriptor<TaskRecord>()) == 1)
-        #expect(try context.fetchCount(FetchDescriptor<HabitRecord>()) == 0)
-        #expect(try context.fetchCount(FetchDescriptor<WorkSessionRecord>()) == 1)
-    }
-
     @Test("Pause and resume add up the paused time")
     func pauseResume() throws {
         let context = try context()

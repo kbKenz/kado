@@ -136,24 +136,32 @@ struct NowInputBuilderTests {
         #expect(input.openSession?.blockID == nil)
     }
 
-    @Test("Task titles sort case-insensitively")
+    @Test("Ties in recent activity sort task titles case-insensitively")
     func titleOrder() throws {
         let context = try context()
-        ["banana", "Apple", "cherry"].forEach { context.insert(TaskRecord(title: $0)) }
+        let edited = now.addingTimeInterval(-3_600)
+        ["banana", "Apple", "cherry"].forEach { context.insert(TaskRecord(title: $0, updatedAt: edited)) }
         try context.save()
         let input = try builder.build(now: now, in: context)
         #expect(input.startCandidates.map(\.title) == ["Apple", "banana", "cherry"])
     }
 
-    @Test("Start candidates: open tasks, then outstanding habits")
-    func candidates() throws {
+    @Test("Start candidates: most recent activity first, tasks and habits mixed")
+    func candidatesByRecentActivity() throws {
         let context = try context()
-        context.insert(TaskRecord(title: "Write"))
-        context.insert(TaskRecord(title: "Call"))
-        context.insert(HabitRecord(name: "Read", createdAt: now.addingTimeInterval(-86_400 * 3)))
+        let hour: TimeInterval = 3_600
+        let old = TaskRecord(title: "Old", updatedAt: now.addingTimeInterval(-30 * hour))
+        let worked = TaskRecord(title: "Worked", updatedAt: now.addingTimeInterval(-40 * hour))
+        let habit = HabitRecord(name: "Read", createdAt: now.addingTimeInterval(-72 * hour))
+        let logged = HabitRecord(name: "Logged", createdAt: now.addingTimeInterval(-72 * hour))
+        [old, worked].forEach(context.insert)
+        [habit, logged].forEach(context.insert)
+        // A session two hours ago, a log yesterday: both count as activity.
+        context.insert(WorkSessionRecord(startedAt: now.addingTimeInterval(-2 * hour), endedAt: now.addingTimeInterval(-hour), task: worked))
+        context.insert(CompletionRecord(date: now.addingTimeInterval(-20 * hour), habit: logged))
         try context.save()
         let input = try builder.build(now: now, in: context)
-        #expect(input.startCandidates.map(\.title) == ["Call", "Write", "Read"])
+        #expect(input.startCandidates.map(\.title) == ["Worked", "Logged", "Old", "Read"])
     }
 
     @Test("A habit created after today is not workable")

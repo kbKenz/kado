@@ -620,23 +620,6 @@
         }
       }
     },
-    "Or pick one" : {
-      "comment" : "Section header in the Start something sheet: existing tasks and habits to start instead.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Or pick one"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Ou choisis-en un"
-          }
-        }
-      }
-    },
     "Pause" : {
       "comment" : "Now tab button that pauses the running work session.",
       "localizations" : {
@@ -889,23 +872,6 @@
         }
       }
     },
-    "Task or habit" : {
-      "comment" : "Accessibility label of the Task / Habit switch in the Start something sheet.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Task or habit"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Tâche ou habitude"
-          }
-        }
-      }
-    },
     "That didn't work. Your text is unchanged; try again." : {
       "comment" : "Shown under a text field when dictation or cleanup failed; the text was kept.",
       "localizations" : {
@@ -1069,23 +1035,6 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "À suivre : %1$@ à %2$@"
-          }
-        }
-      }
-    },
-    "What are you working on?" : {
-      "comment" : "Placeholder of the Start something sheet's title field.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What are you working on?"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Sur quoi travailles-tu ?"
           }
         }
       }
@@ -7856,6 +7805,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Recalculer la progression ?"
+          }
+        }
+      }
+    },
+    "Recent" : {
+      "comment" : "Section header in the Start something sheet: tasks and habits worked on most recently.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recent"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Récents"
           }
         }
       }

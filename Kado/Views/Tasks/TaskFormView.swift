@@ -7,6 +7,10 @@ import SwiftUI
 struct TaskFormView: View {
     let taskID: UUID?
     let defaultDay: Date?
+    /// Filled in as the start time of a new task that has a day.
+    let defaultStartTime: Date?
+    /// Called with the task's ID after a successful save, before the form closes.
+    let onSaved: ((UUID) -> Void)?
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
@@ -26,9 +30,11 @@ struct TaskFormView: View {
     @State private var selectedGoalID: UUID?
     @FocusState private var titleFocused: Bool
 
-    init(taskID: UUID? = nil, defaultDay: Date? = nil) {
+    init(taskID: UUID? = nil, defaultDay: Date? = nil, defaultStartTime: Date? = nil, onSaved: ((UUID) -> Void)? = nil) {
         self.taskID = taskID
         self.defaultDay = defaultDay
+        self.defaultStartTime = defaultStartTime
+        self.onSaved = onSaved
     }
 
     var body: some View {
@@ -233,7 +239,7 @@ struct TaskFormView: View {
         let firstBlock = snapshot?.schedules.first
         let scheduledDay = firstBlock?.plannedDay ?? snapshot?.dueDate ?? defaultDay
         day = scheduledDay.map { calendar.startOfDay(for: $0) }
-        startTime = firstBlock?.startAt
+        startTime = firstBlock?.startAt ?? (snapshot == nil && day != nil ? defaultStartTime : nil)
         endTime = firstBlock?.endAt
         populated = true
         titleFocused = taskID == nil && !UITestSupport.suppressesNameAutoFocus
@@ -259,7 +265,7 @@ struct TaskFormView: View {
                 record.goal = selectedGoal
                 record.updatedAt = .now
             }
-            persistAndDismiss()
+            persistAndDismiss(savedID: record.id)
             return
         }
         guard let schedule = try? draft.normalized(using: calendar) else { return }
@@ -292,12 +298,13 @@ struct TaskFormView: View {
         } else {
             for block in record.scheduleBlocks ?? [] { modelContext.delete(block) }
         }
-        persistAndDismiss()
+        persistAndDismiss(savedID: record.id)
     }
 
-    private func persistAndDismiss() {
+    private func persistAndDismiss(savedID: UUID) {
         do {
             try modelContext.save()
+            onSaved?(savedID)
             dismiss()
         } catch {
             modelContext.rollback()

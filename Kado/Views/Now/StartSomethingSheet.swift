@@ -1,54 +1,47 @@
+import SwiftData
 import SwiftUI
 import KadoCore
 
-/// Start a new task or habit by name, or pick an existing one.
+/// Create a task or habit with the full form and start it, or pick a
+/// recent one.
 struct StartSomethingSheet: View {
     let candidates: [NowItem]
     let onPick: (NowItem) -> Void
-    let onStartNew: (String, QuickStartKind) -> Void
+    /// Called after the New Task form saves, with the new task's ID.
+    let onCreatedTask: (UUID) -> Void
+    /// Called after the New Habit form saves, with the new habit's ID.
+    let onCreatedHabit: (UUID) -> Void
     @Environment(\.dismiss) private var dismiss
-    @State private var title = ""
-    @State private var kind: QuickStartKind = .task
+    @Environment(\.calendar) private var calendar
+    @Environment(\.civilToday) private var civilToday
+    @State private var form: NewForm?
     /// Set synchronously before acting so a second tap cannot start twice.
     /// Never reset: every path dismisses the sheet, so each presentation starts fresh.
     @State private var starting = false
-    // Focus is a nicety: the screen works when the runtime ignores it.
-    @FocusState private var titleFocused: Bool
 
-    private var trimmedTitle: String { title.trimmingCharacters(in: .whitespacesAndNewlines) }
+    private enum NewForm: String, Identifiable {
+        case task, habit
+        var id: String { rawValue }
+    }
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    TextField("What are you working on?", text: $title)
-                        .focused($titleFocused)
-                        .submitLabel(.go)
-                        .onSubmit(startNew)
-                        .accessibilityIdentifier(AccessibilityID.Now.quickStartTitle)
-                    Picker("Task or habit", selection: $kind) {
-                        Text("Task").tag(QuickStartKind.task)
-                        Text("Habit").tag(QuickStartKind.habit)
+                    Button { form = .task } label: {
+                        Label("New task", systemImage: "checklist")
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                    .accessibilityIdentifier(AccessibilityID.Now.quickStartKind)
+                    .accessibilityIdentifier(AccessibilityID.Now.newTask)
+                    Button { form = .habit } label: {
+                        Label("New habit", systemImage: "repeat")
+                    }
+                    .accessibilityIdentifier(AccessibilityID.Now.newHabit)
                 }
+                .foregroundStyle(Color.kadoForeground)
                 .listRowBackground(Color.kadoBackgroundSecondary)
 
-                Section {
-                    Button(action: startNew) {
-                        Text("Start").frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .disabled(trimmedTitle.isEmpty)
-                    .accessibilityIdentifier(AccessibilityID.Now.quickStartStart)
-                }
-                .listRowBackground(Color.clear)
-
                 if !candidates.isEmpty {
-                    Section("Or pick one") {
+                    Section("Recent") {
                         ForEach(candidates) { item in
                             Button {
                                 guard !starting else { return }
@@ -71,14 +64,26 @@ struct StartSomethingSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Close") { dismiss() } }
             }
-            .onAppear { titleFocused = true }
+            .sheet(item: $form) { kind in
+                switch kind {
+                case .task:
+                    // Today, at the quarter hour nearest to now (15:33 → 15:30).
+                    TaskFormView(
+                        defaultDay: civilToday,
+                        defaultStartTime: ScheduleDefaults.nearestQuarterHour(to: .now, calendar: calendar),
+                        onSaved: { id in created { onCreatedTask(id) } }
+                    )
+                case .habit:
+                    NewHabitFormView(model: NewHabitFormModel(), onSaved: { id in created { onCreatedHabit(id) } })
+                }
+            }
         }
     }
 
-    private func startNew() {
-        guard !starting, !trimmedTitle.isEmpty else { return }
+    private func created(_ action: () -> Void) {
+        guard !starting else { return }
         starting = true
-        onStartNew(trimmedTitle, kind)
+        action()
     }
 
     private func icon(for item: NowItem) -> String {
@@ -91,11 +96,16 @@ struct StartSomethingSheet: View {
     StartSomethingSheet(
         candidates: [.task(id: UUID(), title: "Research"), .habit(id: UUID(), name: "Read 20 pages")],
         onPick: { _ in },
-        onStartNew: { _, _ in }
+        onCreatedTask: { _ in },
+        onCreatedHabit: { _ in }
     )
+    .modelContainer(PreviewContainer.shared)
+    .kadoTheme()
 }
 
 #Preview("No candidates, Dark") {
-    StartSomethingSheet(candidates: [], onPick: { _ in }, onStartNew: { _, _ in })
+    StartSomethingSheet(candidates: [], onPick: { _ in }, onCreatedTask: { _ in }, onCreatedHabit: { _ in })
+        .modelContainer(PreviewContainer.shared)
+        .kadoTheme()
         .preferredColorScheme(.dark)
 }

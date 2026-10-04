@@ -53,9 +53,13 @@ struct NowView: View {
                         showingStartSomething = false
                         start(item, blockID: nil, afterSheet: true)
                     },
-                    onStartNew: { title, kind in
+                    onCreatedTask: { id in
                         showingStartSomething = false
-                        startNew(title, kind)
+                        startTask(id, blockID: todaysBlockID(forTask: id), afterSheet: true)
+                    },
+                    onCreatedHabit: { id in
+                        showingStartSomething = false
+                        startHabit(id, blockID: nil, afterSheet: true)
                     }
                 )
             }
@@ -173,7 +177,7 @@ struct NowView: View {
         }
     }
 
-    /// Quick start works without candidates, so a failed load still opens the sheet.
+    /// The New buttons work without candidates, so a failed load still opens the sheet.
     private func presentStartSomething() {
         switch loadInput(now: .now) {
         case .success(let input): quickStartCandidates = input.startCandidates
@@ -189,35 +193,43 @@ struct NowView: View {
         showingError = true
     }
 
-    /// A new habit changes widgets, so they refresh after the save. Unlike a
-    /// stale tap on a card, a refused quick start would silently drop what the
-    /// user typed, so every failure is reported once the sheet has closed.
-    private func startNew(_ title: String, _ kind: QuickStartKind) {
-        do {
-            try tracker.startNew(title: title, kind: kind, in: modelContext)
-            if kind == .habit { WidgetReloader.reloadAll(using: modelContext) }
-        } catch WorkSessionTracker.TrackerError.sessionAlreadyOpen {
-            pendingAlert = "Finish the running session first."
-        } catch {
-            report(error, afterSheet: true)
+    /// Resolves the item's records by UUID at the moment of the action.
+    private func start(_ item: NowItem, blockID: UUID?, afterSheet: Bool = false) {
+        switch item {
+        case .task(let id, _): startTask(id, blockID: blockID, afterSheet: afterSheet)
+        case .habit(let id, _): startHabit(id, blockID: blockID, afterSheet: afterSheet)
         }
     }
 
-    /// Resolves the item's records by UUID at the moment of the action.
-    private func start(_ item: NowItem, blockID: UUID?, afterSheet: Bool = false) {
+    private func startTask(_ id: UUID, blockID: UUID?, afterSheet: Bool) {
         run(afterSheet: afterSheet) {
-            let block = try blockID.flatMap { id in
-                try modelContext.fetch(FetchDescriptor<ScheduleBlockRecord>(predicate: #Predicate { $0.id == id })).first
-            }
-            switch item {
-            case .task(let id, _):
-                guard let task = try modelContext.fetch(FetchDescriptor<TaskRecord>(predicate: #Predicate { $0.id == id })).first else { return }
-                try tracker.start(task: task, block: block, in: modelContext)
-            case .habit(let id, _):
-                guard let habit = try modelContext.fetch(FetchDescriptor<HabitRecord>(predicate: #Predicate { $0.id == id })).first else { return }
-                try tracker.start(habit: habit, block: block, in: modelContext)
-            }
+            guard let task = try modelContext.fetch(FetchDescriptor<TaskRecord>(predicate: #Predicate { $0.id == id })).first else { return }
+            try tracker.start(task: task, block: try block(blockID), in: modelContext)
         }
+    }
+
+    private func startHabit(_ id: UUID, blockID: UUID?, afterSheet: Bool) {
+        run(afterSheet: afterSheet) {
+            guard let habit = try modelContext.fetch(FetchDescriptor<HabitRecord>(predicate: #Predicate { $0.id == id })).first else { return }
+            try tracker.start(habit: habit, block: try block(blockID), in: modelContext)
+        }
+    }
+
+    private func block(_ id: UUID?) throws -> ScheduleBlockRecord? {
+        guard let id else { return nil }
+        return try modelContext.fetch(FetchDescriptor<ScheduleBlockRecord>(predicate: #Predicate { $0.id == id })).first
+    }
+
+    /// A new task's planned block, when it starts today: the session links
+    /// to it, so the card shows the planned range. A block on another day
+    /// is not linked.
+    private func todaysBlockID(forTask id: UUID) -> UUID? {
+        guard let task = try? modelContext.fetch(FetchDescriptor<TaskRecord>(predicate: #Predicate { $0.id == id })).first else { return nil }
+        let today = dayBoundary.startOfDay(for: .now)
+        return (task.scheduleBlocks ?? []).first { block in
+            guard let start = block.startAt else { return false }
+            return dayBoundary.startOfDay(for: start) == today
+        }?.id
     }
 
     /// A stale tap (the session was opened or closed elsewhere) is a no-op:

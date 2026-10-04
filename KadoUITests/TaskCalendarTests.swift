@@ -21,6 +21,7 @@ final class TaskCalendarTests: KadoUITestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         capture(app, "today-task-inbox")
         openCalendar(in: app)
+        capture(app, "today-calendar")
         XCTAssertFalse(taskRow(named: "Buy groceries", in: app).exists)
     }
 

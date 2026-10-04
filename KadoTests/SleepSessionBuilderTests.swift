@@ -91,11 +91,23 @@ struct SleepSessionBuilderTests {
         #expect(minutes(sessions[0]) == (0, 420))
     }
 
-    @Test("Unsorted input gives the same result as sorted input")
+    @Test("Unsorted input: session spans all samples and keeps the earliest id")
     func orderIndependent() {
-        let samples = [sample(.asleep, from: 300, to: 480), sample(.asleep, from: 0, to: 290)]
-        #expect(SleepSessionBuilder.sessions(from: samples).map(minutes).map { [$0.0, $0.1] }
-            == SleepSessionBuilder.sessions(from: samples.reversed()).map(minutes).map { [$0.0, $0.1] })
+        let earliest = UUID()
+        let sessions = SleepSessionBuilder.sessions(from: [
+            sample(.asleep, from: 300, to: 480),
+            sample(.asleep, from: 0, to: 290, id: earliest),
+        ])
+        #expect(sessions.count == 1)
+        #expect(minutes(sessions[0]) == (0, 480))
+        #expect(sessions[0].id == earliest)
+    }
+
+    @Test("Equal-start samples give the same session id in either input order")
+    func equalStartTieIsDeterministic() {
+        let a = sample(.asleep, from: 0, to: 400)
+        let b = sample(.asleep, from: 0, to: 420)
+        #expect(SleepSessionBuilder.sessions(from: [a, b]).first?.id == SleepSessionBuilder.sessions(from: [b, a]).first?.id)
     }
 
     @Test("Awake samples alone give no session")

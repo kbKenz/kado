@@ -15,7 +15,10 @@ nonisolated public enum SleepSessionBuilder {
     public static func sessions(from samples: [SleepSample]) -> [HealthTimelineEntry] {
         let asleep = samples.filter { $0.stage == .asleep }
         let source = asleep.isEmpty ? samples.filter { $0.stage == .inBed } : asleep
-        let sorted = source.sorted { $0.interval.start < $1.interval.start }
+        // Tiebreak on id so equal-start samples give the same session id on every fetch.
+        let sorted = source.sorted {
+            ($0.interval.start, $0.id.uuidString) < ($1.interval.start, $1.id.uuidString)
+        }
 
         var sessions: [HealthTimelineEntry] = []
         for sample in sorted {

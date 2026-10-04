@@ -93,9 +93,11 @@ struct TaskFormView: View {
                 .focused($titleFocused)
                 .submitLabel(.done)
                 .accessibilityIdentifier(AccessibilityID.Tasks.title)
+                .assistedInput($title, identifier: AccessibilityID.Tasks.title)
             TextField("Notes (optional)", text: $notes, axis: .vertical)
                 .lineLimit(3...6)
                 .accessibilityIdentifier(AccessibilityID.Tasks.notes)
+                .assistedInput($notes, identifier: AccessibilityID.Tasks.notes)
         } header: {
             Text("Details")
         }

@@ -36,6 +36,7 @@ struct GoalProgressEntryForm: View {
                     if let goal { LabeledContent("Unit", value: goal.progressUnit) }
                     TextField("Note (optional)", text: $note, axis: .vertical)
                         .accessibilityIdentifier("goal.progress.note")
+                        .assistedInput($note, identifier: "goal.progress.note")
                     if !amount.isFinite || amount <= 0 { Text("Enter a finite amount greater than zero.").foregroundStyle(.red) }
                 }
                 .disabled(!canEdit)

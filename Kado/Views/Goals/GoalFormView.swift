@@ -73,9 +73,11 @@ struct GoalFormView: View {
                     .focused($nameFocused)
                     .submitLabel(.done)
                     .accessibilityIdentifier(AccessibilityID.Goals.name)
+                    .assistedInput($name, identifier: AccessibilityID.Goals.name)
                 TextField("Why this matters (optional)", text: $details, axis: .vertical)
                     .lineLimit(3...8)
                     .accessibilityIdentifier(AccessibilityID.Goals.details)
+                    .assistedInput($details, identifier: AccessibilityID.Goals.details)
             } header: { Text("Details") }
             .listRowBackground(Color.kadoBackgroundSecondary)
             Section {

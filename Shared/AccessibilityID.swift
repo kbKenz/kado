@@ -135,6 +135,15 @@ enum AccessibilityID {
         static let moveConfirm = "goalLinks.move.confirm"
     }
 
+    /// Controls `.assistedInput(_:identifier:)` adds to a text field,
+    /// derived from the field's own identifier.
+    enum AssistedInput {
+        static func mic(_ field: String) -> String { field + ".mic" }
+        static func clean(_ field: String) -> String { field + ".clean" }
+        static func undo(_ field: String) -> String { field + ".undo" }
+        static func failure(_ field: String) -> String { field + ".failure" }
+    }
+
     /// Controls of an `OptionalDateRow`, derived from the identifier its
     /// picker carries (e.g. `Tasks.day`).
     enum OptionalDate {

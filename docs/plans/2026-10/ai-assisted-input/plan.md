@@ -228,13 +228,18 @@ its engine is not available.
 
 ---
 
-### Task 6: `AssistedInputModifier` view
+### Task 6: `AssistedInputModifier` view ✅
 
 **Goal**: the one-line UI that every field uses.
 
 **Changes**:
 - `Kado/UIComponents/AssistedInputModifier.swift` —
-  `View.assistedInput(_ text: Binding<String>, characterLimit: Int? = nil)`;
+  `View.assistedInput(_ text:, characterLimit:, identifier:)`; the
+  field's identifier names the buttons (`AccessibilityID.AssistedInput`)
+  so two assisted fields in one form never share one. Buttons are
+  `.borderless` so a `Form` row does not fire them all on one tap.
+  Model built in `.onAppear` (environment not readable at `@State`
+  seed time);
   trailing `HStack` with mic (`mic` / `stop.circle.fill`) and ✨
   (`sparkles`, `ProgressView` while cleaning, `.tint` set per the
   `CLAUDE.md` spinner rule); Undo chip; inline failure text with
@@ -250,8 +255,11 @@ its engine is not available.
 
 **Tests / verification**:
 - `LocalizationCoverageTests` green.
-- Previews render; screenshot light + dark.
-- Dynamic Type XXXL: buttons do not clip the text.
+- Done 2026-10-04: build + suite green, 0 warnings,
+  `LocalizationCoverageTests` green with 9 new EN/FR keys. Previews
+  compile (available, unavailable + disabled, dark).
+- Screenshots and XXXL check move to Task 7a/7b: nothing uses the
+  modifier until then.
 
 **Commit message (suggested)**: `feat(ai-input): add assistedInput modifier`
 

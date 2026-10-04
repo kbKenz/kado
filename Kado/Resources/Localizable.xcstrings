@@ -106,6 +106,23 @@
         }
       }
     },
+    "Allow microphone and speech recognition for Kadō in Settings to dictate." : {
+      "comment" : "Shown under a text field after the user refused mic or speech access for dictation.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allow microphone and speech recognition for Kadō in Settings to dictate."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorise le micro et la reconnaissance vocale pour Kadō dans Réglages pour dicter."
+          }
+        }
+      }
+    },
     "Choose %@" : {
       "comment" : "Accessibility label of the calendar button that picks an optional date; %@ is the field name.",
       "localizations" : {
@@ -119,6 +136,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisir « %@ »"
+          }
+        }
+      }
+    },
+    "Clean up text" : {
+      "comment" : "Accessibility label of the sparkles button that tidies a text field's grammar and filler words.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clean up text"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nettoyer le texte"
+          }
+        }
+      }
+    },
+    "Cleaning up text" : {
+      "comment" : "Accessibility label of the spinner shown while the on-device model tidies a text field.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cleaning up text"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nettoyage du texte"
           }
         }
       }
@@ -140,6 +191,40 @@
         }
       }
     },
+    "Dictate" : {
+      "comment" : "Accessibility label of the mic button that starts on-device dictation into a text field.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dictate"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dicter"
+          }
+        }
+      }
+    },
+    "Dismiss" : {
+      "comment" : "Accessibility label of the small close button on an inline dictation or cleanup message.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer"
+          }
+        }
+      }
+    },
     "None" : {
       "comment" : "Value shown for an unset optional date or time in a read-only form.",
       "localizations" : {
@@ -153,6 +238,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucune"
+          }
+        }
+      }
+    },
+    "Not available on this device right now. Your text is unchanged." : {
+      "comment" : "Shown under a text field when dictation or cleanup is not available on the device.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not available on this device right now. Your text is unchanged."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Indisponible sur cet appareil pour le moment. Ton texte n’a pas changé."
           }
         }
       }
@@ -174,6 +276,40 @@
         }
       }
     },
+    "Stop dictation" : {
+      "comment" : "Accessibility label of the stop button shown while dictating into a text field.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop dictation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêter la dictée"
+          }
+        }
+      }
+    },
+    "That didn't work. Your text is unchanged; try again." : {
+      "comment" : "Shown under a text field when dictation or cleanup failed; the text was kept.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That didn't work. Your text is unchanged; try again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ça n’a pas marché. Ton texte n’a pas changé ; réessaie."
+          }
+        }
+      }
+    },
     "Tomorrow" : {
       "comment" : "Quick-pick button that plans a task for tomorrow.",
       "localizations" : {
@@ -187,6 +323,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Demain"
+          }
+        }
+      }
+    },
+    "Undo cleanup" : {
+      "comment" : "Button under a text field that restores the text from before the cleanup.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo cleanup"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler le nettoyage"
           }
         }
       }

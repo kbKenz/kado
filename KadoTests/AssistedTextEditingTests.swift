@@ -89,4 +89,25 @@ struct AssistedTextEditingTests {
     func sanitizeRejectsEmpty(output: String) {
         #expect(AssistedTextEditing.sanitizedCleanup(output) == nil)
     }
+
+    // MARK: - Rejecting answers that are not the note
+
+    @Test("A cleanup that keeps the note's words is accepted", arguments: [
+        ("um so read read more books", "Read more books."),
+        ("walked 5km felt felt great", "Walked 5 km. Felt great."),
+        ("i wnat to raed more", "I want to read more."),
+        ("euh je veux lire plus de livres", "Je veux lire plus de livres."),
+        ("went store buy milk", "Went to the store to buy milk."),
+    ])
+    func acceptsCleanup(note: String, output: String) {
+        #expect(AssistedTextEditing.isPlausibleCleanup(output, of: note))
+    }
+
+    @Test("A refusal or an answer to the note is rejected", arguments: [
+        ("message of doing something", "I cannot help you with that request."),
+        ("what should I read next", "You could try a classic novel like Pride and Prejudice."),
+    ])
+    func rejectsUnrelatedAnswer(note: String, output: String) {
+        #expect(!AssistedTextEditing.isPlausibleCleanup(output, of: note))
+    }
 }

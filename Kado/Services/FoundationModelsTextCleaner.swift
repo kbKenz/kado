@@ -29,10 +29,12 @@ final class FoundationModelsTextCleaner: TextCleaning {
         )
         do {
             let response = try await session.respond(
-                to: text,
+                to: CleanupInstructions.prompt(for: text),
                 options: GenerationOptions(sampling: .greedy)
             )
-            guard let cleaned = AssistedTextEditing.sanitizedCleanup(response.content) else {
+            guard let cleaned = AssistedTextEditing.sanitizedCleanup(response.content),
+                  AssistedTextEditing.isPlausibleCleanup(cleaned, of: text)
+            else {
                 throw AssistedInputError.failed
             }
             return cleaned

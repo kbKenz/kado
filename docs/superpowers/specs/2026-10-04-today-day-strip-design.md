@@ -94,8 +94,8 @@ Approaches not used:
 
 ### KadoCore
 
-- `DayStripRange` — `nonisolated public struct`.
-  `days(from earliest: Date, today: Date, futureDays: Int = 60, calendar:)`
+- `DayStripRange` — `nonisolated public enum` (no cases).
+  `days(from earliest: Date?, today: Date, futureDays: Int = 60, calendar:)`
   returns the start-of-day dates. Empty data gives `today` and the future
   range. DST safe (`calendar.date(byAdding: .day)`, never `86_400`).
 - `DayStripProgress` — computes the `DayProgress` for one day from habit and
@@ -144,8 +144,8 @@ before release.
 
 Unit tests (Swift Testing, `KadoTests` and `KadoCoreTests`):
 
-- `DayStripRange`: no data, earliest in the past, DST days (Paris spring and
-  fall), future limit.
+- `DayStripRange`: no data, earliest in the past, DST days (Paris fall
+  2026-10-25, Havana midnight spring-forward 2026-03-08), future limit.
 - `DayStripProgress`: due and done counts; negative habit; a day before the
   habit's first day; a day with nothing due gives `.empty`.
 - `TaskDaySections`: past day (completed and still-open), today (same output

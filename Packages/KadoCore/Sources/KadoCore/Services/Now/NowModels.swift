@@ -22,6 +22,7 @@ nonisolated public enum NowItem: Hashable, Identifiable, Sendable {
 }
 
 /// A planned block already filtered to things that can be worked on.
+/// `start` is required: untimed blocks are filtered out before this type.
 nonisolated public struct NowBlock: Hashable, Sendable {
     public var id: UUID
     public var item: NowItem
@@ -37,9 +38,19 @@ nonisolated public struct NowBlock: Hashable, Sendable {
         self.createdAt = createdAt
     }
 
-    /// A block without an end lasts one hour (`ScheduleDefaults`).
+    /// A block with a start and no end lasts one hour, the same default
+    /// the app's schedule rows use. Not capped at the day's end.
+    public static let defaultDuration: TimeInterval = 3600
+
+    /// Planned range, for display.
     public var range: ClosedRange<Date> {
-        start...max(start, end ?? start.addingTimeInterval(3600))
+        start...max(start, end ?? start.addingTimeInterval(Self.defaultDuration))
+    }
+
+    /// Half-open: a block is current from its start up to, not including,
+    /// its end, so back-to-back blocks never both match.
+    public func isCurrent(at now: Date) -> Bool {
+        start <= now && now < range.upperBound
     }
 }
 
@@ -59,10 +70,15 @@ nonisolated public struct OpenSession: Hashable, Sendable {
 }
 
 nonisolated public enum NowState: Equatable, Sendable {
+    /// A session is running. `plannedRange` is its block's range, nil without a block today.
     case running(OpenSession, plannedRange: ClosedRange<Date>?)
+    /// A session is open and paused. `plannedRange` as for `running`.
     case paused(OpenSession, plannedRange: ClosedRange<Date>?)
+    /// No session; this block's range holds now.
     case suggestedCurrent(NowBlock)
+    /// No session and nothing current; this is the next block later today.
     case suggestedNext(NowBlock)
+    /// Nothing open, current or left today.
     case empty
 }
 

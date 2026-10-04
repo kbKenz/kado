@@ -32,7 +32,8 @@ struct NowResolverTests {
     @Test("Between blocks, the next block is suggested and nothing else is up next")
     func gap() {
         let outreach = block("Outreach", at(14), at(15))
-        let screen = resolve(now: at(12, 30), blocks: [outreach])
+        let review = block("Review", at(16), at(17))
+        let screen = resolve(now: at(12, 30), blocks: [outreach, review])
         #expect(screen.state == .suggestedNext(outreach))
         #expect(screen.upNext == nil)
     }
@@ -96,5 +97,46 @@ struct NowResolverTests {
         #expect(screen.state == .empty)
         let early = block("Before rollover", at(3, day: 14), at(3, 30, day: 14))
         #expect(resolve(now: at(2, day: 14), blocks: [early], startHour: 4).state == .suggestedNext(early))
+    }
+
+    @Test("While a session runs, a block that already started is never up next")
+    func upNextSkipsStartedBlocks() {
+        let a = block("A", at(10), at(12))
+        let b = block("B", at(11), at(11, 30))
+        let c = block("C", at(14), at(15))
+        let running = OpenSession(id: UUID(), item: a.item, session: WorkSession(startedAt: at(10)), blockID: a.id)
+        #expect(resolve(now: at(13), blocks: [a, b, c], open: running).upNext == c)
+    }
+
+    @Test("Back-to-back blocks: at the shared instant the later one is current")
+    func backToBack() {
+        let first = block("First", at(10), at(11))
+        let second = block("Second", at(11), at(12))
+        #expect(resolve(now: at(11), blocks: [first, second]).state == .suggestedCurrent(second))
+    }
+
+    @Test("A session whose block is on another day has no planned range")
+    func sessionBlockOtherDay() {
+        let yesterday = block("Yesterday", at(10, day: 12), at(12, day: 12))
+        let running = OpenSession(id: UUID(), item: yesterday.item, session: WorkSession(startedAt: at(9)), blockID: yesterday.id)
+        #expect(resolve(now: at(9, 30), blocks: [yesterday], open: running).state == .running(running, plannedRange: nil))
+    }
+
+    @Test("A paused session without a block has no planned range")
+    func pausedWithoutBlock() {
+        let item = NowItem.task(id: UUID(), title: "Ad hoc")
+        let paused = OpenSession(id: UUID(), item: item, session: WorkSession(startedAt: at(9), pausedAt: at(9, 20)), blockID: nil)
+        #expect(resolve(now: at(9, 30), blocks: [], open: paused).state == .paused(paused, plannedRange: nil))
+    }
+
+    @Test("An ad-hoc session hides the planned block covering now")
+    func adHocHidesCurrentBlock() {
+        let covering = block("Covering", at(10), at(12))
+        let later = block("Later", at(14), at(15))
+        let item = NowItem.task(id: UUID(), title: "Ad hoc")
+        let running = OpenSession(id: UUID(), item: item, session: WorkSession(startedAt: at(10, 15)), blockID: nil)
+        let screen = resolve(now: at(10, 30), blocks: [covering, later], open: running)
+        #expect(screen.state == .running(running, plannedRange: nil))
+        #expect(screen.upNext == later)
     }
 }

@@ -30,6 +30,7 @@ struct LocalizationCoverageTests {
 
     private static let catalogPaths: [String] = [
         "Kado/Resources/Localizable.xcstrings",
+        "Kado/Resources/InfoPlist.xcstrings",
         "KadoWidgets/Resources/Localizable.xcstrings",
     ]
 

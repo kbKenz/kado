@@ -183,7 +183,7 @@ its engine is not available.
 
 ---
 
-### Task 5: `DefaultSpeechTranscriber` and permission strings
+### Task 5: `DefaultSpeechTranscriber` and permission strings ✅
 
 **Goal**: real on-device dictation, with honest permission prompts.
 
@@ -196,17 +196,33 @@ its engine is not available.
   `shouldReportPartialResults = true`; audio session `.record`, mode
   `.measurement`, deactivated with `.notifyOthersOnDeactivation` on
   stop.
+- `Kado/Managers/SpeechRecognitionSession.swift` (added during
+  build) — the audio engine and recognizer, `nonisolated`: their
+  callbacks run off the main thread, and closures made inside a
+  MainActor type would trap there. `stop()` finishes the stream at
+  once (a cancelled task may never call back); words still in flight
+  are dropped, which the model already does after a stop.
+- `Kado/Services/SpeechTranscriptionEnding.swift` — an error after
+  the user stopped is a normal end. Tested.
+- `Kado/Services/SpeechLocaleSelection.swift` — falls back from the
+  exact locale (en-KG) to its base language (en) when only that has
+  an on-device model. Tested.
 - `Kado/Info.plist` — `NSMicrophoneUsageDescription`,
   `NSSpeechRecognitionUsageDescription`.
 - `Kado/Resources/InfoPlist.xcstrings` (new) — EN + FR for both
-  keys. FR drafted with `tu`, flagged for native review.
+  keys. FR drafted with `tu`, flagged for native review. Added to
+  `LocalizationCoverageTests`.
 - `Kado/App/KadoApp.swift` — inject `\.speechTranscriber`.
 
 **Tests / verification**:
 - Build green.
-- Manual on simulator / device: first tap shows both prompts with
-  the right text (EN and FR); deny → inline message, field unchanged;
-  allow → words stream in; stopping restores other audio.
+- Done 2026-10-04: built Info.plist carries both keys; `fr.lproj/
+  InfoPlist.strings` compiled.
+- **The simulator has no on-device recognizer** (probed en-US,
+  en-KG, fr-FR, ru-RU: `supportsOnDeviceRecognition == false`), so
+  the mic is hidden there by design. Prompts, live dictation, deny
+  path and audio ducking must be checked **on a physical iPhone**
+  after Task 6.
 
 **Commit message (suggested)**: `feat(ai-input): add on-device speech transcription`
 
@@ -300,7 +316,8 @@ merged to `main` on 2026-10-04.
 |---|---|
 | Wrong Xcode (16.0 in `/Applications`) | All builds via Xcode 26.5; set `DEVELOPER_DIR` or `xcode-select` before Task 4 |
 | Simulator cannot run Foundation Models | Verify on a device or on a simulator hosted by a Mac with Apple Intelligence on; logic is covered by mocks in Task 3 |
-| On-device speech missing for a locale (FR, etc.) | Mic hides; documented, not a failure |
+| On-device speech missing for a locale (FR, etc.) | Falls back to the base language; else the mic hides |
+| Simulator cannot dictate (no on-device recognizer) | Dictation verified on a physical iPhone only |
 | Short note in a language the device does not list (FR word on an EN-only phone) is pinned to a device language and may be translated | Accepted: rare, 1–3 words, Undo restores |
 | Model rewrites meaning or translates | Strict instructions + Undo; manual EN + FR samples in Task 4 |
 | Audio session conflicts (music, timers) | `.notifyOthersOnDeactivation` on stop; manual check with music playing |

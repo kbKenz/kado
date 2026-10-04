@@ -1,0 +1,42 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "NSMicrophoneUsageDescription": {
+      "comment": "System permission prompt shown the first time the user taps the dictation mic.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kadō uses the microphone only while you dictate into a text field. Your words are turned into text on this device; audio is never stored or sent."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kadō utilise le micro uniquement quand tu dictes dans un champ de texte. Tes mots sont transformés en texte sur cet appareil ; l’audio n’est jamais enregistré ni envoyé."
+          }
+        }
+      }
+    },
+    "NSSpeechRecognitionUsageDescription": {
+      "comment": "System permission prompt for on-device speech recognition, shown when dictating.",
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Speech recognition runs on this device only, to turn what you dictate into text. Nothing you say leaves your device."
+          }
+        },
+        "fr": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "La reconnaissance vocale se fait uniquement sur cet appareil, pour transformer ta dictée en texte. Rien de ce que tu dis ne quitte ton appareil."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.1"
+}

@@ -292,7 +292,7 @@ its engine is not available.
 
 ---
 
-### Task 7b: Adopt in Tasks and Goals
+### Task 7b: Adopt in Tasks and Goals ✅
 
 **Goal**: the feature is live in the task and goal fields that
 merged to `main` on 2026-10-04.
@@ -309,11 +309,17 @@ merged to `main` on 2026-10-04.
 - Imported task and archived goal: controls hidden.
 - Screenshots light + dark.
 
+- Done 2026-10-04: unit suite green; full `make e2e` 30/33. The 3
+  failures (`LogValueSheetTests` ×2 "no keyboard focus",
+  `ArchivedHabitsTests.testArchivedDetailUnarchivesFromItsToolbar`
+  query timeout) fail identically on untouched `main` (72fab6c), so
+  they predate this branch.
+
 **Commit message (suggested)**: `feat(ai-input): offer voice input and cleanup in tasks and goals`
 
 ---
 
-### Task 8: Docs
+### Task 8: Docs ✅
 
 **Goal**: privacy and roadmap say what the app now does.
 

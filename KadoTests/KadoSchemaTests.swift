@@ -38,6 +38,33 @@ struct KadoSchemaTests {
         #expect(KadoSchemaV8.models.contains { $0 == KadoSchemaV8.WorkSessionRecord.self })
     }
 
+    @Test("Deleting a block keeps its sessions; deleting a task removes them")
+    func sessionDeleteRules() throws {
+        let schema = Schema(versionedSchema: KadoSchemaV8.self)
+        let store = try ModelContainer(
+            for: schema,
+            configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        )
+        let context = store.mainContext
+        let task = KadoSchemaV8.TaskRecord(title: "Research")
+        context.insert(task)
+        let block = KadoSchemaV8.ScheduleBlockRecord(task: task)
+        context.insert(block)
+        let session = KadoSchemaV8.WorkSessionRecord(startedAt: .now, task: task, scheduleBlock: block)
+        context.insert(session)
+        try context.save()
+
+        context.delete(block)
+        try context.save()
+        let kept = try context.fetch(FetchDescriptor<KadoSchemaV8.WorkSessionRecord>())
+        #expect(kept.count == 1)
+        #expect(kept.first?.scheduleBlock == nil)
+
+        context.delete(task)
+        try context.save()
+        #expect(try context.fetchCount(FetchDescriptor<KadoSchemaV8.WorkSessionRecord>()) == 0)
+    }
+
     @Test("V7 to V8 keeps habits, tasks and blocks and accepts work sessions")
     func v7ToV8Migration() throws {
         let url = FileManager.default.temporaryDirectory
@@ -71,7 +98,9 @@ struct KadoSchemaTests {
         #expect(task.id == taskID)
         #expect(task.scheduleBlocks?.first?.id == blockID)
         #expect(task.workSessions?.isEmpty ?? true)
-        #expect(try context.fetch(FetchDescriptor<KadoSchemaV8.HabitRecord>()).first?.id == habitID)
+        let habit = try #require(context.fetch(FetchDescriptor<KadoSchemaV8.HabitRecord>()).first)
+        #expect(habit.id == habitID)
+        #expect(habit.workSessions?.isEmpty ?? true)
         let block = try #require(task.scheduleBlocks?.first)
         let session = KadoSchemaV8.WorkSessionRecord(startedAt: .now, task: task, scheduleBlock: block)
         context.insert(session)

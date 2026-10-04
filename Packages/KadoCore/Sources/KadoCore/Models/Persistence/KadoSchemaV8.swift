@@ -387,6 +387,11 @@ public extension KadoSchemaV8 {
             self.habit = habit
             self.scheduleBlock = scheduleBlock
         }
+
+        /// The value-type view of this record, for display and math.
+        public var snapshot: WorkSession {
+            WorkSession(startedAt: startedAt, endedAt: endedAt, pausedAt: pausedAt, pausedSeconds: pausedSeconds)
+        }
     }
 }
 

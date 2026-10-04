@@ -15,10 +15,8 @@ nonisolated public enum DayStripRange {
     ) -> [Date] {
         let todayStart = calendar.startOfDay(for: today)
         let first = earliest.map { min(calendar.startOfDay(for: $0), todayStart) } ?? todayStart
-        guard let last = calendar.date(byAdding: .day, value: max(futureDays, 0), to: todayStart) else {
-            return [todayStart]
-        }
-        let lastStart = calendar.startOfDay(for: last)
+        let lastStart = calendar.date(byAdding: .day, value: max(futureDays, 0), to: todayStart)
+            .map { calendar.startOfDay(for: $0) } ?? todayStart
         var days: [Date] = []
         var cursor = first
         while cursor <= lastStart {
@@ -32,7 +30,8 @@ nonisolated public enum DayStripRange {
         return days
     }
 
-    /// `day` moved inside `days`, or `nil` when `days` is empty.
+    /// Limits `day` to `days.first...days.last`; does not snap to a day.
+    /// `nil` when `days` is empty.
     public static func clamp(_ day: Date, to days: [Date]) -> Date? {
         guard let first = days.first, let last = days.last else { return nil }
         return min(max(day, first), last)

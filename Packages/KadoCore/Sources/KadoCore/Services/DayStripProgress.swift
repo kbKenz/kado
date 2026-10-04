@@ -5,6 +5,11 @@ import Foundation
 /// `isDueOrLogged`, `HabitRowState.isDone`), so the ring and the list
 /// never disagree. Tasks are not counted — `DayProgress` is habits-only
 /// everywhere (confetti, lock-screen ring).
+///
+/// `isListed` overlaps with `isDue`'s own before-start check; it is kept
+/// so the rule is explicit and shared with `TodayRow`. The caller must
+/// pass already-filtered (non-archived) habits, and `evaluator` must use
+/// the same calendar as `calendar`.
 nonisolated public enum DayStripProgress {
     public static func progress(
         on day: Date,

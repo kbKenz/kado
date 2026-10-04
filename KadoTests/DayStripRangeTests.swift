@@ -38,7 +38,7 @@ struct DayStripRangeTests {
         let earliest = TestCalendar.instant(cal, y1, m1, d1, 12)
         let today = TestCalendar.instant(cal, y2, m2, d2, 12)
         let days = DayStripRange.days(from: earliest, today: today, futureDays: 3, calendar: cal)
-        let back = cal.dateComponents([.day], from: cal.startOfDay(for: earliest), to: cal.startOfDay(for: today)).day!
+        let back = cal.ordinality(of: .day, in: .era, for: today)! - cal.ordinality(of: .day, in: .era, for: earliest)!
         #expect(days.count == back + 1 + 3)
         for day in days { #expect(day == cal.startOfDay(for: day)) }
         for (a, b) in zip(days, days.dropFirst()) {

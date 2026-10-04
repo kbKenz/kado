@@ -28,7 +28,8 @@ struct HealthTimelineClippingTests {
         let cal = TestCalendar.utc
         let before = entry(date(cal, 2026, 4, 12, 22), date(cal, 2026, 4, 13, 0))
         let after = entry(date(cal, 2026, 4, 15, 1), date(cal, 2026, 4, 15, 2))
-        #expect(HealthTimelineClipper.entries([before, after], on: date(cal, 2026, 4, 13, 12), calendar: cal).isEmpty)
+        let atEnd = entry(date(cal, 2026, 4, 14, 0), date(cal, 2026, 4, 14, 1))
+        #expect(HealthTimelineClipper.entries([before, atEnd, after], on: date(cal, 2026, 4, 13, 12), calendar: cal).isEmpty)
     }
 
     @Test("Output is sorted by start")
@@ -52,16 +53,20 @@ struct HealthTimelineClippingTests {
             (TestCalendar.paris, 2026, 3, 29),   // 23-hour day
             (TestCalendar.paris, 2026, 10, 25),  // 25-hour day
             (TestCalendar.havana, 2026, 3, 8),   // day starts at 01:00
+            (TestCalendar.havana, 2026, 11, 1),  // midnight occurs twice; 25-hour day
           ])
-    func dstInvariant(calendar: Calendar, year: Int, month: Int, day: Int) {
+    func dstInvariant(calendar: Calendar, year: Int, month: Int, day: Int) throws {
         let noon = date(calendar, year, month, day, 12)
         let dayInterval = calendar.dateInterval(of: .day, for: noon)!
+        let nextNoon = calendar.date(byAdding: .day, value: 1, to: noon)!
+        #expect(dayInterval.end == calendar.startOfDay(for: nextNoon))
         let spanning = entry(calendar.date(byAdding: .hour, value: -6, to: dayInterval.start)!,
                              calendar.date(byAdding: .hour, value: 6, to: dayInterval.end)!)
         let result = HealthTimelineClipper.entries([spanning], on: noon, calendar: calendar)
         #expect(result.count == 1)
         #expect(result.first?.interval == dayInterval)
-        let window = HealthTimelineClipper.queryInterval(around: noon, calendar: calendar)!
-        #expect(window.start < dayInterval.start && window.end > dayInterval.end)
+        let window = try #require(HealthTimelineClipper.queryInterval(around: noon, calendar: calendar))
+        #expect(dayInterval.start.timeIntervalSince(window.start) == 12 * 3600.0)
+        #expect(window.end.timeIntervalSince(dayInterval.end) == 12 * 3600.0)
     }
 }

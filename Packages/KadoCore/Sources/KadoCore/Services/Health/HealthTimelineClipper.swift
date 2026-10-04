@@ -3,7 +3,7 @@ import Foundation
 /// Fits Health entries to the Calendar's civil day. The habit
 /// "Day starts at" setting does not apply: the Calendar is civil.
 nonisolated public enum HealthTimelineClipper {
-    /// The day widened by 12 hours on each side, so a night that
+    /// The day widened by 12 elapsed hours on each side, so a night that
     /// starts the evening before (or a session that ends the morning
     /// after) is fetched whole and merges correctly before clipping.
     public static func queryInterval(around day: Date, calendar: Calendar) -> DateInterval? {

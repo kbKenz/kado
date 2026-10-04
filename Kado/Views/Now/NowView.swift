@@ -51,7 +51,7 @@ struct NowView: View {
                     candidates: quickStartCandidates,
                     onPick: { item in
                         showingStartSomething = false
-                        start(item, blockID: nil)
+                        start(item, blockID: nil, afterSheet: true)
                     },
                     onStartNew: { title, kind in
                         showingStartSomething = false
@@ -206,8 +206,8 @@ struct NowView: View {
     }
 
     /// Resolves the item's records by UUID at the moment of the action.
-    private func start(_ item: NowItem, blockID: UUID?) {
-        run {
+    private func start(_ item: NowItem, blockID: UUID?, afterSheet: Bool = false) {
+        run(afterSheet: afterSheet) {
             let block = try blockID.flatMap { id in
                 try modelContext.fetch(FetchDescriptor<ScheduleBlockRecord>(predicate: #Predicate { $0.id == id })).first
             }
@@ -223,8 +223,9 @@ struct NowView: View {
     }
 
     /// A stale tap (the session was opened or closed elsewhere) is a no-op:
-    /// the screen already re-renders to the real state. Anything else alerts.
-    private func run(_ action: () throws -> Void) {
+    /// the screen already re-renders to the real state. Anything else alerts —
+    /// after the sheet has closed when `afterSheet`, so the alert isn't dropped.
+    private func run(afterSheet: Bool = false, _ action: () throws -> Void) {
         do {
             try action()
         } catch WorkSessionTracker.TrackerError.sessionAlreadyOpen {
@@ -234,8 +235,12 @@ struct NowView: View {
         } catch {
             let nsError = error as NSError
             Self.logger.error("Now action failed: \(nsError.domain, privacy: .public) \(nsError.code, privacy: .public)")
-            errorMessage = "Couldn't save your change. Try again."
-            showingError = true
+            if afterSheet {
+                pendingAlert = "Couldn't save your change. Try again."
+            } else {
+                errorMessage = "Couldn't save your change. Try again."
+                showingError = true
+            }
         }
     }
 }

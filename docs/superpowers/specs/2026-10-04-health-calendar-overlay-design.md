@@ -59,7 +59,8 @@ If a HealthKit query throws, Kadō logs the error type only, never sample data, 
 
 ### App target
 
-- `HealthTimelineProviding` protocol: `func entries(in interval: DateInterval) async throws -> [HealthTimelineEntry]`, plus authorization request and availability.
+- `HealthTimelineProviding` protocol: `sleepEntries(in:)` and `workoutEntries(in:)` (separate, so one can fail without hiding the other), plus `requestAuthorization()` and `isAvailable`.
+- `HealthTimelineLoader`: gates on the opt-in and availability, calls both queries, catches each failure on its own, and clips the result to the day.
 - `HealthKitTimelineProvider`: the live implementation. It uses `HKHealthStore` with async sample queries for sleep and workouts, maps samples to the inputs of `SleepSessionBuilder`, and maps `HKWorkoutActivityType` to a localized activity name.
 - `MockHealthTimelineProvider`: returns fixed entries or throws. It is the default `@Entry` in `EnvironmentValues+Services.swift`, so previews and unit tests never touch HealthKit. `KadoApp` injects the live provider at scene build, following the `notificationScheduler` pattern.
 - `PlannerCalendarView` loads entries with `.task(id:)` keyed on the selected day and on the scene becoming active. It queries the day's interval extended by 12 hours on each side (`calendar.date(byAdding: .hour, ...)`), because sleep crosses midnight, then clips to the day.

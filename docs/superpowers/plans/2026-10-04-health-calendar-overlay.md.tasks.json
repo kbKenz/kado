@@ -1,0 +1,67 @@
+{
+  "planPath": "docs/superpowers/plans/2026-10-04-health-calendar-overlay.md",
+  "tasks": [
+    {
+      "id": 0,
+      "subject": "Task 1: Sleep session builder",
+      "status": "pending",
+      "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 1: Sleep session builder.\n\n```json:metadata\n{\"files\": [\"Packages/KadoCore/Sources/KadoCore/Models/HealthTimelineEntry.swift\", \"Packages/KadoCore/Sources/KadoCore/Models/SleepSample.swift\", \"Packages/KadoCore/Sources/KadoCore/Services/Health/SleepSessionBuilder.swift\", \"KadoTests/SleepSessionBuilderTests.swift\"], \"verifyCommand\": \"make build && make test\", \"acceptanceCriteria\": [\"Asleep stages preferred, inBed fallback\", \"awake never forms a session\", \"overlaps and gaps <=30min merge\", \"session id = earliest sample id\"]}\n```"
+    },
+    {
+      "id": 1,
+      "subject": "Task 2: Civil-day clipping",
+      "status": "pending",
+      "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 2: Civil-day clipping.\n\n```json:metadata\n{\"files\": [\"Packages/KadoCore/Sources/KadoCore/Services/Health/HealthTimelineClipper.swift\", \"KadoTests/HealthTimelineClippingTests.swift\"], \"verifyCommand\": \"make build && make test\", \"acceptanceCriteria\": [\"overnight split across days\", \"edge-touching entries dropped\", \"sorted output\", \"Paris and Havana DST correct\"]}\n```",
+      "blockedBy": [
+        0
+      ]
+    },
+    {
+      "id": 2,
+      "subject": "Task 3: Provider protocol, stub, and loader",
+      "status": "pending",
+      "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 3: Provider protocol, stub, and loader.\n\n```json:metadata\n{\"files\": [\"Kado/Services/HealthTimelineProviding.swift\", \"Kado/Services/PreviewHealthTimelineProvider.swift\", \"Kado/Services/HealthTimelineLoader.swift\", \"Kado/Services/HealthCalendarDefaults.swift\", \"Kado/App/EnvironmentValues+Services.swift\", \"KadoTests/Mocks/StubHealthTimelineProvider.swift\", \"KadoTests/HealthTimelineLoaderTests.swift\"], \"verifyCommand\": \"make build && make test\", \"acceptanceCriteria\": [\"toggle off or unavailable: no query\", \"per-kind failure isolation\", \"clipped results\", \"log error type only\"]}\n```",
+      "blockedBy": [
+        1
+      ]
+    },
+    {
+      "id": 3,
+      "subject": "Task 4: Live HealthKit provider and project configuration",
+      "status": "pending",
+      "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 4: Live HealthKit provider and project configuration.\n\n```json:metadata\n{\"files\": [\"Kado/Services/HealthKitTimelineProvider.swift\", \"Kado/Services/HKWorkoutActivityType+DisplayName.swift\", \"Kado/Resources/InfoPlist.xcstrings\", \"Kado/Kado.entitlements\", \"Kado/Info.plist\", \"Kado/App/KadoApp.swift\", \"Kado/Resources/Localizable.xcstrings\"], \"verifyCommand\": \"make build && make test\", \"acceptanceCriteria\": [\"app builds with HealthKit\", \"usage description EN+FR\", \"deployment-check passes\", \"LocalizationCoverageTests passes\"]}\n```",
+      "blockedBy": [
+        2
+      ]
+    },
+    {
+      "id": 4,
+      "subject": "Task 5: Draw Health entries on the Calendar timeline",
+      "status": "pending",
+      "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 5: Draw Health entries on the Calendar timeline.\n\n```json:metadata\n{\"files\": [\"Kado/Views/Calendar/CalendarBlockItem.swift\", \"Kado/Views/Calendar/CalendarDayTimeline.swift\", \"Kado/Views/Calendar/PlannerCalendarView.swift\", \"Shared/AccessibilityID.swift\", \"Kado/Resources/Localizable.xcstrings\"], \"verifyCommand\": \"make build && make test\", \"acceptanceCriteria\": [\"sleep band behind cards, no lane, no taps\", \"read-only workout cards\", \"agenda lists health rows\", \"VoiceOver labels\", \"reload on day/toggle/foreground\"]}\n```",
+      "blockedBy": [
+        2
+      ]
+    },
+    {
+      "id": 5,
+      "subject": "Task 6: Settings opt-in",
+      "status": "pending",
+      "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 6: Settings opt-in.\n\n```json:metadata\n{\"files\": [\"Kado/Views/Settings/HealthCalendarSection.swift\", \"Kado/Views/Settings/SettingsView.swift\", \"Shared/AccessibilityID.swift\", \"Kado/Resources/Localizable.xcstrings\"], \"verifyCommand\": \"make build && make test\", \"acceptanceCriteria\": [\"hidden when unavailable\", \"authorization then store true\", \"off stops queries\", \"no double request\", \"footer and Open Health\"]}\n```",
+      "blockedBy": [
+        3,
+        4
+      ]
+    },
+    {
+      "id": 6,
+      "subject": "Task 7: Roadmap and privacy notes",
+      "status": "pending",
+      "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 7: Roadmap and privacy notes.\n\n```json:metadata\n{\"files\": [\"docs/ROADMAP.md\", \"PRIVACY.md\"], \"verifyCommand\": \"git diff --stat\", \"acceptanceCriteria\": [\"ROADMAP display-only note\", \"PRIVACY Apple Health section\"]}\n```",
+      "blockedBy": [
+        5
+      ]
+    }
+  ],
+  "lastUpdated": "2026-10-04T00:00:00Z"
+}

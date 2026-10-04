@@ -1,0 +1,84 @@
+{
+  "planPath": "docs/superpowers/plans/2026-10-04-today-day-strip.md",
+  "tasks": [
+    {
+      "id": 1,
+      "subject": "Task 1: DayStripRange (KadoCore)",
+      "status": "pending",
+      "description": "**Goal:** A pure function that lists the strip's days, DST-safe, plus a clamp.\n\nSee plan section 'Task 1: DayStripRange (KadoCore)' for files, steps and code.\n\n**Verify:** `-only-testing:KadoTests/DayStripRangeTests` \u2192 all pass\n\n```json:metadata\n{\"files\": [\"KadoTests/DayStripRangeTests.swift\", \"Packages/KadoCore/Sources/KadoCore/Services/DayStripRange.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/DayStripRangeTests` \\u2192 all pass\", \"acceptanceCriteria\": [\"With no data: today \\u2026 today+60 (61 days).\", \"With an earlier date: starts at that date's midnight.\", \"A future `earliest` never starts the range after today.\", \"Every element is a real midnight and consecutive days differ by exactly one calendar day, in Paris (2026-10-25) and Havana (2026-03-08).\", \"`clamp` returns the nearest end for out-of-range days.\"]}\n```"
+    },
+    {
+      "id": 2,
+      "subject": "Task 2: Habit listing rule and DayStripProgress (KadoCore)",
+      "status": "pending",
+      "description": "**Goal:** One rule for \"does this habit show on day D\" and the ring's `DayProgress` for a day.\n\nSee plan section 'Task 2: Habit listing rule and DayStripProgress (KadoCore)' for files, steps and code.\n\n**Verify:** `-only-testing:KadoTests/DayStripProgressTests` \u2192 all pass\n\n```json:metadata\n{\"files\": [\"KadoTests/DayStripProgressTests.swift\", \"Packages/KadoCore/Sources/KadoCore/Models/Habit+Listing.swift\", \"Packages/KadoCore/Sources/KadoCore/Services/DayStripProgress.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/DayStripProgressTests` \\u2192 all pass\", \"acceptanceCriteria\": [\"`isListed(on:)` is false before the earlier of `createdAt` and `effectiveStart`, true from that day on.\", \"Progress counts habits that are listed and `isDueOrLogged` that day; `completed` counts `HabitRowState.isDone`.\", \"Future days: `completed == 0`, `total` = due count.\", \"Nothing due \\u2192 `DayProgress.empty`.\"]}\n```",
+      "blockedBy": [
+        1
+      ]
+    },
+    {
+      "id": 3,
+      "subject": "Task 3: TodayDayKind and TaskDaySections (app target)",
+      "status": "pending",
+      "description": "**Goal:** Classify the selected day and compute the task sections for it; today's output equals the current `TodayView.taskSections`.\n\nSee plan section 'Task 3: TodayDayKind and TaskDaySections (app target)' for files, steps and code.\n\n**Verify:** `-only-testing:KadoTests/TodayDayKindTests -only-testing:KadoTests/TaskDaySectionsTests` \u2192 all pass\n\n```json:metadata\n{\"files\": [\"Kado/Views/Tasks/TaskDaySections.swift\", \"Kado/Views/Today/TodayDayKind.swift\", \"Kado/Views/Today/TodayView.swift\", \"KadoTests/TaskDaySectionsTests.swift\", \"KadoTests/TodayDayKindTests.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/TodayDayKindTests -only-testing:KadoTests/TaskDaySectionsTests` \\u2192 all pass\", \"acceptanceCriteria\": [\"`TodayDayKind(day:today:calendar:)` gives `.past/.today/.future` by calendar day; `allowsHabitLogging` is false only for `.future`.\", \"Today: same due/overdue, inbox, completed as before (moved code, no behaviour change).\", \"Past: `completed` = completed that day; `due` = open tasks due that day or scheduled on it (not overdue ones from earlier); inbox empty.\", \"Future: `due` = tasks due or scheduled that day, open **and** completed (completed rows show ticked); `completed` and inbox empty.\", \"A schedule block from 23:00 to 01:00 belongs to both days.\"]}\n```",
+      "blockedBy": [
+        2
+      ]
+    },
+    {
+      "id": 4,
+      "subject": "Task 4: First-day filter in TodayRow.sections",
+      "status": "pending",
+      "description": "**Goal:** Habits don't appear on days before their first listed day.\n\nSee plan section 'Task 4: First-day filter in TodayRow.sections' for files, steps and code.\n\n**Verify:** `-only-testing:KadoTests/TodayRowTests` \u2192 all pass\n\n```json:metadata\n{\"files\": [\"Kado/Views/Today/TodayRow.swift\", \"KadoTests/TodayRowTests.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/TodayRowTests` \\u2192 all pass\", \"acceptanceCriteria\": [\"A habit created on day X is in neither section on X\\u22121, and is in a section on X.\", \"Existing `TodayRowTests` still pass.\"]}\n```",
+      "blockedBy": [
+        3
+      ]
+    },
+    {
+      "id": 5,
+      "subject": "Task 5: DayStrip and DayStripCell views",
+      "status": "pending",
+      "description": "**Goal:** The strip UI, with accessibility, previews and strings.\n\nSee plan section 'Task 5: DayStrip and DayStripCell views' for files, steps and code.\n\n**Verify:** `DEVELOPER_DIR=\u2026 make build` (or `xcodebuild build` with the destination above) \u2192 succeeds with no new warnings\n\n```json:metadata\n{\"files\": [\"Kado/Resources/Localizable.xcstrings\", \"Kado/Views/Today/DayStrip.swift\", \"Kado/Views/Today/DayStripCell.swift\", \"Shared/AccessibilityID.swift\"], \"verifyCommand\": \"`DEVELOPER_DIR=\\u2026 make build` (or `xcodebuild build` with the destination above) \\u2192 succeeds with no new warnings\", \"acceptanceCriteria\": [\"Cell: weekday letter (`Weekday.localizedShort`), day number, ring of `progress.fraction`; dot when `progress.total == 0`.\", \"Selected: accent fill, text `Color.kadoBackground`. Today (unselected): number in `Color.kadoAccent`.\", \"Cell is a `Button`: label = full date (\\\"Saturday, October 4\\\"), value = \\\"%lld of %lld habits done\\\" (plural) or \\\"Nothing due\\\", `.isSelected` trait when selected; identifier `AccessibilityID.Today.dayStripCell(day)`.\", \"Strip scrolls horizontally, snaps to cells, centres the selection on appear and on change (animation off under Reduce Motion).\", \"Previews: default, and `#Preview(\\\"Dark\\\")`.\", \"Build succeeds.\"]}\n```",
+      "blockedBy": [
+        4
+      ]
+    },
+    {
+      "id": 6,
+      "subject": "Task 6: Wire the selected day into TodayView",
+      "status": "pending",
+      "description": "**Goal:** Today shows and edits the selected day; strip pinned at the top; title and Today button.\n\nSee plan section 'Task 6: Wire the selected day into TodayView' for files, steps and code.\n\n**Verify:** `DEVELOPER_DIR=\u2026 make test` \u2192 all pass (1 known issue allowed, as on `main`)\n\n```json:metadata\n{\"files\": [\"Kado/Resources/Localizable.xcstrings\", \"Kado/Views/Today/TodayView.swift\", \"KadoTests/TodayBackfillTests.swift\"], \"verifyCommand\": \"`DEVELOPER_DIR=\\u2026 make test` \\u2192 all pass (1 known issue allowed, as on `main`)\", \"acceptanceCriteria\": [\"`@State private var selectedDay: Date?`; `displayedDay = selectedDay.map { calendar.startOfDay(for: $0) } ?? today`; `dayKind = TodayDayKind(day: displayedDay, today: today, calendar: calendar)`.\", \"Strip pinned via `.safeAreaInset(edge: .top)` with `Color.kadoBackground` behind it; range from `DayStripRange.days(from: earliestRecordDate, today: today, calendar:)`, where `earliestRecordDate` = min of habit `createdAt`, completion dates and task `createdAt` \\u2014 all from the `@Query` arrays.\", \"Selecting today sets `selectedDay = nil`. If `selectedDay` falls outside the range, clamp it in `.onChange(of: days)`.\", \"Title: \\\"Today\\\" for `.today`, else `Text(displayedDay, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day())`. Toolbar `Button(\\\"Today\\\")` (identifier `jumpToTodayButton`, placement `.topBarLeading`) only when not today.\", \"Sections per the spec table: task sections from `TaskDaySections.make(for: kind == .today ? civilToday : displayedDay, kind: dayKind, \\u2026)`; section headers: today unchanged; past \\\"Completed\\\" / \\\"Due\\\"; future \\\"Planned\\\"; inbox, rollover caption and bottom card only on `.today`; empty text \\\"Nothing on this day\\\" for past/future.\", \"Habit rows: `TodayRow.sections(from:on: displayedDay, \\u2026)`; state/streak/score `asOf: displayedDay`; on `.future` all habit callbacks except `onOpenDetail` are `nil` and no swipe actions; `moveHabits` only on `.today` (`.onMove` nil otherwise).\", \"`loggingInstant` uses `displayedDay`.\", \"Task toggle: `completedAt = dayKind == .past ? dayBoundary.loggingInstant(for: .now, on: displayedDay) : .now`.\", \"`checkMilestones` returns early unless `dayKind == .today`.\", \"New task sheet: `TaskFormView(defaultDay: dayKind == .today ? nil : displayedDay)`.\", \"Unit tests for backfill pass; the whole `KadoTests` suite passes.\"]}\n```",
+      "blockedBy": [
+        5
+      ]
+    },
+    {
+      "id": 7,
+      "subject": "Task 7: Log sheets write to the selected day",
+      "status": "pending",
+      "description": "**Goal:** Counter and timer sheets opened from another day read and write that day.\n\nSee plan section 'Task 7: Log sheets write to the selected day' for files, steps and code.\n\n**Verify:** build succeeds; `make test` passes\n\n```json:metadata\n{\"files\": [\"Kado/Resources/Localizable.xcstrings\", \"Kado/Views/HabitDetail/TimerLogSheet.swift\", \"Kado/Views/Today/CounterLogSheet.swift\", \"Kado/Views/Today/TodayView.swift\"], \"verifyCommand\": \"build succeeds; `make test` passes\", \"acceptanceCriteria\": [\"Both sheets take `var day: Date? = nil`; `private var logDay: Date { day ?? today }` replaces every `today` read (prefill lookup and `loggingInstant(for: .now, on:)`).\", \"When `day` is set and differs from `today`, the footer reads \\\"Saves for %@\\\" with the short date instead of the \\\"today's completion\\\" text.\", \"`TodaySheet.logCounter(UUID, Date)` / `.logTimer(UUID, Date)`; ids include the day; `logSheetCallback` passes `displayedDay`.\", \"Other callers of the sheets (Habit Detail) compile unchanged.\"]}\n```",
+      "blockedBy": [
+        6
+      ]
+    },
+    {
+      "id": 8,
+      "subject": "Task 8: UI test",
+      "status": "pending",
+      "description": "**Goal:** End-to-end: pick yesterday, log a habit, jump back to today.\n\nSee plan section 'Task 8: UI test' for files, steps and code.\n\n**Verify:** `DEVELOPER_DIR=\u2026 xcodebuild test -project Kado.xcodeproj -scheme Kado -destination 'platform=iOS Simulator,name=Kado feat-today-day-strip' -derivedDataPath build -only-testing:KadoUITests/TodayDayStripTests` \u2192 passes\n\n```json:metadata\n{\"files\": [\"KadoUITests/TodayDayStripTests.swift\"], \"verifyCommand\": \"`DEVELOPER_DIR=\\u2026 xcodebuild test -project Kado.xcodeproj -scheme Kado -destination 'platform=iOS Simulator,name=Kado feat-today-day-strip' -derivedDataPath build -only-testing:KadoUITests/TodayDayStripTests` \\u2192 passes\", \"acceptanceCriteria\": [\"Launch with `seedProduction: true`; tap yesterday's cell; title is not \\\"Today\\\"; tap the first row's trailing control; the row's accessibility value changes; tap the Today button; the Today button is gone.\"]}\n```",
+      "blockedBy": [
+        7
+      ]
+    },
+    {
+      "id": 9,
+      "subject": "Task 9: Verification and docs",
+      "status": "pending",
+      "description": "**Goal:** Prove it works and record it.\n\nSee plan section 'Task 9: Verification and docs' for files, steps and code.\n\n**Verify:** command outputs above, screenshots saved to the scratchpad and looked at.\n\n```json:metadata\n{\"files\": [\"docs/ROADMAP.md\"], \"verifyCommand\": \"command outputs above, screenshots saved to the scratchpad and looked at.\", \"acceptanceCriteria\": [\"`make test` passes (same known issue count as `main`: 1).\", \"`make deployment-check` passes.\", \"Screenshots on the simulator: today, a past day, a future day \\u2014 light and dark; and Dynamic Type XXXL (`xcrun simctl ui '<sim>' content_size accessibility-extra-extra-extra-large`). The strip numbers must not truncate.\", \"iPad build succeeds (`-destination 'platform=iOS Simulator,name=iPad Air 13-inch (M3)'` or the installed iPad).\", \"ROADMAP line added; commit.\"]}\n```",
+      "blockedBy": [
+        8
+      ]
+    }
+  ],
+  "lastUpdated": "2026-10-04T14:01:03.208774+00:00"
+}

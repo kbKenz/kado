@@ -34,7 +34,7 @@ Approaches not used:
 - A lazy horizontal `ScrollView` with `.scrollTargetBehavior(.viewAligned)`.
 - Each cell: weekday letter, day number, small ring with that day's
   `DayProgress.fraction`. A day with nothing due shows a dot, not an empty
-  ring.
+  ring. Future days show an empty ring (nothing can be done yet).
 - The selected cell has an accent fill. The today cell has an accent number
   when it is not selected.
 - Tap a cell to select it. The strip opens on today, and scrolls to today
@@ -61,7 +61,7 @@ Approaches not used:
 
 | | Past day | Today (no change) | Future day |
 |---|---|---|---|
-| Tasks | "Completed" (completed that day), then "Due" (due or scheduled that day, still open) | Due and overdue, inbox, completed today | "Planned" (due or scheduled that day) |
+| Tasks | "Completed" (completed that day), then "Due" (due or scheduled that day, still open) | Due and overdue, inbox, completed today | "Planned" (due or scheduled that day, open and completed) |
 | Habits | "Habits" (due or logged that day), "Not scheduled" | Same as now | "Habits" (due that day), view-only |
 | Inbox | Hidden | Shown | Hidden |
 | Rollover caption, notice cards | Hidden | Shown | Hidden |
@@ -84,9 +84,10 @@ Approaches not used:
   `dayBoundary.loggingInstant(for: .now, on: selectedDay)`.
 - **Habits, future day:** rows are not tappable for logging; they still open
   Habit Detail. No swipe actions.
-- **Tasks:** toggle sets `completedAt` to the selected day at the current
-  clock time (for today: `.now`, as now). Untoggle clears it. Edit and
-  delete work as now.
+- **Tasks:** on a past day, toggle sets `completedAt` to the selected day at
+  the current clock time. On today and future days it sets `.now` (a task
+  done early was done now); the task stays on its future day with a tick.
+  Untoggle clears it. Edit and delete work as now.
 - The confetti and the review-prompt milestones fire only for today.
 
 ## Architecture

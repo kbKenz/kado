@@ -33,6 +33,7 @@ struct OptionalDateRow: View {
     let identifier: String
 
     @Environment(\.isEnabled) private var isEnabled
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var isPicking = false
     @State private var pickedDate = Date.now
 
@@ -55,27 +56,51 @@ struct OptionalDateRow: View {
 
     // MARK: - Set
 
+    /// Accessibility text sizes: the label takes its own line and the
+    /// picker sits under it. Side by side, the label broke mid-word
+    /// ("Dat/e") and the picker ran off the leading edge.
+    @ViewBuilder
     private func setRow(_ current: Date) -> some View {
-        HStack {
-            DatePicker(
-                selection: Binding(get: { current }, set: { value = $0 }),
-                displayedComponents: kind == .time ? .hourAndMinute : .date
-            ) {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(alignment: .leading, spacing: 8) {
                 Label(title, systemImage: systemImage)
-            }
-            .accessibilityIdentifier(identifier)
-            if isEnabled {
-                Button {
-                    value = nil
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.secondary)
-                        .imageScale(.large)
+                HStack {
+                    picker(current).labelsHidden()
+                    Spacer(minLength: 0)
+                    clearButton
                 }
-                .buttonStyle(.borderless)
-                .accessibilityLabel(Text("Remove \(Text(title))"))
-                .accessibilityIdentifier(AccessibilityID.OptionalDate.clear(identifier))
             }
+        } else {
+            HStack {
+                picker(current)
+                clearButton
+            }
+        }
+    }
+
+    private func picker(_ current: Date) -> some View {
+        DatePicker(
+            selection: Binding(get: { current }, set: { value = $0 }),
+            displayedComponents: kind == .time ? .hourAndMinute : .date
+        ) {
+            Label(title, systemImage: systemImage)
+        }
+        .accessibilityIdentifier(identifier)
+    }
+
+    @ViewBuilder
+    private var clearButton: some View {
+        if isEnabled {
+            Button {
+                value = nil
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundStyle(.secondary)
+                    .imageScale(.large)
+            }
+            .buttonStyle(.borderless)
+            .accessibilityLabel(Text("Remove \(Text(title))"))
+            .accessibilityIdentifier(AccessibilityID.OptionalDate.clear(identifier))
         }
     }
 
@@ -89,27 +114,37 @@ struct OptionalDateRow: View {
         .datePickerPopover(isPresented: $isPicking, date: $pickedDate, commit: commitPicked)
     }
 
-    /// Wide enough: label and chips on one line. Large Dynamic Type:
-    /// chips wrap under the label instead of squeezing it.
+    /// Widest layout that fits: label and chips on one line, chips
+    /// under the label, then chips stacked. Chip titles never wrap, so
+    /// `ViewThatFits` sees their real width instead of "To-mor-row".
     private var quickPickRow: some View {
         ViewThatFits(in: .horizontal) {
             HStack {
                 Label(title, systemImage: systemImage)
                 Spacer(minLength: 8)
-                quickPickButtons
+                HStack(spacing: 6) { quickPickButtons }
             }
             VStack(alignment: .leading, spacing: 8) {
                 Label(title, systemImage: systemImage)
-                quickPickButtons
+                HStack(spacing: 6) { quickPickButtons }
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                Label(title, systemImage: systemImage)
+                VStack(alignment: .leading, spacing: 6) { quickPickButtons }
             }
         }
     }
 
+    @ViewBuilder
     private var quickPickButtons: some View {
-        HStack(spacing: 6) {
+        Group {
             ForEach(quickPicks) { pick in
-                Button(pick.title) { value = pick.date }
-                    .accessibilityIdentifier(AccessibilityID.OptionalDate.quick(identifier, pick.id))
+                Button { value = pick.date } label: {
+                    Text(pick.title)
+                        .lineLimit(1)
+                        .fixedSize()
+                }
+                .accessibilityIdentifier(AccessibilityID.OptionalDate.quick(identifier, pick.id))
             }
             Button(action: add) {
                 Image(systemName: "calendar.badge.plus")

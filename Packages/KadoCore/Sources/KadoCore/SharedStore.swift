@@ -17,7 +17,7 @@ import SwiftData
 nonisolated public enum SharedStore {
     /// App Group identifier. Must match the entitlement string on
     /// both the main app and the widget extension targets.
-    public static let appGroupID = "group.dev.kbkenz.kado"
+    public static let appGroupID = "group.com.kenzhebaev.kado"
 
     /// App Group container root if the entitlement is active.
     public static func appGroupContainerURL() -> URL? {

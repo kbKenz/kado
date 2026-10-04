@@ -10,5 +10,5 @@ import Foundation
 /// reference the identifier without the project-wide MainActor
 /// default propagating in and warning.
 nonisolated public enum CloudContainerID {
-    public static let kado = "iCloud.dev.kbkenz.kado"
+    public static let kado = "iCloud.com.kenzhebaev.kado"
 }

@@ -187,7 +187,7 @@ nonisolated enum UITestSupport {
         SupporterDefaults.sharedDefaults.removeObject(forKey: SupporterDefaults.key)
         // Today's List / Calendar choice persists, so a run that picked
         // Calendar would start every later run in it.
-        UserDefaults.standard.removeObject(forKey: TodayView.modeDefaultsKey)
+        UserDefaults.standard.removeObject(forKey: TodayModeDefaults.key)
         applyTipNudgeState(arguments)
         applyAppearanceAnnouncementState(arguments)
     }

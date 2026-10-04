@@ -68,10 +68,8 @@ struct TodayView: View {
 
     enum Mode: String { case list, calendar }
 
-    static let modeDefaultsKey = "kado.todayMode"
-
     /// List or Calendar view of the displayed day; remembered across launches.
-    @AppStorage(TodayView.modeDefaultsKey) private var mode: Mode = .list
+    @AppStorage(TodayModeDefaults.key) private var mode: Mode = .list
 
     /// Single source of truth for sheets the Today surface presents.
     /// Replaces the boolean soup that would otherwise emerge from
@@ -118,105 +116,93 @@ struct TodayView: View {
                 case .calendar: CalendarDayAgenda(day: displayedDay)
                 }
             }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.kadoBackground.ignoresSafeArea())
-                .safeAreaInset(edge: .top, spacing: 0) {
-                    VStack(spacing: 8) {
-                        DayStrip(
-                            days: days,
-                            selection: stripSelection,
-                            today: today,
-                            progress: { stripProgress(for: $0, input: progressInput) }
-                        )
-                        // A horizontal ScrollView is greedy vertically and
-                        // would take the whole inset, pushing the list away.
-                        .fixedSize(horizontal: false, vertical: true)
-                        Picker("View", selection: $mode) {
-                            Text("List").tag(Mode.list)
-                            Text("Calendar").tag(Mode.calendar)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.kadoBackground.ignoresSafeArea())
+            .safeAreaInset(edge: .top, spacing: 0) {
+                TodayHeader(
+                    days: days,
+                    selection: stripSelection,
+                    today: today,
+                    progress: { stripProgress(for: $0, input: progressInput) },
+                    mode: $mode
+                )
+            }
+            .onChange(of: today) { _, newToday in
+                // A day picked while it was in the future follows
+                // today again once it becomes today.
+                if let selectedDay, calendar.isDate(selectedDay, inSameDayAs: newToday) {
+                    self.selectedDay = nil
+                }
+            }
+            .onChange(of: days) { _, days in
+                if let selectedDay,
+                   let clamped = DayStripRange.clamp(selectedDay, to: days),
+                   clamped != selectedDay {
+                    self.selectedDay = calendar.isDate(clamped, inSameDayAs: today) ? nil : clamped
+                }
+            }
+            .navigationTitle(titleText)
+            .navigationDestination(for: HabitRoute.self) { route in
+                HabitDetailLoader(habitID: route.id)
+            }
+            .toolbar {
+                if dayKind != .today {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Today") { selectedDay = nil }
+                            .accessibilityIdentifier(AccessibilityID.Today.jumpToTodayButton)
+                    }
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button { sheet = .newTask } label: {
+                            Label("New task", systemImage: "checklist")
                         }
-                        .pickerStyle(.segmented)
-                        .padding(.horizontal)
-                        .accessibilityIdentifier(AccessibilityID.Today.modePicker)
-                    }
-                    .background(Color.kadoBackground, ignoresSafeAreaEdges: [])
-                }
-                .onChange(of: today) { _, newToday in
-                    // A day picked while it was in the future follows
-                    // today again once it becomes today.
-                    if let selectedDay, calendar.isDate(selectedDay, inSameDayAs: newToday) {
-                        self.selectedDay = nil
-                    }
-                }
-                .onChange(of: days) { _, days in
-                    if let selectedDay,
-                       let clamped = DayStripRange.clamp(selectedDay, to: days),
-                       clamped != selectedDay {
-                        self.selectedDay = calendar.isDate(clamped, inSameDayAs: today) ? nil : clamped
-                    }
-                }
-                .navigationTitle(titleText)
-                .navigationDestination(for: HabitRoute.self) { route in
-                    HabitDetailLoader(habitID: route.id)
-                }
-                .toolbar {
-                    if dayKind != .today {
-                        ToolbarItem(placement: .topBarLeading) {
-                            Button("Today") { selectedDay = nil }
-                                .accessibilityIdentifier(AccessibilityID.Today.jumpToTodayButton)
+                        .accessibilityIdentifier(AccessibilityID.Today.newTaskButton)
+                        Button { sheet = .newHabit } label: {
+                            Label("New habit", systemImage: "repeat")
                         }
+                        .accessibilityIdentifier(AccessibilityID.Today.newHabitButton)
+                    } label: {
+                        Label("Add", systemImage: "plus")
                     }
-                    ToolbarItem(placement: .primaryAction) {
-                        Menu {
-                            Button { sheet = .newTask } label: {
-                                Label("New task", systemImage: "checklist")
-                            }
-                            .accessibilityIdentifier(AccessibilityID.Today.newTaskButton)
-                            Button { sheet = .newHabit } label: {
-                                Label("New habit", systemImage: "repeat")
-                            }
-                            .accessibilityIdentifier(AccessibilityID.Today.newHabitButton)
-                        } label: {
-                            Label("Add", systemImage: "plus")
-                        }
-                        .accessibilityIdentifier(AccessibilityID.Today.addButton)
-                    }
+                    .accessibilityIdentifier(AccessibilityID.Today.addButton)
                 }
-                .onAppear(perform: refreshCard)
-                // Re-asked after every sheet, because two of them retire
-                // a card: a tip taken in the Tip Jar retires the nudge,
-                // opening Appearance retires the announcement, and Today
-                // is already on screen so nothing else would prompt it
-                // to look again.
-                .sheet(item: $sheet, onDismiss: refreshCard) { sheet in
-                    sheetContent(for: sheet)
+            }
+            .onAppear(perform: refreshCard)
+            // Re-asked after every sheet, because two of them retire
+            // a card: a tip taken in the Tip Jar retires the nudge,
+            // opening Appearance retires the announcement, and Today
+            // is already on screen so nothing else would prompt it
+            // to look again.
+            .sheet(item: $sheet, onDismiss: refreshCard) { sheet in
+                sheetContent(for: sheet)
+            }
+            .confirmationDialog(
+                String(localized: "Archive this habit?"),
+                isPresented: archiveDialogBinding,
+                titleVisibility: .visible,
+                presenting: confirmingArchiveOf
+            ) { habitID in
+                Button(String(localized: "Archive"), role: .destructive) {
+                    archive(habitID)
                 }
-                .confirmationDialog(
-                    String(localized: "Archive this habit?"),
-                    isPresented: archiveDialogBinding,
-                    titleVisibility: .visible,
-                    presenting: confirmingArchiveOf
-                ) { habitID in
-                    Button(String(localized: "Archive"), role: .destructive) {
-                        archive(habitID)
-                    }
-                    .accessibilityIdentifier(AccessibilityID.Today.archiveConfirmButton)
-                    Button(String(localized: "Cancel"), role: .cancel) {}
-                } message: { _ in
-                    Text("Archived habits leave Today but keep their history. You can find them in Settings › Archived habits.")
-                }
-                .confirmationDialog("Remove this task?", isPresented: taskDeleteBinding, titleVisibility: .visible, presenting: pendingTaskDeletion) { item in
-                    Button(item.isFromGoogle ? String(localized: "Remove from planner") : String(localized: "Delete task"), role: .destructive) { deleteTask(item.id) }
-                        .accessibilityIdentifier(AccessibilityID.Tasks.deleteConfirm)
-                    Button("Cancel", role: .cancel) {}
-                } message: { item in
-                    Text(item.isFromGoogle
-                        ? String(localized: "The imported task and its completion history will be archived. The event stays in Google Calendar.")
-                        : String(localized: "This removes the task and its planned calendar blocks."))
-                }
-                .alert("Unable to update task", isPresented: taskErrorBinding) {
-                    Button("Close", role: .cancel) {}
-                } message: { Text(taskError ?? "") }
+                .accessibilityIdentifier(AccessibilityID.Today.archiveConfirmButton)
+                Button(String(localized: "Cancel"), role: .cancel) {}
+            } message: { _ in
+                Text("Archived habits leave Today but keep their history. You can find them in Settings › Archived habits.")
+            }
+            .confirmationDialog("Remove this task?", isPresented: taskDeleteBinding, titleVisibility: .visible, presenting: pendingTaskDeletion) { item in
+                Button(item.isFromGoogle ? String(localized: "Remove from planner") : String(localized: "Delete task"), role: .destructive) { deleteTask(item.id) }
+                    .accessibilityIdentifier(AccessibilityID.Tasks.deleteConfirm)
+                Button("Cancel", role: .cancel) {}
+            } message: { item in
+                Text(item.isFromGoogle
+                    ? String(localized: "The imported task and its completion history will be archived. The event stays in Google Calendar.")
+                    : String(localized: "This removes the task and its planned calendar blocks."))
+            }
+            .alert("Unable to update task", isPresented: taskErrorBinding) {
+                Button("Close", role: .cancel) {}
+            } message: { Text(taskError ?? "") }
         }
     }
 
@@ -874,4 +860,34 @@ struct TodayView: View {
     TodayView()
         .modelContainer(PreviewContainer.shared)
         .preferredColorScheme(.dark)
+}
+
+/// The day strip with the List / Calendar switch under it.
+private struct TodayHeader: View {
+    let days: [Date]
+    @Binding var selection: Date
+    let today: Date
+    let progress: (Date) -> DayProgress
+    @Binding var mode: TodayView.Mode
+
+    var body: some View {
+        VStack(spacing: 8) {
+            DayStrip(days: days, selection: $selection, today: today, progress: progress)
+                // A horizontal ScrollView is greedy vertically and
+                // would take the whole inset, pushing the list away.
+                .fixedSize(horizontal: false, vertical: true)
+            Picker("View", selection: $mode) {
+                Text("List").tag(TodayView.Mode.list)
+                Text("Calendar").tag(TodayView.Mode.calendar)
+            }
+            .pickerStyle(.segmented)
+            // Capped so it doesn't stretch across an iPad.
+            .frame(maxWidth: 400)
+            .padding(.horizontal)
+            .padding(.bottom, 6)
+            .accessibilityIdentifier(AccessibilityID.Today.modePicker)
+        }
+        .frame(maxWidth: .infinity)
+        .background(Color.kadoBackground, ignoresSafeAreaEdges: [])
+    }
 }

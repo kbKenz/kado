@@ -19,7 +19,7 @@
     {
       "id": 2,
       "subject": "Task 3: Provider protocol, stub, and loader",
-      "status": "pending",
+      "status": "completed",
       "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 3: Provider protocol, stub, and loader.\n\n```json:metadata\n{\"files\": [\"Kado/Services/HealthTimelineProviding.swift\", \"Kado/Services/PreviewHealthTimelineProvider.swift\", \"Kado/Services/HealthTimelineLoader.swift\", \"Kado/Services/HealthCalendarDefaults.swift\", \"Kado/App/EnvironmentValues+Services.swift\", \"KadoTests/Mocks/StubHealthTimelineProvider.swift\", \"KadoTests/HealthTimelineLoaderTests.swift\"], \"verifyCommand\": \"make build && make test\", \"acceptanceCriteria\": [\"toggle off or unavailable: no query\", \"per-kind failure isolation\", \"clipped results\", \"log error type only\"]}\n```",
       "blockedBy": [
         1
@@ -28,7 +28,7 @@
     {
       "id": 3,
       "subject": "Task 4: Live HealthKit provider and project configuration",
-      "status": "pending",
+      "status": "completed",
       "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 4: Live HealthKit provider and project configuration.\n\n```json:metadata\n{\"files\": [\"Kado/Services/HealthKitTimelineProvider.swift\", \"Kado/Services/HKWorkoutActivityType+DisplayName.swift\", \"Kado/Resources/InfoPlist.xcstrings\", \"Kado/Kado.entitlements\", \"Kado/Info.plist\", \"Kado/App/KadoApp.swift\", \"Kado/Resources/Localizable.xcstrings\"], \"verifyCommand\": \"make build && make test\", \"acceptanceCriteria\": [\"app builds with HealthKit\", \"usage description EN+FR\", \"deployment-check passes\", \"LocalizationCoverageTests passes\"]}\n```",
       "blockedBy": [
         2
@@ -37,7 +37,7 @@
     {
       "id": 4,
       "subject": "Task 5: Draw Health entries on the Calendar timeline",
-      "status": "pending",
+      "status": "completed",
       "description": "See docs/superpowers/plans/2026-10-04-health-calendar-overlay.md \u2014 Task 5: Draw Health entries on the Calendar timeline.\n\n```json:metadata\n{\"files\": [\"Kado/Views/Calendar/CalendarBlockItem.swift\", \"Kado/Views/Calendar/CalendarDayTimeline.swift\", \"Kado/Views/Calendar/PlannerCalendarView.swift\", \"Shared/AccessibilityID.swift\", \"Kado/Resources/Localizable.xcstrings\"], \"verifyCommand\": \"make build && make test\", \"acceptanceCriteria\": [\"sleep band behind cards, no lane, no taps\", \"read-only workout cards\", \"agenda lists health rows\", \"VoiceOver labels\", \"reload on day/toggle/foreground\"]}\n```",
       "blockedBy": [
         2
@@ -63,5 +63,5 @@
       ]
     }
   ],
-  "lastUpdated": "2026-10-04T08:39:17.475578+00:00"
+  "lastUpdated": "2026-10-04T09:17:51.373798+00:00"
 }

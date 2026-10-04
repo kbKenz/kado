@@ -20,7 +20,7 @@ The feature is off by default. Settings has a "Health on Calendar" row with a to
 
 If `HKHealthStore.isHealthDataAvailable()` is false, the row is hidden and the feature is unavailable.
 
-HealthKit does not tell an app that read access was denied; it returns no samples. So an empty day shows no error. The row footer says: "No data showing? Check Settings → Health → Data Access → Kadō." A button opens the Health app.
+HealthKit does not tell an app that read access was denied; it returns no samples. So an empty day shows no error. The row footer says: "No data showing? Check Settings → Privacy & Security → Health → Kadō." A button opens the Health app.
 
 When the toggle is off, Kadō never queries HealthKit.
 

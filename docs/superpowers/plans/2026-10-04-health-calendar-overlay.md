@@ -1271,7 +1271,7 @@ struct HealthCalendarSection: View {
                 }
             } footer: {
                 if showsHealth {
-                    Text("No data showing? Check Settings → Health → Data Access & Devices → Kadō.")
+                    Text("No data showing? Check Settings → Privacy & Security → Health → Kadō.")
                 } else {
                     Text("Show your sleep and workouts on the Calendar. Read-only, and the data stays on your device.")
                 }
@@ -1330,7 +1330,7 @@ In `Kado/Views/Settings/SettingsView.swift`, right after the `Section { Navigati
 Add to `Kado/Resources/Localizable.xcstrings` with comments (EN → FR):
 - `Health on Calendar` → `Santé dans le Calendrier`
 - `Open Health` → `Ouvrir Santé`
-- `No data showing? Check Settings → Health → Data Access & Devices → Kadō.` → `Aucune donnée ? Vérifie Réglages → Santé → Accès aux données et appareils → Kadō.`
+- `No data showing? Check Settings → Privacy & Security → Health → Kadō.` → `Aucune donnée ? Vérifie Réglages → Confidentialité et sécurité → Santé → Kadō.`
 - `Show your sleep and workouts on the Calendar. Read-only, and the data stays on your device.` → `Affiche ton sommeil et tes entraînements dans le Calendrier. Lecture seule, et les données restent sur ton appareil.`
 
 - [ ] **Step 5: Build, test, check by hand**
@@ -1390,7 +1390,7 @@ read-only access to your sleep and workouts. It reads them only to
 draw them on the Calendar, on your device. Kadō never writes to
 Health, and never stores, syncs to iCloud, exports, or sends this
 data anywhere. Turn the setting off, or remove access in
-Settings → Health → Data Access & Devices → Kadō, at any time.
+Settings → Privacy & Security → Health → Kadō, at any time.
 ```
 
 - [ ] **Step 3: Commit**

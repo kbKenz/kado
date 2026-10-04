@@ -13,6 +13,11 @@ struct CalendarBlockItem: Identifiable {
 
     var isFromHealth: Bool { healthKind != nil }
 
+    /// The name used for any activity without its own name.
+    static var genericWorkoutName: String {
+        String(localized: "Workout", comment: "Generic workout name shown on the Calendar timeline.")
+    }
+
     /// SF Symbol for a Health entry; nil for planned blocks.
     var healthSymbol: String? {
         switch healthKind {

@@ -115,17 +115,34 @@ struct CalendarDayTimeline: View {
         RoundedRectangle(cornerRadius: KadoRadius.sm)
             .fill(Color.kadoBackgroundSecondary)
             .overlay(alignment: .bottomTrailing) {
-                Label(item.title, systemImage: item.healthSymbol ?? "bed.double.fill")
-                    .font(.caption2)
-                    .lineLimit(1)
-                    .foregroundStyle(Color.kadoForegroundSecondary)
-                    .padding(6)
+                HStack(spacing: 4) {
+                    Label(item.title, systemImage: item.healthSymbol ?? "bed.double.fill")
+                    Text(item.schedule.timeLabel)
+                }
+                .font(.caption2)
+                .lineLimit(1)
+                .foregroundStyle(Color.kadoForegroundSecondary)
+                .padding(6)
             }
             .allowsHitTesting(false)
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(item.title)
-            .accessibilityValue(item.schedule.timeLabel)
+            .accessibilityLabel(healthAccessibilityLabel(item))
+            .accessibilityValue(healthAccessibilityValue(item))
             .accessibilityIdentifier(AccessibilityID.Calendar.health(item.id))
+    }
+
+    /// Shared by the timeline card, the sleep band and the agenda row so
+    /// VoiceOver reads the same thing in both layouts.
+    private func healthAccessibilityLabel(_ block: CalendarBlockItem) -> Text {
+        if block.healthKind == .sleep || block.title == CalendarBlockItem.genericWorkoutName {
+            return Text(block.title)
+        }
+        return Text("\(block.title) workout", comment: "VoiceOver label for a Health workout on the Calendar, e.g. 'Running workout'.")
+    }
+
+    private func healthAccessibilityValue(_ block: CalendarBlockItem) -> Text {
+        if block.healthKind == .sleep { return Text(block.schedule.timeLabel) }
+        return Text("\(block.schedule.timeLabel), from Health", comment: "VoiceOver value for a Health workout: its time range and source.")
     }
 
     @ViewBuilder
@@ -158,8 +175,8 @@ struct CalendarDayTimeline: View {
         .clipShape(RoundedRectangle(cornerRadius: KadoRadius.sm))
         .overlay(RoundedRectangle(cornerRadius: KadoRadius.sm).strokeBorder(Color.kadoDivider))
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("\(block.title) workout", comment: "VoiceOver label for a Health workout on the Calendar, e.g. 'Running workout'."))
-        .accessibilityValue(Text("\(block.schedule.timeLabel), from Health", comment: "VoiceOver value for a Health workout: its time range and source."))
+        .accessibilityLabel(healthAccessibilityLabel(block))
+        .accessibilityValue(healthAccessibilityValue(block))
         .accessibilityIdentifier(AccessibilityID.Calendar.health(block.id))
     }
 
@@ -237,12 +254,18 @@ struct CalendarDayTimeline: View {
                     VStack(alignment: .leading) {
                         Label(block.title, systemImage: block.healthSymbol ?? "heart")
                         Text(block.schedule.timeLabel).font(.caption)
+                        if block.healthKind != .sleep {
+                            Text("Health", comment: "Calendar timeline caption: this entry comes from Apple Health.")
+                                .font(.caption2)
+                        }
                     }
                     .foregroundStyle(Color.kadoForegroundSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
                     .background(Color.kadoBackgroundSecondary, in: RoundedRectangle(cornerRadius: KadoRadius.card))
-                    .accessibilityElement(children: .combine)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(healthAccessibilityLabel(block))
+                    .accessibilityValue(healthAccessibilityValue(block))
                     .accessibilityIdentifier(AccessibilityID.Calendar.health(block.id))
                 } else if let task = block.task {
                     TaskRowView(item: task, schedule: block.schedule, showsDate: false,

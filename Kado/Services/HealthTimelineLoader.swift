@@ -10,7 +10,6 @@ struct HealthTimelineLoader {
     let provider: any HealthTimelineProviding
     let calendar: Calendar
 
-
     func entries(on day: Date, isEnabled: Bool) async -> [HealthTimelineEntry] {
         guard isEnabled, provider.isAvailable,
               let window = HealthTimelineClipper.queryInterval(around: day, calendar: calendar)

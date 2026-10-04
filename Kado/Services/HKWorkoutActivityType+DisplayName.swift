@@ -16,7 +16,7 @@ extension HKWorkoutActivityType {
         case .highIntensityIntervalTraining: String(localized: "HIIT", comment: "Workout type shown on the Calendar timeline.")
         case .rowing: String(localized: "Rowing", comment: "Workout type shown on the Calendar timeline.")
         case .elliptical: String(localized: "Elliptical", comment: "Workout type shown on the Calendar timeline.")
-        default: String(localized: "Workout", comment: "Generic workout name shown on the Calendar timeline.")
+        default: CalendarBlockItem.genericWorkoutName
         }
     }
 }

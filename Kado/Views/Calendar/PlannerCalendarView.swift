@@ -23,7 +23,7 @@ struct PlannerCalendarView: View {
 
     /// Entries for the selected day only; a previous day's result is never drawn.
     private var dayHealthEntries: [HealthTimelineEntry] {
-        guard let loadedHealth, loadedHealth.day == day else { return [] }
+        guard showsHealth, let loadedHealth, loadedHealth.day == day else { return [] }
         return loadedHealth.entries
     }
 

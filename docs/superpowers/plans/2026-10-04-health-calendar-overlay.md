@@ -1172,8 +1172,12 @@ Add after `.onAppear { if selectedDay == nil { ... } }` in `body`:
 ```swift
             .task(id: HealthReloadKey(day: day, isEnabled: showsHealth, isActive: scenePhase == .active)) {
                 guard scenePhase == .active else { return }
-                healthEntries = await HealthTimelineLoader(provider: healthProvider, calendar: calendar)
+                let loaded = await HealthTimelineLoader(provider: healthProvider, calendar: calendar)
                     .entries(on: day, isEnabled: showsHealth)
+                // A superseded load (the user moved to another day) must not
+                // overwrite the newer day's entries.
+                guard !Task.isCancelled else { return }
+                healthEntries = loaded
             }
 ```
 

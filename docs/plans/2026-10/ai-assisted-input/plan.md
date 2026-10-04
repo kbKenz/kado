@@ -33,9 +33,12 @@ its engine is not available.
   scene build, so previews and tests never touch the mic or the
   model.
 - Builds need Xcode 26.x (iOS 26 SDK). Deployment target stays 18.0.
-- On this branch, adopted only in `NewHabitFormView` (habit name) and
-  `DayEditPopover` (note, limit 500). Tasks and Goals adopt it after
-  they merge.
+- Adopted in every free-text field on `main` (Tasks and Goals merged
+  2026-10-04, `72fab6c`): habit name, day note (limit 500), task
+  title and notes, goal name and "why", goal progress note. Not in
+  numeric fields (amount, baseline, target) or the unit field.
+- Controls hide when the field is disabled (`\.isEnabled`): imported
+  tasks and archived goals are read-only.
 
 ## Task list
 
@@ -220,7 +223,9 @@ its engine is not available.
   (`sparkles`, `ProgressView` while cleaning, `.tint` set per the
   `CLAUDE.md` spinner rule); Undo chip; inline failure text with
   "Open Settings" for `permissionDenied`; stops recording
-  `.onDisappear`.
+  `.onDisappear`; hides both controls when
+  `@Environment(\.isEnabled)` is `false` (imported tasks, archived
+  goals).
 - Accessibility labels and identifiers on each button (leaves only).
 - `Kado/Resources/Localizable.xcstrings` — new keys with comments,
   EN + FR.
@@ -236,9 +241,9 @@ its engine is not available.
 
 ---
 
-### Task 7: Adopt in habit name and day note
+### Task 7a: Adopt in habit name and day note
 
-**Goal**: the feature is live in the two fields `main` has.
+**Goal**: the feature is live in the habit fields.
 
 **Changes**:
 - `Kado/Views/NewHabit/NewHabitFormView.swift` —
@@ -256,12 +261,34 @@ its engine is not available.
 
 ---
 
+### Task 7b: Adopt in Tasks and Goals
+
+**Goal**: the feature is live in the task and goal fields that
+merged to `main` on 2026-10-04.
+
+**Changes**:
+- `Kado/Views/Tasks/TaskFormView.swift` — title, notes.
+- `Kado/Views/Goals/GoalFormView.swift` — name, "Why this matters".
+- `Kado/Views/Goals/GoalProgressEntryForm.swift` — note only (not
+  amount).
+
+**Tests / verification**:
+- `make test`, `make e2e` green — `TaskCalendarTests` and
+  `GoalProgressUITests` type into these fields.
+- Imported task and archived goal: controls hidden.
+- Screenshots light + dark.
+
+**Commit message (suggested)**: `feat(ai-input): offer voice input and cleanup in tasks and goals`
+
+---
+
 ### Task 8: Docs
 
 **Goal**: privacy and roadmap say what the app now does.
 
 **Changes**:
-- `PRIVACY.md` — microphone and speech recognition: optional,
+- `PRIVACY.md` — new optional section next to "Google Calendar
+  (optional)": microphone and speech recognition are optional,
   on-device only, audio not stored or sent; cleanup runs on device.
 - `docs/ROADMAP.md` — entry for the feature.
 
@@ -292,7 +319,6 @@ its engine is not available.
 
 ## Out of scope
 
-- Tasks and Goals forms (not on `main`).
 - Cloud models or fallbacks.
 - Auto-cleanup, title suggestions, restructuring.
 - `SpeechAnalyzer` (iOS 26) — can replace the manager behind the

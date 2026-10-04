@@ -118,15 +118,18 @@ TextField("Add a note...", text: $noteText, axis: .vertical)
 
 ### 4. Where it is adopted on this branch
 
-`main` contains only two free-text fields:
+Every free-text field on `main` (updated 2026-10-04, after Tasks and
+Goals merged in `72fab6c`):
 
 - `NewHabitFormView` → habit name
 - `DayEditPopover` → completion note (limit 500)
+- `TaskFormView` → title, notes
+- `GoalFormView` → name, "Why this matters"
+- `GoalProgressEntryForm` → note
 
-Tasks and Goals forms are not on `main` yet (they are uncommitted
-work on `feature/goal-progress`). When they merge, each of their text
-fields adopts the feature with one `.assistedInput(...)` line. That
-is out of scope for this branch.
+Numeric fields (amount, baseline, target) and the unit field are left
+alone. Disabled fields (imported tasks, archived goals) hide the
+controls.
 
 ### 5. Error handling
 

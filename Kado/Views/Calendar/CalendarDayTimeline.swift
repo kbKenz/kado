@@ -114,8 +114,8 @@ struct CalendarDayTimeline: View {
     private func sleepBand(_ item: CalendarBlockItem) -> some View {
         RoundedRectangle(cornerRadius: KadoRadius.sm)
             .fill(Color.kadoBackgroundSecondary)
-            .overlay(alignment: .topTrailing) {
-                Label(item.title, systemImage: "bed.double.fill")
+            .overlay(alignment: .bottomTrailing) {
+                Label(item.title, systemImage: item.healthSymbol ?? "bed.double.fill")
                     .font(.caption2)
                     .lineLimit(1)
                     .foregroundStyle(Color.kadoForegroundSecondary)
@@ -136,7 +136,7 @@ struct CalendarDayTimeline: View {
     /// Read-only: no button, no menu, no completion.
     private func workoutCard(_ block: CalendarBlockItem) -> some View {
         VStack(alignment: .leading, spacing: 3) {
-            Label(block.title, systemImage: "figure.run")
+            Label(block.title, systemImage: block.healthSymbol ?? "figure.run")
                 .font(.caption.weight(.semibold))
                 .lineLimit(2)
             Text(block.schedule.timeLabel)
@@ -149,8 +149,14 @@ struct CalendarDayTimeline: View {
         .foregroundStyle(Color.kadoForegroundSecondary)
         .padding(8)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(Color.kadoBackgroundSecondary, in: RoundedRectangle(cornerRadius: KadoRadius.sm))
-        .overlay(RoundedRectangle(cornerRadius: KadoRadius.sm).strokeBorder(Color.kadoHairline))
+        .background(Color.kadoBackground, in: RoundedRectangle(cornerRadius: KadoRadius.sm))
+        .overlay(alignment: .leading) {
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.kadoForegroundSecondary)
+                .frame(width: 3)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: KadoRadius.sm))
+        .overlay(RoundedRectangle(cornerRadius: KadoRadius.sm).strokeBorder(Color.kadoDivider))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text("\(block.title) workout", comment: "VoiceOver label for a Health workout on the Calendar, e.g. 'Running workout'."))
         .accessibilityValue(Text("\(block.schedule.timeLabel), from Health", comment: "VoiceOver value for a Health workout: its time range and source."))
@@ -229,7 +235,7 @@ struct CalendarDayTimeline: View {
             ForEach(agendaItems) { block in
                 if block.isFromHealth {
                     VStack(alignment: .leading) {
-                        Label(block.title, systemImage: block.healthKind == .sleep ? "bed.double.fill" : "figure.run")
+                        Label(block.title, systemImage: block.healthSymbol ?? "heart")
                         Text(block.schedule.timeLabel).font(.caption)
                     }
                     .foregroundStyle(Color.kadoForegroundSecondary)

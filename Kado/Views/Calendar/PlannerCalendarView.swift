@@ -14,7 +14,18 @@ struct PlannerCalendarView: View {
     @Environment(\.healthTimelineProvider) private var healthProvider
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(HealthCalendarDefaults.key) private var showsHealth = false
-    @State private var healthEntries: [HealthTimelineEntry] = []
+    @State private var loadedHealth: LoadedHealth?
+
+    private struct LoadedHealth {
+        let day: Date
+        let entries: [HealthTimelineEntry]
+    }
+
+    /// Entries for the selected day only; a previous day's result is never drawn.
+    private var dayHealthEntries: [HealthTimelineEntry] {
+        guard let loadedHealth, loadedHealth.day == day else { return [] }
+        return loadedHealth.entries
+    }
 
     /// Reload when the day, the opt-in, or foreground state changes.
     private struct HealthReloadKey: Hashable {
@@ -77,7 +88,7 @@ struct PlannerCalendarView: View {
                 // A superseded load (the user moved to another day) must not
                 // overwrite the newer day's entries.
                 guard !Task.isCancelled else { return }
-                healthEntries = loaded
+                loadedHealth = LoadedHealth(day: day, entries: loaded)
             }
             .sheet(item: $sheet) { selection in
                 switch selection {
@@ -226,7 +237,7 @@ struct PlannerCalendarView: View {
                         Text("Planned time").font(.caption).foregroundStyle(Color.kadoForegroundSecondary)
                     }
                     CalendarDayTimeline(
-                        day: day, blocks: timed, healthEntries: healthEntries,
+                        day: day, blocks: timed, healthEntries: dayHealthEntries,
                         onToggle: { if let taskID = $0.task?.id { toggleTask(taskID) } },
                         onEdit: openBlock,
                         onDelete: { deletingTaskID = $0.task?.id }

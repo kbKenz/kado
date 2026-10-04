@@ -13,6 +13,15 @@ struct CalendarBlockItem: Identifiable {
 
     var isFromHealth: Bool { healthKind != nil }
 
+    /// SF Symbol for a Health entry; nil for planned blocks.
+    var healthSymbol: String? {
+        switch healthKind {
+        case .sleep: "bed.double.fill"
+        case .workout: "figure.run"
+        case nil: nil
+        }
+    }
+
     init(_ record: ScheduleBlockRecord, on day: Date, calendar: Calendar) {
         id = record.id
         schedule = TaskScheduleItem(record)

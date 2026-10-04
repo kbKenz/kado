@@ -48,9 +48,11 @@ final class GoalProgressUITests: KadoUITestCase {
         reopened.buttons[AccessibilityID.Goals.actions].tap()
         reopened.buttons[AccessibilityID.Goals.archive].tap()
         reopened.buttons[AccessibilityID.Goals.edit].tap()
-        let startDateToggle = reopened.switches[AccessibilityID.Goals.hasStartDate]
-        scrollTo(startDateToggle, in: reopened)
-        XCTAssertFalse(startDateToggle.isEnabled)
+        // Archived: the start date row is read-only — shown, no add button.
+        let startDateRow = reopened.descendants(matching: .any)[AccessibilityID.Goals.startDate].firstMatch
+        scrollTo(startDateRow, in: reopened)
+        XCTAssertTrue(startDateRow.exists)
+        XCTAssertFalse(reopened.buttons[AccessibilityID.OptionalDate.add(AccessibilityID.Goals.startDate)].exists)
         capture(reopened, "goal-progress-archived-form")
         reopened.buttons[AccessibilityID.Goals.cancel].tap()
     }

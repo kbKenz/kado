@@ -23,6 +23,9 @@ the App Store release it went out in.
   [Descoped](#descoped) below.
 - **French localization** (originally v1.0) shipped early, in the
   v0.2 stream.
+- **In progress**: on-device dictation and one-tap text cleanup in
+  every free-text field (Speech + Foundation Models, nothing leaves the
+  device) — see `docs/plans/2026-10/ai-assisted-input/`.
 - **Next**: Live Activities + Dynamic Island for timer habits, then
   the remaining v1.x polish items (biometrics, categories, backup
   files).

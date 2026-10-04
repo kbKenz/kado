@@ -24,6 +24,8 @@ struct KadoApp: App {
     @State private var tipJarStore = DefaultTipJarStore(tipNudge: DefaultTipNudgeService())
     @State private var supporterPack: any SupporterPackStoring = Self.makeSupporterPack()
     @State private var appIconApplier = AppIconApplier(switcher: LiveAppIconSwitcher())
+    @State private var textCleaner: any TextCleaning = TextCleanerFactory.make()
+    @State private var speechTranscriber: any SpeechTranscribing = SpeechTranscriptionManager()
 
     /// Raw wall-clock marker, bumped whenever the logical day may have
     /// changed. `\.today` is *derived* from it rather than stored, so
@@ -192,6 +194,8 @@ struct KadoApp: App {
         .environment(\.tipJarStore, tipJarStore)
         .environment(\.supporterPack, supporterPack)
         .environment(\.appIconApplier, appIconApplier)
+        .environment(\.textCleaner, textCleaner)
+        .environment(\.speechTranscriber, speechTranscriber)
         .environment(\.calendar, weekCalendar)
         // The one calculator that reads `firstWeekday`: a
         // `.daysPerWeek` streak is counted in whole calendar weeks, so

@@ -61,6 +61,23 @@ Health, and never stores, syncs to iCloud, exports, or sends this
 data anywhere. Turn the setting off, or remove access in
 Settings → Privacy & Security → Health → Kadō, at any time.
 
+## Dictation and text cleanup (optional)
+
+Text fields can offer a microphone button for dictation and a cleanup
+button that tidies grammar and filler words. Both run entirely on your
+device:
+
+- **Dictation** uses Apple's Speech framework with on-device recognition
+  required. Audio is processed in memory while you dictate and is never
+  stored or sent, to the developer or to Apple's speech servers. Where
+  your device has no on-device speech model, the microphone button is not
+  shown. The first use asks for microphone and speech recognition access;
+  you can change either at any time in Settings.
+- **Cleanup** uses Apple's on-device Foundation Models (iOS 26 with
+  Apple Intelligence turned on). The text you choose to clean up is sent
+  to the model on your device only. Nothing is stored beyond the text
+  you keep in the field.
+
 ## Export and import
 
 JSON and CSV backups include your planning records, including imported
@@ -71,7 +88,8 @@ the underlying calendar and task data.
 ## Third-party services
 
 The app adds no developer analytics, advertising, or crash reporting
-services. The optional Google Sign-In SDK is used for Google account
+services. Dictation and text cleanup use only Apple frameworks running on
+your device. The optional Google Sign-In SDK is used for Google account
 authorization; its own data practices are described above. Local tasks,
 habits, and the internal calendar remain usable without a Google account.
 

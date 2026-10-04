@@ -26,5 +26,9 @@
 			<string>Kado</string>
 		</dict>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Kadō uses the microphone only while you dictate into a text field. Your words are turned into text on this device; audio is never stored or sent.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Speech recognition runs on this device only, to turn what you dictate into text. Nothing you say leaves your device.</string>
 </dict>
 </plist>

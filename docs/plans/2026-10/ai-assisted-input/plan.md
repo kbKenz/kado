@@ -1,0 +1,363 @@
+# Plan — AI-assisted text input
+
+**Date**: 2026-10-04
+**Status**: ready to build
+**Research**: [research.md](./research.md)
+
+## Summary
+
+Add two on-device helpers to free-text fields: a mic that dictates
+into the field, and a ✨ button that tidies the text (grammar,
+punctuation, filler) with Apple's Foundation Models, replacing it in
+place with Undo. Both come from one `.assistedInput(_:)` modifier
+backed by two injected services, so any field adopts the feature with
+one line. Nothing leaves the device. Each control hides itself where
+its engine is not available.
+
+## Decisions locked in
+
+- On device only: `SFSpeechRecognizer` with
+  `requiresOnDeviceRecognition`, and `FoundationModels`. No network.
+- Cleanup is tidy only. It must not add content or translate.
+- Cleanup replaces the text and offers Undo for about 5 s. Undo is
+  dropped when the user edits the field.
+- Dictation: tap to start, live partials appended after the existing
+  text, tap to stop. No auto-cleanup.
+- Cleaner availability = iOS 26 **and**
+  `SystemLanguageModel.default.availability == .available` **and**
+  `supportsLocale(.current)`. Otherwise ✨ hides.
+- Mic availability = recognizer for `.current` locale exists **and**
+  `supportsOnDeviceRecognition`. Otherwise the mic hides.
+- Environment defaults are mocks / unavailable stand-ins (pattern:
+  `notificationScheduler`). `KadoApp` injects the real services at
+  scene build, so previews and tests never touch the mic or the
+  model.
+- Builds need Xcode 26.x (iOS 26 SDK). Deployment target stays 18.0.
+- Adopted in every free-text field on `main` (Tasks and Goals merged
+  2026-10-04, `72fab6c`): habit name, day note (limit 500), task
+  title and notes, goal name and "why", goal progress note. Not in
+  numeric fields (amount, baseline, target) or the unit field.
+- Controls hide when the field is disabled (`\.isEnabled`): imported
+  tasks and archived goals are read-only.
+
+## Task list
+
+### Task 1: `AssistedTextEditing` pure logic (tests first) ✅
+
+**Goal**: every text rule in one tested, UI-free type.
+
+**Changes**:
+- `Kado/Services/AssistedTextEditing.swift` — `nonisolated enum`
+  (namespace, static functions; it holds no state) with:
+  - `appending(_ transcript: String, to base: String) -> String` —
+    one space between non-empty base and transcript, none if base is
+    empty or ends in whitespace; empty transcript returns base.
+  - `limited(_ text: String, to limit: Int?) -> String` — prefix to
+    the limit, `nil` means no limit.
+  - `sanitizedCleanup(_ output: String) -> String?` — trims
+    whitespace and newlines, strips one pair of wrapping quotes
+    (`"…"`, `“…”`, `«…»`), returns `nil` if the result is empty.
+- `KadoTests/AssistedTextEditingTests.swift`.
+
+**Tests / verification**:
+- Append: empty base; base ending in space; base ending in newline;
+  normal base; empty transcript.
+- Limit: under, at, over the limit; `nil` limit; emoji and accented
+  characters count as one `Character`.
+- Sanitize: wrapping quotes stripped, inner quotes kept, whitespace
+  only → `nil`, normal text unchanged.
+- `make test` green.
+
+**Commit message (suggested)**: `feat(ai-input): add pure text-editing rules for assisted input`
+
+---
+
+### Task 2: Service protocols, stand-ins, environment entries ✅
+
+**Goal**: the two seams exist and are injectable; nothing real yet.
+
+**Changes**:
+- `Kado/Services/SpeechTranscribing.swift` — protocol
+  (`isAvailable`, `requestAuthorization() async -> Bool`,
+  `transcribe() -> AsyncThrowingStream<String, Error>`, `stop()`),
+  and `UnavailableSpeechTranscriber`. `AssistedInputError` enum
+  (`permissionDenied`, `unavailable`, `failed`) in its own file.
+- `Kado/Services/TextCleaning.swift` — protocol (`isAvailable`,
+  `clean(_:) async throws -> String`) and `UnavailableTextCleaner`.
+- `Kado/Preview Content/MockSpeechTranscriber.swift`,
+  `MockTextCleaner.swift` — hand-driven: `send(_:)` / `fail(_:)`
+  partials; scripted result, with `holdsUntilReleased` + `release()`
+  to test taps during a running cleanup. `@unchecked Sendable` with the one-line comment, per
+  `CLAUDE.md`.
+- `Kado/App/EnvironmentValues+Services.swift` — `@Entry var
+  speechTranscriber` (default: `UnavailableSpeechTranscriber()`,
+  production code, not a Debug mock) and `@Entry var
+  textCleaner` (default: `UnavailableTextCleaner()`).
+- `KadoTests/EnvironmentValuesServicesTests.swift` — defaults are
+  the unavailable stand-ins.
+
+**Tests / verification**:
+- Default environment reports both services unavailable.
+- `make test` and `make build` green.
+
+**Commit message (suggested)**: `feat(ai-input): add speech and cleanup service seams`
+
+---
+
+### Task 3: `AssistedInputModel` state machine (tests first) ✅
+
+**Goal**: all behaviour of the control, testable without a view.
+
+**Changes**:
+- `Kado/ViewModels/AssistedInputModel.swift` — `@Observable` class
+  owning:
+  - `state: State` enum — `.idle`, `.recording(base: String)`,
+    `.cleaning`, `.failed(AssistedInputError)`.
+  - `undoSnapshot: String?`.
+  - `toggleRecording(text:)`, `clean(text:)`, `undo(text:)`,
+    `textDidChange(to:)`, `stopIfRecording()`, `dismissFailure()`.
+    Actions return their `Task` (or `nil` when not allowed) so tests
+    await them instead of sleeping.
+  - A cleanup result is dropped if the user edited the text while
+    the model ran (their text wins).
+  - Guard flags set synchronously before spawning a `Task` (the
+    `TipJarView` double-tap rule in `CLAUDE.md`).
+  - Undo expiry through an injected `sleep` function so tests fire
+    it by hand.
+- `KadoTests/AssistedInputModelTests.swift`.
+
+**Tests / verification**:
+- Recording: partials replace the previous partial, not the base;
+  stop keeps the last partial; stream error keeps received text and
+  sets `.failed`; permission denied sets `.failed(.permissionDenied)`
+  and text unchanged.
+- Cleaning: success replaces text and sets the snapshot; error or
+  `nil` sanitize result leaves text unchanged; second tap while
+  cleaning is ignored; character limit applied to the result.
+- Undo restores the snapshot; user edit clears it; clock advance of
+  5 s clears it.
+- Cannot clean while recording and the reverse.
+- `make test` green.
+
+**Commit message (suggested)**: `feat(ai-input): add assisted input state model`
+
+---
+
+### Task 4: `FoundationModelsTextCleaner` ✅
+
+**Goal**: real cleanup on iOS 26 devices with Apple Intelligence.
+
+**Changes**:
+- `Kado/Services/FoundationModelsTextCleaner.swift` —
+  `@available(iOS 26, *)`; new `LanguageModelSession(instructions:)`
+  per call (no history leaks between fields); maps
+  `GenerationError` (`guardrailViolation`,
+  `exceededContextWindowSize`, `unsupportedLanguageOrLocale`) to
+  `AssistedInputError.failed`; output goes through
+  `AssistedTextEditing.sanitizedCleanup`.
+- `Kado/Services/CleanupInstructions.swift` (added during build) —
+  the instructions, plus the note's language detected on device with
+  `NaturalLanguage` and named in them. Without it, a French note came
+  back in English. Notes under 4 words are detected only among
+  `Locale.preferredLanguages`: free detection read "Meditate" as
+  Romanian (0.99) and the model wrote "Medita". Tested in
+  `CleanupInstructionsTests`.
+- `Kado/Services/TextCleanerFactory.swift` — `#available(iOS 26, *)`
+  → Foundation Models, else `UnavailableTextCleaner`.
+- `Kado/App/KadoApp.swift` — inject `\.textCleaner` at scene build.
+
+**Tests / verification**:
+- Build with Xcode 26.x, no new warnings.
+- Manual: on an Apple Intelligence Mac's simulator (or device), clean
+  "um so i want to like read more books books every day" → tidy text,
+  same meaning. French sample too.
+- Manual: with Apple Intelligence off, ✨ is hidden (check in Task 6).
+- Done 2026-10-04: `FoundationModels` is `LC_LOAD_WEAK_DYLIB`; the
+  app launches on an iOS 18.0 simulator. A one-off live probe (not
+  committed) on the iOS 26.5 simulator cleaned EN, FR and RU notes in
+  their own language and kept "Meditate", "Run 5k", "Читать" as is.
+  A prompt-injection note ("ignore your instructions…") fails safely
+  (text unchanged).
+
+**Commit message (suggested)**: `feat(ai-input): clean up text with on-device Foundation Models`
+
+---
+
+### Task 5: `DefaultSpeechTranscriber` and permission strings ✅
+
+**Goal**: real on-device dictation, with honest permission prompts.
+
+**Changes**:
+- `Kado/Managers/SpeechTranscriptionManager.swift` (stateful system
+  wrapper, so it is a Manager per `CLAUDE.md`) —
+  `SFSpeechRecognizer(locale: .current)`, `AVAudioEngine`,
+  `SFSpeechAudioBufferRecognitionRequest` with
+  `requiresOnDeviceRecognition = true` and
+  `shouldReportPartialResults = true`; audio session `.record`, mode
+  `.measurement`, deactivated with `.notifyOthersOnDeactivation` on
+  stop.
+- `Kado/Managers/SpeechRecognitionSession.swift` (added during
+  build) — the audio engine and recognizer, `nonisolated`: their
+  callbacks run off the main thread, and closures made inside a
+  MainActor type would trap there. `stop()` finishes the stream at
+  once (a cancelled task may never call back); words still in flight
+  are dropped, which the model already does after a stop.
+- `Kado/Services/SpeechTranscriptionEnding.swift` — an error after
+  the user stopped is a normal end. Tested.
+- `Kado/Services/SpeechLocaleSelection.swift` — falls back from the
+  exact locale (en-KG) to its base language (en) when only that has
+  an on-device model. Tested.
+- `Kado/Info.plist` — `NSMicrophoneUsageDescription`,
+  `NSSpeechRecognitionUsageDescription`.
+- `Kado/Resources/InfoPlist.xcstrings` (new) — EN + FR for both
+  keys. FR drafted with `tu`, flagged for native review. Added to
+  `LocalizationCoverageTests`.
+- `Kado/App/KadoApp.swift` — inject `\.speechTranscriber`.
+
+**Tests / verification**:
+- Build green.
+- Done 2026-10-04: built Info.plist carries both keys; `fr.lproj/
+  InfoPlist.strings` compiled.
+- **The simulator has no on-device recognizer** (probed en-US,
+  en-KG, fr-FR, ru-RU: `supportsOnDeviceRecognition == false`), so
+  the mic is hidden there by design. Prompts, live dictation, deny
+  path and audio ducking must be checked **on a physical iPhone**
+  after Task 6.
+
+**Commit message (suggested)**: `feat(ai-input): add on-device speech transcription`
+
+---
+
+### Task 6: `AssistedInputModifier` view ✅
+
+**Goal**: the one-line UI that every field uses.
+
+**Changes**:
+- `Kado/UIComponents/AssistedInputModifier.swift` —
+  `View.assistedInput(_ text:, characterLimit:, identifier:)`; the
+  field's identifier names the buttons (`AccessibilityID.AssistedInput`)
+  so two assisted fields in one form never share one. Buttons are
+  `.borderless` so a `Form` row does not fire them all on one tap.
+  Model built in `.onAppear` (environment not readable at `@State`
+  seed time);
+  trailing `HStack` with mic (`mic` / `stop.circle.fill`) and ✨
+  (`sparkles`, `ProgressView` while cleaning, `.tint` set per the
+  `CLAUDE.md` spinner rule); Undo chip; inline failure text with
+  "Open Settings" for `permissionDenied`; stops recording
+  `.onDisappear`; hides both controls when
+  `@Environment(\.isEnabled)` is `false` (imported tasks, archived
+  goals).
+- Accessibility labels and identifiers on each button (leaves only).
+- `Kado/Resources/Localizable.xcstrings` — new keys with comments,
+  EN + FR.
+- Previews: idle, recording, cleaning, undo visible, failure; one
+  `#Preview("Dark")`.
+
+**Tests / verification**:
+- `LocalizationCoverageTests` green.
+- Done 2026-10-04: build + suite green, 0 warnings,
+  `LocalizationCoverageTests` green with 9 new EN/FR keys. Previews
+  compile (available, unavailable + disabled, dark).
+- Screenshots and XXXL check move to Task 7a/7b: nothing uses the
+  modifier until then.
+
+**Commit message (suggested)**: `feat(ai-input): add assistedInput modifier`
+
+---
+
+### Task 7a: Adopt in habit name and day note ✅
+
+**Goal**: the feature is live in the habit fields.
+
+**Changes**:
+- `Kado/Views/NewHabit/NewHabitFormView.swift` —
+  `.assistedInput($model.name)`.
+- `Kado/UIComponents/DayEditPopover.swift` —
+  `.assistedInput($noteText, characterLimit: noteCharLimit)`.
+
+**Tests / verification**:
+- `make test`, `make build` green; `make e2e` green (existing name
+  and note UI tests still pass).
+- Screenshots of both fields, light + dark, iPhone + iPad.
+- VoiceOver walk-through of both fields.
+
+- Done 2026-10-04: suite green; PreStartDay, DayCompletionCelebration,
+  OverviewDayEdit, DayEditPopover UI tests 10/10. Live in the app on
+  the simulator: "um read read more books every day" → "Read more
+  books every day.", Undo restored it. The mic **is** offered in the
+  app on the simulator (the unit-test host reported no on-device
+  recognizer); live dictation still to be tried by hand.
+
+**Commit message (suggested)**: `feat(ai-input): offer voice input and cleanup in habit name and day note`
+
+---
+
+### Task 7b: Adopt in Tasks and Goals ✅
+
+**Goal**: the feature is live in the task and goal fields that
+merged to `main` on 2026-10-04.
+
+**Changes**:
+- `Kado/Views/Tasks/TaskFormView.swift` — title, notes.
+- `Kado/Views/Goals/GoalFormView.swift` — name, "Why this matters".
+- `Kado/Views/Goals/GoalProgressEntryForm.swift` — note only (not
+  amount).
+
+**Tests / verification**:
+- `make test`, `make e2e` green — `TaskCalendarTests` and
+  `GoalProgressUITests` type into these fields.
+- Imported task and archived goal: controls hidden.
+- Screenshots light + dark.
+
+- Done 2026-10-04: unit suite green; full `make e2e` 30/33. The 3
+  failures (`LogValueSheetTests` ×2 "no keyboard focus",
+  `ArchivedHabitsTests.testArchivedDetailUnarchivesFromItsToolbar`
+  query timeout) fail identically on untouched `main` (72fab6c), so
+  they predate this branch.
+
+**Commit message (suggested)**: `feat(ai-input): offer voice input and cleanup in tasks and goals`
+
+---
+
+### Task 8: Docs ✅
+
+**Goal**: privacy and roadmap say what the app now does.
+
+**Changes**:
+- `PRIVACY.md` — new optional section next to "Google Calendar
+  (optional)": microphone and speech recognition are optional,
+  on-device only, audio not stored or sent; cleanup runs on device.
+- `docs/ROADMAP.md` — entry for the feature.
+
+**Commit message (suggested)**: `docs: describe on-device voice input and text cleanup`
+
+## Risks and mitigation
+
+| Risk | Mitigation |
+|---|---|
+| Wrong Xcode (16.0 in `/Applications`) | All builds via Xcode 26.5; set `DEVELOPER_DIR` or `xcode-select` before Task 4 |
+| Simulator cannot run Foundation Models | Verify on a device or on a simulator hosted by a Mac with Apple Intelligence on; logic is covered by mocks in Task 3 |
+| On-device speech missing for a locale (FR, etc.) | Falls back to the base language; else the mic hides |
+| Simulator cannot dictate (no on-device recognizer) | Dictation verified on a physical iPhone only |
+| Short note in a language the device does not list (FR word on an EN-only phone) is pinned to a device language and may be translated | Accepted: rare, 1–3 words, Undo restores |
+| Model rewrites meaning or translates | Strict instructions + Undo; manual EN + FR samples in Task 4 |
+| Audio session conflicts (music, timers) | `.notifyOthersOnDeactivation` on stop; manual check with music playing |
+| Trailing buttons crowd the compact popover | Previews + XXXL check in Task 6; fall back to a row below the field in the popover if needed |
+
+## Open questions
+
+- [x] Should Settings have a switch to turn the AI helpers off?
+      **Decided 2026-10-04: no switch.** Each control hides when
+      unavailable.
+- [ ] The model adds a final period to short names ("drink watter"
+      → "Drink water.") and sometimes keeps a repeat ("meditate
+      meditate" → "Meditate, meditate."). Add a rule, or accept?
+- [ ] FR strings need review by a native speaker before merge
+      (`CLAUDE.md` localisation rule).
+
+## Out of scope
+
+- Cloud models or fallbacks.
+- Auto-cleanup, title suggestions, restructuring.
+- `SpeechAnalyzer` (iOS 26) — can replace the manager behind the
+  same protocol later.

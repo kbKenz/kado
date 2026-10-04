@@ -18,8 +18,7 @@ struct GoalFormView: View {
     @State private var name = ""
     @State private var details = ""
     @State private var status: GoalStatus = .active
-    @State private var hasStartDate = false
-    @State private var hasTargetDate = false
+    /// `nil` means not set.
     @State private var startDate: Date?
     @State private var targetDate: Date?
     @State private var populated = false
@@ -74,9 +73,11 @@ struct GoalFormView: View {
                     .focused($nameFocused)
                     .submitLabel(.done)
                     .accessibilityIdentifier(AccessibilityID.Goals.name)
+                    .assistedInput($name, identifier: AccessibilityID.Goals.name)
                 TextField("Why this matters (optional)", text: $details, axis: .vertical)
                     .lineLimit(3...8)
                     .accessibilityIdentifier(AccessibilityID.Goals.details)
+                    .assistedInput($details, identifier: AccessibilityID.Goals.details)
             } header: { Text("Details") }
             .listRowBackground(Color.kadoBackgroundSecondary)
             Section {
@@ -100,18 +101,24 @@ struct GoalFormView: View {
 
     private var datesSection: some View {
         Section {
-            Toggle("Start date", isOn: $hasStartDate)
-                .accessibilityIdentifier(AccessibilityID.Goals.hasStartDate)
-            if hasStartDate {
-                DatePicker("Starts", selection: startDateBinding, displayedComponents: .date)
-                    .accessibilityIdentifier(AccessibilityID.Goals.startDate)
-            }
-            Toggle("Target date", isOn: $hasTargetDate)
-                .accessibilityIdentifier(AccessibilityID.Goals.hasTargetDate)
-            if hasTargetDate {
-                DatePicker("Target", selection: targetDateBinding, displayedComponents: .date)
-                    .accessibilityIdentifier(AccessibilityID.Goals.targetDate)
-            }
+            OptionalDateRow(
+                title: "Start date",
+                addTitle: "Add start date",
+                systemImage: "flag",
+                value: $startDate,
+                suggestion: { civilToday },
+                identifier: AccessibilityID.Goals.startDate
+            )
+            OptionalDateRow(
+                title: "Target date",
+                addTitle: "Add target date",
+                systemImage: "flag.checkered",
+                value: $targetDate,
+                // A target before the start would be refused; open on
+                // the start when there is one.
+                suggestion: { startDate ?? civilToday },
+                identifier: AccessibilityID.Goals.targetDate
+            )
             if !validDates {
                 Text("Target date must be on or after start date.")
                     .font(.footnote)
@@ -127,20 +134,12 @@ struct GoalFormView: View {
         return GoalListItem(record)
     }
 
-    private var startDateBinding: Binding<Date> {
-        Binding(get: { startDate ?? civilToday }, set: { startDate = $0 })
-    }
-
-    private var targetDateBinding: Binding<Date> {
-        Binding(get: { targetDate ?? civilToday }, set: { targetDate = $0 })
-    }
-
     private var errorBinding: Binding<Bool> {
         Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
     }
 
     private var validDates: Bool {
-        guard hasStartDate, hasTargetDate, let startDate, let targetDate else { return true }
+        guard let startDate, let targetDate else { return true }
         return calendar.startOfDay(for: targetDate) >= calendar.startOfDay(for: startDate)
     }
 
@@ -156,10 +155,8 @@ struct GoalFormView: View {
         name = item?.name ?? ""
         details = item?.details ?? ""
         status = item?.status ?? .active
-        hasStartDate = item?.startDate != nil
-        hasTargetDate = item?.targetDate != nil
-        startDate = item?.startDate ?? civilToday
-        targetDate = item?.targetDate ?? civilToday
+        startDate = item?.startDate
+        targetDate = item?.targetDate
         populated = true
         nameFocused = goalID == nil && !UITestSupport.suppressesNameAutoFocus
     }
@@ -186,8 +183,8 @@ struct GoalFormView: View {
         record.status = status
         record.completedAt = status == .completed ? (record.completedAt ?? .now) : nil
         if record.archivedAt == nil {
-            record.startDate = hasStartDate ? startDate.map { calendar.startOfDay(for: $0) } : nil
-            record.targetDate = hasTargetDate ? targetDate.map { calendar.startOfDay(for: $0) } : nil
+            record.startDate = startDate.map { calendar.startOfDay(for: $0) }
+            record.targetDate = targetDate.map { calendar.startOfDay(for: $0) }
         }
         record.updatedAt = .now
         do {

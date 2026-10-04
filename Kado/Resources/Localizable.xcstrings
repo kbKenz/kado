@@ -939,6 +939,23 @@
         }
       }
     },
+    "%lld of %lld habits done" : {
+      "comment" : "Day strip cell accessibility value: habits done of habits due that day",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld of %2$lld habits done"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld habitudes faites sur %2$lld"
+          }
+        }
+      }
+    },
     "%lld of %lld habits done today" : {
       "comment" : "Medium widget VoiceOver summary. Arg 1 completed, arg 2 total.",
       "extractionState" : "stale",
@@ -6061,6 +6078,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Notes (facultatif)"
+          }
+        }
+      }
+    },
+    "Nothing due" : {
+      "comment" : "Day strip cell accessibility value when no habit is due that day",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing due"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rien de prévu"
           }
         }
       }

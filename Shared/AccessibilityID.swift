@@ -103,6 +103,17 @@ enum AccessibilityID {
         /// "Archiver" on the French simulator.
         static let archiveButton = "today.archive"
         static let archiveConfirmButton = "today.archive.confirm"
+        /// One day-strip cell. On the cell's `Button` (a leaf).
+        static func dayStripCell(_ day: Date) -> String {
+            let f = DateFormatter()
+            f.calendar = Foundation.Calendar(identifier: .gregorian)
+            f.locale = Locale(identifier: "en_US_POSIX")
+            f.timeZone = .current
+            f.dateFormat = "yyyy-MM-dd"
+            return "today.dayStrip.\(f.string(from: day))"
+        }
+        /// The toolbar button that jumps back to today.
+        static let jumpToTodayButton = "today.jumpToToday"
     }
 
     enum Goals {

@@ -97,13 +97,13 @@ public struct DefaultBackupImporter: BackupImporting {
                 summary.updatedScheduleBlocks += 1
             }
         }
-        var sessionIDs = Set(try existingSessions(in: context).keys)
+        let sessionsByID = try existingSessions(in: context)
         for session in document.workSessions {
             summary.totalWorkSessions += 1
-            if sessionIDs.insert(session.id).inserted {
-                summary.newWorkSessions += 1
+            if let local = sessionsByID[session.id] {
+                if !Self.keepsLocalSession(local, over: session) { summary.updatedWorkSessions += 1 }
             } else {
-                summary.updatedWorkSessions += 1
+                summary.newWorkSessions += 1
             }
         }
         if document.formatVersion >= 4 {
@@ -247,6 +247,8 @@ public struct DefaultBackupImporter: BackupImporting {
             summary.totalWorkSessions += 1
             let record: WorkSessionRecord
             if let found = sessions[backup.id] {
+                // A finished session is never reopened by an older copy.
+                if Self.keepsLocalSession(found, over: backup) { continue }
                 record = found
                 summary.updatedWorkSessions += 1
             } else {
@@ -379,13 +381,20 @@ public struct DefaultBackupImporter: BackupImporting {
         }
         let blockIDs = Set(blocks.keys).union(document.scheduleBlocks.map(\.id))
         guard Set(document.workSessions.map(\.id)).count == document.workSessions.count else { throw BackupError.invalidJSON }
+        // At most one session may be running at a time.
+        guard document.workSessions.filter({ $0.endedAt == nil }).count <= 1 else { throw BackupError.invalidJSON }
         for session in document.workSessions {
+            guard session.pausedSeconds.isFinite, session.pausedSeconds >= 0 else { throw BackupError.invalidJSON }
             if let taskID = session.taskID, !taskIDs.contains(taskID) { throw BackupError.invalidJSON }
             if let habitID = session.habitID, !habitIDs.contains(habitID) { throw BackupError.invalidJSON }
             if let blockID = session.scheduleBlockID, !blockIDs.contains(blockID) { throw BackupError.invalidJSON }
             if session.taskID != nil && session.habitID != nil { throw BackupError.invalidJSON }
             if let end = session.endedAt, end < session.startedAt { throw BackupError.invalidJSON }
         }
+    }
+
+    private static func keepsLocalSession(_ local: WorkSessionRecord, over incoming: WorkSessionBackup) -> Bool {
+        local.endedAt != nil && incoming.endedAt == nil
     }
 
     private static func completionsByID(_ record: HabitRecord) -> [UUID: CompletionRecord] {

@@ -224,6 +224,8 @@ private struct ImportConfirmSheet: View {
                              new: summary.newGoals, updated: summary.updatedGoals)
                     labelRow(title: "Progress entries", total: summary.totalGoalProgressEntries,
                              new: summary.newGoalProgressEntries, updated: summary.updatedGoalProgressEntries)
+                    labelRow(title: "Work sessions", total: summary.totalWorkSessions,
+                             new: summary.newWorkSessions, updated: summary.updatedWorkSessions)
                 } footer: {
                     Text("Imported records merge with your current data by matching IDs, including goals and their linked tasks and habits.")
                 }
@@ -300,7 +302,7 @@ private enum PresentedAlert: Identifiable {
         case .importFailed(let failure):
             return Text(failure.message)
         case .importSucceeded(let summary):
-            return Text("Habits: \(summary.totalHabits) (\(summary.newHabits) new, \(summary.updatedHabits) updated)\nCompletions: \(summary.totalCompletions) (\(summary.newCompletions) new, \(summary.updatedCompletions) updated)\nTasks: \(summary.totalTasks)\nPlanned blocks: \(summary.totalScheduleBlocks)\nGoals: \(summary.totalGoals)\nProgress entries: \(summary.totalGoalProgressEntries)")
+            return Text("Habits: \(summary.totalHabits) (\(summary.newHabits) new, \(summary.updatedHabits) updated)\nCompletions: \(summary.totalCompletions) (\(summary.newCompletions) new, \(summary.updatedCompletions) updated)\nTasks: \(summary.totalTasks)\nPlanned blocks: \(summary.totalScheduleBlocks)\nGoals: \(summary.totalGoals)\nProgress entries: \(summary.totalGoalProgressEntries)\nWork sessions: \(summary.totalWorkSessions)")
         }
     }
 }

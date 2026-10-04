@@ -4263,6 +4263,42 @@
         }
       }
     },
+    "Habits: %lld (%lld new, %lld updated)\nCompletions: %lld (%lld new, %lld updated)\nTasks: %lld\nPlanned blocks: %lld\nGoals: %lld\nProgress entries: %lld\nWork sessions: %lld" : {
+      "comment" : "Backup import result including tracked work sessions. Preserve all eleven integer placeholders.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habits: %lld (%lld new, %lld updated)\nCompletions: %lld (%lld new, %lld updated)\nTasks: %lld\nPlanned blocks: %lld\nGoals: %lld\nProgress entries: %lld\nWork sessions: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Habitudes : %lld (%lld nouvelles, %lld mises à jour)\nRéalisation : %lld (%lld nouvelles, %lld mises à jour)\nTâches : %lld\nCréneaux planifiés : %lld\nObjectifs : %lld\nSaisies de progression : %lld\nSéances de travail : %lld"
+          }
+        }
+      }
+    },
+    "Work sessions" : {
+      "comment" : "Label tracked work session counts in the backup import preview.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Work sessions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Séances de travail"
+          }
+        }
+      }
+    },
     "Health" : {
       "comment" : "Calendar timeline caption: this entry comes from Apple Health.",
       "localizations" : {

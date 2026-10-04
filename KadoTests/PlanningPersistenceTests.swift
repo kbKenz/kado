@@ -252,4 +252,146 @@ struct PlanningPersistenceTests {
         #expect(document.workSessions.isEmpty)
         #expect(document.formatVersion == 4)
     }
+
+    // MARK: - Work session review fixes
+
+    private func sessionBackup(
+        id: UUID = UUID(), endedAt: Date? = nil, pausedAt: Date? = nil, pausedSeconds: Double = 0,
+        updatedAt: Date? = nil, task: UUID? = nil, habit: UUID? = nil, block: UUID? = nil
+    ) -> WorkSessionBackup {
+        WorkSessionBackup(
+            id: id, startedAt: day, endedAt: endedAt, pausedAt: pausedAt, pausedSeconds: pausedSeconds,
+            createdAt: day, updatedAt: updatedAt ?? day, taskID: task, habitID: habit, scheduleBlockID: block
+        )
+    }
+
+    private func habitBackup(id: UUID) -> HabitBackup {
+        HabitBackup(
+            id: id, name: "Walk", frequency: .daily, type: .binary, createdAt: day, archivedAt: nil,
+            color: .blue, icon: "figure.walk", remindersEnabled: false, reminderHour: 9, reminderMinute: 0,
+            completions: [], sortOrder: 0, goalID: nil
+        )
+    }
+
+    @Test("An open paused session survives JSON and CSV round trips")
+    func openPausedSessionRoundTrip() throws {
+        var document = BackupDocument(exportedAt: day, appVersion: "test", habits: [])
+        document.workSessions = [sessionBackup(pausedAt: day.addingTimeInterval(60), pausedSeconds: 30)]
+        let exporter = DefaultBackupExporter(now: { Date(timeIntervalSince1970: 0) }, appVersion: "test")
+        let importer = DefaultBackupImporter()
+        let csv = CSVBackupCoder()
+        for decoded in [try importer.parse(data: exporter.encode(document)), try csv.decode(csv.encode(document))] {
+            #expect(decoded.workSessions == document.workSessions)
+            let destination = try container()
+            try importer.apply(decoded, to: destination.mainContext)
+            let restored = try #require(destination.mainContext.fetch(FetchDescriptor<WorkSessionRecord>()).first)
+            #expect(restored.endedAt == nil)
+            #expect(restored.pausedAt == day.addingTimeInterval(60))
+            #expect(restored.pausedSeconds == 30)
+        }
+    }
+
+    @Test("A habit-linked session imports with its habit link")
+    func habitLinkedSession() throws {
+        let habitID = UUID()
+        var document = BackupDocument(exportedAt: day, appVersion: "test", habits: [habitBackup(id: habitID)])
+        document.workSessions = [sessionBackup(endedAt: day.addingTimeInterval(10), habit: habitID)]
+        let destination = try container()
+        try DefaultBackupImporter().apply(document, to: destination.mainContext)
+        let restored = try #require(destination.mainContext.fetch(FetchDescriptor<WorkSessionRecord>()).first)
+        #expect(restored.habit?.id == habitID)
+        #expect(restored.task == nil)
+    }
+
+    @Test("A session may link a task and block that exist only in the destination store")
+    func sessionLinksToStoreOnlyRecords() throws {
+        let destination = try container()
+        let context = destination.mainContext
+        let task = TaskRecord(title: "Local", createdAt: day, updatedAt: day)
+        context.insert(task)
+        let block = ScheduleBlockRecord(plannedDay: day, createdAt: day, updatedAt: day, task: task)
+        context.insert(block)
+        try context.save()
+        var document = BackupDocument(exportedAt: day, appVersion: "test", habits: [])
+        document.workSessions = [sessionBackup(endedAt: day.addingTimeInterval(10), task: task.id, block: block.id)]
+        try DefaultBackupImporter().apply(document, to: context)
+        let restored = try #require(context.fetch(FetchDescriptor<WorkSessionRecord>()).first)
+        #expect(restored.task?.id == task.id)
+        #expect(restored.scheduleBlock?.id == block.id)
+    }
+
+    @Test("A locally closed session is not reopened by an older open copy")
+    func closedSessionStaysClosed() throws {
+        let id = UUID()
+        let end = day.addingTimeInterval(500)
+        let destination = try container()
+        let context = destination.mainContext
+        let importer = DefaultBackupImporter()
+        var closed = BackupDocument(exportedAt: day, appVersion: "test", habits: [])
+        closed.workSessions = [sessionBackup(id: id, endedAt: end, pausedSeconds: 5, updatedAt: day.addingTimeInterval(600))]
+        try importer.apply(closed, to: context)
+
+        var open = BackupDocument(exportedAt: day, appVersion: "test", habits: [])
+        open.workSessions = [sessionBackup(id: id, pausedSeconds: 1, updatedAt: day)]
+        #expect(try importer.summary(for: open, in: context).updatedWorkSessions == 0)
+        let summary = try importer.apply(open, to: context)
+        #expect(summary.updatedWorkSessions == 0)
+        let record = try #require(context.fetch(FetchDescriptor<WorkSessionRecord>()).first)
+        #expect(record.endedAt == end)
+        #expect(record.pausedSeconds == 5)
+        #expect(record.updatedAt == day.addingTimeInterval(600))
+    }
+
+    @Test("Preview counts match apply counts, and a second import keeps one record")
+    func previewMatchesApply() throws {
+        var document = BackupDocument(exportedAt: day, appVersion: "test", habits: [])
+        document.workSessions = [sessionBackup(endedAt: day.addingTimeInterval(10)), sessionBackup()]
+        let destination = try container()
+        let context = destination.mainContext
+        let importer = DefaultBackupImporter()
+        let preview = try importer.summary(for: document, in: context)
+        #expect((preview.totalWorkSessions, preview.newWorkSessions, preview.updatedWorkSessions) == (2, 2, 0))
+        let applied = try importer.apply(document, to: context)
+        #expect((applied.totalWorkSessions, applied.newWorkSessions, applied.updatedWorkSessions) == (2, 2, 0))
+        let again = try importer.summary(for: document, in: context)
+        #expect((again.totalWorkSessions, again.newWorkSessions, again.updatedWorkSessions) == (2, 0, 2))
+        let second = try importer.apply(document, to: context)
+        #expect((second.newWorkSessions, second.updatedWorkSessions) == (0, 2))
+        #expect(try context.fetchCount(FetchDescriptor<WorkSessionRecord>()) == 2)
+    }
+
+    @Test("Two open sessions in one document are rejected")
+    func twoOpenSessions() throws {
+        var document = BackupDocument(exportedAt: day, appVersion: "test", habits: [])
+        document.workSessions = [sessionBackup(), sessionBackup()]
+        let destination = try container()
+        #expect(throws: BackupError.invalidJSON) {
+            try DefaultBackupImporter().apply(document, to: destination.mainContext)
+        }
+        #expect(try destination.mainContext.fetchCount(FetchDescriptor<WorkSessionRecord>()) == 0)
+    }
+
+    @Test("Negative or non-finite pausedSeconds is rejected")
+    func invalidPausedSeconds() throws {
+        for value in [-1.0, Double.infinity, Double.nan] {
+            var document = BackupDocument(exportedAt: day, appVersion: "test", habits: [])
+            document.workSessions = [sessionBackup(endedAt: day.addingTimeInterval(10), pausedSeconds: value)]
+            let destination = try container()
+            #expect(throws: BackupError.invalidJSON) {
+                try DefaultBackupImporter().apply(document, to: destination.mainContext)
+            }
+        }
+    }
+
+    @Test("A version 4 CSV header containing a work_session row is invalid")
+    func versionFourCSVWithSessionRow() throws {
+        let header = CSVBackupCoder.progressColumns
+        var row = Array(repeating: "", count: header.count)
+        row[0] = "4"
+        row[header.firstIndex(of: "entity_type")!] = "work_session"
+        let text = [header, row].map { $0.joined(separator: ",") }.joined(separator: "\n") + "\n"
+        #expect(throws: BackupError.invalidCSV) {
+            try CSVBackupCoder().decode(Data(text.utf8))
+        }
+    }
 }

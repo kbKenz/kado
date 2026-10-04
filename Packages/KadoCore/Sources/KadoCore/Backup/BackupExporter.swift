@@ -53,9 +53,14 @@ public struct DefaultBackupExporter: BackupExporting {
         let goals = try context.fetch(FetchDescriptor<GoalRecord>(
             sortBy: [SortDescriptor(\.createdAt, order: .forward), SortDescriptor(\.name, order: .forward)]
         )).map(Self.backup(from:))
-        let sessions = try context.fetch(FetchDescriptor<WorkSessionRecord>(
-            sortBy: [SortDescriptor(\.startedAt, order: .forward), SortDescriptor(\.createdAt, order: .forward)]
-        )).map(Self.backup(from:))
+        // Sorted in memory so the final tie-break on id is deterministic.
+        let sessions = try context.fetch(FetchDescriptor<WorkSessionRecord>())
+            .sorted { lhs, rhs in
+                if lhs.startedAt != rhs.startedAt { return lhs.startedAt < rhs.startedAt }
+                if lhs.createdAt != rhs.createdAt { return lhs.createdAt < rhs.createdAt }
+                return lhs.id.uuidString < rhs.id.uuidString
+            }
+            .map(Self.backup(from:))
         return BackupDocument(
             exportedAt: now(),
             appVersion: appVersion,

@@ -61,6 +61,10 @@ struct TodayView: View {
     /// section).
     @State private var card: TodayCard?
 
+    /// The day the list shows. `nil` means today, so the selection
+    /// follows the rollover instead of sticking to yesterday.
+    @State private var selectedDay: Date?
+
     /// Single source of truth for sheets the Today surface presents.
     /// Replaces the boolean soup that would otherwise emerge from
     /// New / Edit / Log-counter / Log-timer running in parallel.
@@ -95,15 +99,43 @@ struct TodayView: View {
     }
 
     var body: some View {
+        // Snapshotted once per pass, so the strip's cells share it
+        // instead of each re-snapshotting every habit.
+        let progressInput = stripProgressInput
         NavigationStack(path: $path) {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.kadoBackground.ignoresSafeArea())
-                .navigationTitle(Text("Today"))
+                .safeAreaInset(edge: .top, spacing: 0) {
+                    DayStrip(
+                        days: stripDays,
+                        selection: stripSelection,
+                        today: today,
+                        progress: { stripProgress(for: $0, input: progressInput) }
+                    )
+                    // A horizontal ScrollView is greedy vertically and
+                    // would take the whole inset, pushing the list away.
+                    .fixedSize(horizontal: false, vertical: true)
+                    .background(Color.kadoBackground, ignoresSafeAreaEdges: [])
+                }
+                .onChange(of: stripDays) { _, days in
+                    if let selectedDay,
+                       let clamped = DayStripRange.clamp(selectedDay, to: days),
+                       clamped != selectedDay {
+                        self.selectedDay = calendar.isDate(clamped, inSameDayAs: today) ? nil : clamped
+                    }
+                }
+                .navigationTitle(titleText)
                 .navigationDestination(for: HabitRoute.self) { route in
                     HabitDetailLoader(habitID: route.id)
                 }
                 .toolbar {
+                    if dayKind != .today {
+                        ToolbarItem(placement: .topBarLeading) {
+                            Button("Today") { selectedDay = nil }
+                                .accessibilityIdentifier(AccessibilityID.Today.jumpToTodayButton)
+                        }
+                    }
                     ToolbarItem(placement: .primaryAction) {
                         Menu {
                             Button { sheet = .newTask } label: {
@@ -158,13 +190,74 @@ struct TodayView: View {
         }
     }
 
+    // MARK: - Selected day
+
+    private var displayedDay: Date {
+        selectedDay.map { calendar.startOfDay(for: $0) } ?? today
+    }
+
+    private var dayKind: TodayDayKind {
+        TodayDayKind(day: displayedDay, today: today, calendar: calendar)
+    }
+
+    private var titleText: Text {
+        dayKind == .today
+            ? Text("Today")
+            : Text(displayedDay, format: .dateTime.weekday(.abbreviated).month(.abbreviated).day())
+    }
+
+    /// From the earliest thing the user created or logged to 60 days
+    /// ahead.
+    private var stripDays: [Date] {
+        let habitDates = activeHabits.flatMap { habit in
+            [habit.createdAt] + (habit.completions ?? []).map(\.date)
+        }
+        let taskDates = activeTasks.map(\.createdAt)
+        return DayStripRange.days(from: (habitDates + taskDates).min(), today: today, calendar: calendar)
+    }
+
+    private var stripSelection: Binding<Date> {
+        Binding(
+            get: { displayedDay },
+            set: { newDay in
+                selectedDay = calendar.isDate(newDay, inSameDayAs: today) ? nil : newDay
+            }
+        )
+    }
+
+    private struct StripProgressInput {
+        let habits: [Habit]
+        let completions: [UUID: [Completion]]
+    }
+
+    private var stripProgressInput: StripProgressInput {
+        StripProgressInput(
+            habits: activeHabits.map(\.snapshot),
+            completions: Dictionary(
+                activeHabits.map { ($0.id, ($0.completions ?? []).compactMap(\.snapshot)) },
+                uniquingKeysWith: { first, _ in first }
+            )
+        )
+    }
+
+    private func stripProgress(for day: Date, input: StripProgressInput) -> DayProgress {
+        DayStripProgress.progress(
+            on: day,
+            isFuture: TodayDayKind(day: day, today: today, calendar: calendar) == .future,
+            habits: input.habits,
+            completions: input.completions,
+            evaluator: frequencyEvaluator,
+            calendar: calendar
+        )
+    }
+
     @ViewBuilder
     private func sheetContent(for sheet: TodaySheet) -> some View {
         switch sheet {
         case .newHabit:
             NewHabitFormView(model: NewHabitFormModel())
         case .newTask:
-            TaskFormView()
+            TaskFormView(defaultDay: dayKind == .today ? nil : displayedDay)
         case .editTask(let id):
             TaskFormView(taskID: id)
         case .editHabit(let habitID):
@@ -227,85 +320,30 @@ struct TodayView: View {
                 .buttonStyle(.bordered)
             }
         } else {
-            let (due, other) = sections
+            let (due, allOther) = sections
+            // A future day lists only what its schedule asks for.
+            let other = dayKind == .future ? [] : allOther
             let tasks = taskSections
             List {
-                // Sampled once and passed down: letting the guard and
-                // the view each read `.now` lets them straddle the
-                // rollover and leave an empty, space-taking row.
-                let now = Date.now
-                if TodayDayCaption.isBeforeRollover(dayBoundary, now: now) {
-                    TodayDayCaption(boundary: dayBoundary, now: now)
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 6, trailing: 20))
-                }
-                if !tasks.due.isEmpty {
-                    Section("Tasks today & overdue") {
-                        ForEach(tasks.due) { taskRow($0) }
+                if dayKind == .today {
+                    // Sampled once and passed down: letting the guard and
+                    // the view each read `.now` lets them straddle the
+                    // rollover and leave an empty, space-taking row.
+                    let now = Date.now
+                    if TodayDayCaption.isBeforeRollover(dayBoundary, now: now) {
+                        TodayDayCaption(boundary: dayBoundary, now: now)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 6, trailing: 20))
                     }
                 }
-                if !tasks.inbox.isEmpty {
-                    Section {
-                        ForEach(tasks.inbox) { taskRow($0) }
-                    } header: { Text("Task inbox") }
-                    footer: { Text("Tasks without a day. Tap a task to schedule it.") }
+                taskSectionViews(tasks)
+                if due.isEmpty && other.isEmpty && tasks.isEmpty {
+                    emptyDaySection
                 }
-                if !tasks.completed.isEmpty {
-                    Section("Tasks completed today") {
-                        ForEach(tasks.completed) { taskRow($0) }
-                    }
-                }
-                if due.isEmpty && other.isEmpty && tasks.due.isEmpty && tasks.inbox.isEmpty && tasks.completed.isEmpty {
-                    Section {
-                        Text("Nothing planned for today")
-                            .foregroundStyle(Color.kadoForegroundSecondary)
-                        Text("Future tasks appear on their day in Calendar.")
-                            .font(.footnote)
-                            .foregroundStyle(Color.kadoForegroundSecondary)
-                    }
-                    .listRowBackground(Color.kadoBackgroundSecondary)
-                }
-                if !due.isEmpty {
-                    Section {
-                        ForEach(due) { row($0) }
-                            .onMove { moveHabits(due, from: $0, to: $1) }
-                    } header: {
-                        Text("Habits today")
-                            .foregroundStyle(Color.kadoForegroundSecondary)
-                    }
-                }
-                if !other.isEmpty {
-                    Section {
-                        ForEach(other) { row($0) }
-                            .onMove { moveHabits(other, from: $0, to: $1) }
-                    } header: {
-                        Text("Not scheduled today")
-                            .foregroundStyle(Color.kadoForegroundSecondary)
-                    } footer: {
-                        Text("Tap to open detail, or long-press to edit or archive.")
-                            .foregroundStyle(Color.kadoForegroundSecondary)
-                    }
-                }
-                switch card {
-                case .appearanceAnnouncement:
-                    Section {
-                        AppearanceAnnouncementBanner(
-                            onOpen: { sheet = .appearance },
-                            onHide: hideAppearanceAnnouncement
-                        )
-                        .todayNoticeCardRow()
-                    }
-                case .tipNudge:
-                    Section {
-                        TipNudgeBanner(
-                            onTip: { sheet = .tipJar },
-                            onHide: hideTipNudge
-                        )
-                        .todayNoticeCardRow()
-                    }
-                case nil:
-                    EmptyView()
+                habitSectionViews(due: due, other: other)
+                if dayKind == .today {
+                    cardSection
                 }
             }
             .scrollContentBackground(.hidden)
@@ -317,12 +355,120 @@ struct TodayView: View {
         }
     }
 
-    private var taskSections: (due: [TaskListItem], inbox: [TaskListItem], completed: [TaskListItem]) {
-        // Task planning uses civil days, while the existing habit rows
-        // continue to use the user's custom habit-day boundary.
-        let s = TaskDaySections.make(for: civilToday, kind: .today,
-                                     items: activeTasks.map { TaskListItem($0) }, calendar: calendar)
-        return (s.due, s.inbox, s.completed)
+    private var taskSections: TaskDaySections {
+        // Task planning uses civil days, while the habit rows use the
+        // user's custom habit-day boundary.
+        TaskDaySections.make(
+            for: dayKind == .today ? civilToday : displayedDay,
+            kind: dayKind,
+            items: activeTasks.map { TaskListItem($0) },
+            calendar: calendar
+        )
+    }
+
+    private var taskDueHeader: LocalizedStringKey {
+        switch dayKind {
+        case .today: "Tasks today & overdue"
+        case .past: "Due"
+        case .future: "Planned"
+        }
+    }
+
+    private var taskCompletedHeader: LocalizedStringKey {
+        dayKind == .today ? "Tasks completed today" : "Completed that day"
+    }
+
+    @ViewBuilder
+    private func taskSectionViews(_ tasks: TaskDaySections) -> some View {
+        // On a past day the completed tasks come first, as the spec lists them.
+        if dayKind == .past, !tasks.completed.isEmpty {
+            Section(taskCompletedHeader) {
+                ForEach(tasks.completed) { taskRow($0) }
+            }
+        }
+        if !tasks.due.isEmpty {
+            Section(taskDueHeader) {
+                ForEach(tasks.due) { taskRow($0) }
+            }
+        }
+        if dayKind == .today, !tasks.inbox.isEmpty {
+            Section {
+                ForEach(tasks.inbox) { taskRow($0) }
+            } header: { Text("Task inbox") }
+            footer: { Text("Tasks without a day. Tap a task to schedule it.") }
+        }
+        if dayKind == .today, !tasks.completed.isEmpty {
+            Section(taskCompletedHeader) {
+                ForEach(tasks.completed) { taskRow($0) }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var emptyDaySection: some View {
+        Section {
+            if dayKind == .today {
+                Text("Nothing planned for today")
+                    .foregroundStyle(Color.kadoForegroundSecondary)
+                Text("Future tasks appear on their day in Calendar.")
+                    .font(.footnote)
+                    .foregroundStyle(Color.kadoForegroundSecondary)
+            } else {
+                Text("Nothing on this day")
+                    .foregroundStyle(Color.kadoForegroundSecondary)
+            }
+        }
+        .listRowBackground(Color.kadoBackgroundSecondary)
+    }
+
+    @ViewBuilder
+    private func habitSectionViews(due: [TodayRow], other: [TodayRow]) -> some View {
+        let canReorder = dayKind == .today
+        if !due.isEmpty {
+            Section {
+                ForEach(due) { row($0) }
+                    .onMove(perform: canReorder ? { moveHabits(due, from: $0, to: $1) } : nil)
+            } header: {
+                Text(dayKind == .today ? "Habits today" : "Habits")
+                    .foregroundStyle(Color.kadoForegroundSecondary)
+            }
+        }
+        if !other.isEmpty {
+            Section {
+                ForEach(other) { row($0) }
+                    .onMove(perform: canReorder ? { moveHabits(other, from: $0, to: $1) } : nil)
+            } header: {
+                Text(dayKind == .today ? "Not scheduled today" : "Not scheduled that day")
+                    .foregroundStyle(Color.kadoForegroundSecondary)
+            } footer: {
+                Text("Tap to open detail, or long-press to edit or archive.")
+                    .foregroundStyle(Color.kadoForegroundSecondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var cardSection: some View {
+        switch card {
+        case .appearanceAnnouncement:
+            Section {
+                AppearanceAnnouncementBanner(
+                    onOpen: { sheet = .appearance },
+                    onHide: hideAppearanceAnnouncement
+                )
+                .todayNoticeCardRow()
+            }
+        case .tipNudge:
+            Section {
+                TipNudgeBanner(
+                    onTip: { sheet = .tipJar },
+                    onHide: hideTipNudge
+                )
+                .todayNoticeCardRow()
+            }
+        case nil:
+            EmptyView()
+        }
     }
 
     private func taskRow(_ item: TaskListItem) -> some View {
@@ -359,7 +505,11 @@ struct TodayView: View {
 
     private func toggleTask(_ id: UUID) {
         guard let record = activeTasks.first(where: { $0.id == id }) else { return }
-        record.completedAt = record.completedAt == nil ? .now : nil
+        // A task done on a past day is stamped with that day; today and
+        // future days stamp now (a task done early was done now).
+        record.completedAt = record.completedAt == nil
+            ? (dayKind == .past ? dayBoundary.loggingInstant(for: .now, on: displayedDay) : .now)
+            : nil
         record.updatedAt = .now
         saveTaskChanges()
     }
@@ -390,33 +540,33 @@ struct TodayView: View {
             habit: item.habit,
             completions: item.completions,
             calendar: calendar,
-            asOf: today
+            asOf: displayedDay
         )
         NavigationLink(value: HabitRoute(id: item.id)) {
             HabitRowView(
                 habit: item.habit,
                 state: state,
                 streak: streakCalculator.current(
-                    for: item.habit, completions: item.completions, asOf: today
+                    for: item.habit, completions: item.completions, asOf: displayedDay
                 ),
                 scorePercent: Int(
                     (scoreCalculator.currentScore(
-                        for: item.habit, completions: item.completions, asOf: today
+                        for: item.habit, completions: item.completions, asOf: displayedDay
                     ) * 100).rounded()
                 ),
-                onToggle: canToggle(item) ? { toggle(item.id) } : nil,
-                onCounterIncrement: isCounter(item) ? { incrementCounter(item.id) } : nil,
-                onCounterDecrement: isCounter(item) ? { decrementCounter(item.id) } : nil,
-                onTimerAddFiveMinutes: isTimer(item) ? { addFiveMinutes(item.id) } : nil,
-                onLogSpecificValue: logSheetCallback(for: item),
+                onToggle: dayKind.allowsHabitLogging && canToggle(item) ? { toggle(item.id) } : nil,
+                onCounterIncrement: dayKind.allowsHabitLogging && isCounter(item) ? { incrementCounter(item.id) } : nil,
+                onCounterDecrement: dayKind.allowsHabitLogging && isCounter(item) ? { decrementCounter(item.id) } : nil,
+                onTimerAddFiveMinutes: dayKind.allowsHabitLogging && isTimer(item) ? { addFiveMinutes(item.id) } : nil,
+                onLogSpecificValue: dayKind.allowsHabitLogging ? logSheetCallback(for: item) : nil,
                 onOpenDetail: { path.append(HabitRoute(id: item.id)) },
                 onEdit: { sheet = .editHabit(item.id) },
-                onArchive: { confirmingArchiveOf = item.id }
+                onArchive: dayKind == .today ? { confirmingArchiveOf = item.id } : nil
             )
         }
         .listRowBackground(Color.kadoBackgroundSecondary)
         .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            if canSwipeUndo(item, state: state) {
+            if dayKind.allowsHabitLogging, canSwipeUndo(item, state: state) {
                 Button(role: .destructive) {
                     toggle(item.id)
                 } label: {
@@ -436,7 +586,7 @@ struct TodayView: View {
     private var sections: (due: [TodayRow], other: [TodayRow]) {
         TodayRow.sections(
             from: activeHabits,
-            on: today,
+            on: displayedDay,
             evaluator: frequencyEvaluator,
             calendar: calendar
         )
@@ -502,7 +652,7 @@ struct TodayView: View {
     /// the day these rows were rendered for. Keeps a tap consistent
     /// with what the user was looking at when they made it.
     private var loggingInstant: Date {
-        dayBoundary.loggingInstant(for: .now, on: today)
+        dayBoundary.loggingInstant(for: .now, on: displayedDay)
     }
 
     private func moveHabits(_ section: [TodayRow], from source: IndexSet, to destination: Int) {
@@ -584,6 +734,7 @@ struct TodayView: View {
     }
 
     private func checkMilestones(for record: HabitRecord) {
+        guard dayKind == .today else { return }
         let snap = record.snapshot
         let comps = (record.completions ?? []).compactMap(\.snapshot)
         let streak = streakCalculator.current(for: snap, completions: comps, asOf: today)

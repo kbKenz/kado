@@ -2199,6 +2199,23 @@
         }
       }
     },
+    "Completed that day" : {
+      "comment" : "Header of the Today task section listing tasks completed on the day picked in the day strip (past days).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completed that day"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminées ce jour-là"
+          }
+        }
+      }
+    },
     "Completing a task stays in this app. It does not change the Google event." : {
       "comment" : "Explain local completion ownership for imported Google meetings.",
       "extractionState" : "manual",
@@ -2989,6 +3006,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Appuyer deux fois pour modifier ce jour."
+          }
+        }
+      }
+    },
+    "Due" : {
+      "comment" : "Header of the Today task section listing open tasks due on a past day picked in the day strip.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Due"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À faire"
           }
         }
       }
@@ -6009,6 +6043,23 @@
         }
       }
     },
+    "Not scheduled that day" : {
+      "comment" : "Header on Today above the habits whose schedule did not ask for the past day picked in the day strip.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not scheduled that day"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas prévues ce jour-là"
+          }
+        }
+      }
+    },
     "Not scheduled today" : {
       "comment" : "Today tab second section header listing habits not due today (still reachable for edit or archive).",
       "localizations" : {
@@ -6157,6 +6208,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rien de prévu aujourd'hui"
+          }
+        }
+      }
+    },
+    "Nothing on this day" : {
+      "comment" : "Empty state on Today when the past or future day picked in the day strip has nothing to show.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing on this day"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rien ce jour-là"
           }
         }
       }
@@ -6699,6 +6767,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisis l'habitude affichée par ce widget."
+          }
+        }
+      }
+    },
+    "Planned" : {
+      "comment" : "Header of the Today task section listing tasks planned for a future day picked in the day strip.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planned"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prévues"
           }
         }
       }

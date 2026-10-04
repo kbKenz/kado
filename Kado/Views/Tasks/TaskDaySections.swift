@@ -16,6 +16,8 @@ struct TaskDaySections {
     var inbox: [TaskListItem] = []
     var completed: [TaskListItem] = []
 
+    var isEmpty: Bool { due.isEmpty && inbox.isEmpty && completed.isEmpty }
+
     static func make(for day: Date, kind: TodayDayKind, items: [TaskListItem], calendar: Calendar) -> TaskDaySections {
         let start = calendar.startOfDay(for: day)
         let pending = items.filter { !$0.isComplete }

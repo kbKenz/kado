@@ -58,12 +58,13 @@ struct HealthTimelineLoaderTests {
     @Test("Results are clipped to the day and sorted")
     func clipsAndSorts() async {
         let provider = StubHealthTimelineProvider()
-        let night = entry(.sleep, hours: -2...7)
-        let run = entry(.workout(name: "Running"), hours: 18...19)
-        provider.sleep = [night]
+        let night = entry(.sleep, hours: -2...6)
+        let nap = entry(.sleep, hours: 14...15)
+        let run = entry(.workout(name: "Running"), hours: 7...8)
+        provider.sleep = [night, nap]
         provider.workouts = [run]
         let result = await HealthTimelineLoader(provider: provider, calendar: calendar).entries(on: day, isEnabled: true)
-        #expect(result.map(\.id) == [night.id, run.id])
+        #expect(result.map(\.id) == [night.id, run.id, nap.id])
         #expect(result.first?.interval.start == day)
     }
 }

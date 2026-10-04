@@ -26,6 +26,8 @@ the App Store release it went out in.
 - **In progress**: on-device dictation and one-tap text cleanup in
   every free-text field (Speech + Foundation Models, nothing leaves the
   device) — see `docs/plans/2026-10/ai-assisted-input/`.
+- **In progress**: Now tab — tracked work sessions, quick start for a
+  new task or habit; Calendar inside Today.
 - **Next**: Live Activities + Dynamic Island for timer habits, then
   the remaining v1.x polish items (biometrics, categories, backup
   files).

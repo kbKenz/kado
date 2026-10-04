@@ -265,3 +265,15 @@ Suggested: Professor outreach email
 | Backup | Sessions survive a JSON export → import round trip and appear in CSV. |
 | Unit `SuggestionRanker` (phase 2) | Order and fixed reasons; unknown model ID falls back. |
 | UI | Start → Pause → Resume → Finish → Done; Today List / Calendar switch; updated tab positions. |
+
+## Changes during build
+
+- Duration tie-break dropped: there is no duration data to rank on.
+- Quick start added to "Start something", from user feedback: create a
+  task (the default) or a habit and start it at once.
+- "Also running" row for a second synced open session deferred. The
+  earliest open session is shown first.
+- "min left" / "min over" counts the worked-time budget against the
+  planned duration, not the clock.
+- Calendar's own "+" removed in favor of Today's add menu. In Calendar
+  mode, new tasks default to the shown day.

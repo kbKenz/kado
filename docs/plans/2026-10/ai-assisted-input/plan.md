@@ -140,7 +140,7 @@ its engine is not available.
 
 ---
 
-### Task 4: `FoundationModelsTextCleaner`
+### Task 4: `FoundationModelsTextCleaner` ✅
 
 **Goal**: real cleanup on iOS 26 devices with Apple Intelligence.
 
@@ -152,6 +152,13 @@ its engine is not available.
   `exceededContextWindowSize`, `unsupportedLanguageOrLocale`) to
   `AssistedInputError.failed`; output goes through
   `AssistedTextEditing.sanitizedCleanup`.
+- `Kado/Services/CleanupInstructions.swift` (added during build) —
+  the instructions, plus the note's language detected on device with
+  `NaturalLanguage` and named in them. Without it, a French note came
+  back in English. Notes under 4 words are detected only among
+  `Locale.preferredLanguages`: free detection read "Meditate" as
+  Romanian (0.99) and the model wrote "Medita". Tested in
+  `CleanupInstructionsTests`.
 - `Kado/Services/TextCleanerFactory.swift` — `#available(iOS 26, *)`
   → Foundation Models, else `UnavailableTextCleaner`.
 - `Kado/App/KadoApp.swift` — inject `\.textCleaner` at scene build.
@@ -161,7 +168,13 @@ its engine is not available.
 - Manual: on an Apple Intelligence Mac's simulator (or device), clean
   "um so i want to like read more books books every day" → tidy text,
   same meaning. French sample too.
-- Manual: with Apple Intelligence off, ✨ is hidden.
+- Manual: with Apple Intelligence off, ✨ is hidden (check in Task 6).
+- Done 2026-10-04: `FoundationModels` is `LC_LOAD_WEAK_DYLIB`; the
+  app launches on an iOS 18.0 simulator. A one-off live probe (not
+  committed) on the iOS 26.5 simulator cleaned EN, FR and RU notes in
+  their own language and kept "Meditate", "Run 5k", "Читать" as is.
+  A prompt-injection note ("ignore your instructions…") fails safely
+  (text unchanged).
 
 **Commit message (suggested)**: `feat(ai-input): clean up text with on-device Foundation Models`
 
@@ -261,6 +274,7 @@ its engine is not available.
 | Wrong Xcode (16.0 in `/Applications`) | All builds via Xcode 26.5; set `DEVELOPER_DIR` or `xcode-select` before Task 4 |
 | Simulator cannot run Foundation Models | Verify on a device or on a simulator hosted by a Mac with Apple Intelligence on; logic is covered by mocks in Task 3 |
 | On-device speech missing for a locale (FR, etc.) | Mic hides; documented, not a failure |
+| Short note in a language the device does not list (FR word on an EN-only phone) is pinned to a device language and may be translated | Accepted: rare, 1–3 words, Undo restores |
 | Model rewrites meaning or translates | Strict instructions + Undo; manual EN + FR samples in Task 4 |
 | Audio session conflicts (music, timers) | `.notifyOthersOnDeactivation` on stop; manual check with music playing |
 | Trailing buttons crowd the compact popover | Previews + XXXL check in Task 6; fall back to a row below the field in the popover if needed |
@@ -270,6 +284,9 @@ its engine is not available.
 - [x] Should Settings have a switch to turn the AI helpers off?
       **Decided 2026-10-04: no switch.** Each control hides when
       unavailable.
+- [ ] The model adds a final period to short names ("drink watter"
+      → "Drink water.") and sometimes keeps a repeat ("meditate
+      meditate" → "Meditate, meditate."). Add a rule, or accept?
 - [ ] FR strings need review by a native speaker before merge
       (`CLAUDE.md` localisation rule).
 

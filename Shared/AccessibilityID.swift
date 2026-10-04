@@ -166,6 +166,8 @@ enum AccessibilityID {
         static let blockPrefix = "calendar.block."
         static func block(_ id: UUID) -> String { blockPrefix + id.uuidString }
         static let completeMenuItem = "calendar.complete"
+        static let healthPrefix = "calendar.health."
+        static func health(_ id: UUID) -> String { healthPrefix + id.uuidString }
     }
 
     /// The counter-log and timer-log sheets (`CounterLogSheet`,

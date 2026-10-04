@@ -8,6 +8,9 @@ import SwiftUI
 struct CalendarDayTimeline: View {
     let day: Date
     let blocks: [CalendarBlockItem]
+    /// Already clipped to `day`. Defaults to empty so existing call
+    /// sites and previews compile unchanged.
+    var healthEntries: [HealthTimelineEntry] = []
     let onToggle: (CalendarBlockItem) -> Void
     let onEdit: (CalendarBlockItem) -> Void
     let onDelete: (CalendarBlockItem) -> Void
@@ -30,6 +33,20 @@ struct CalendarDayTimeline: View {
         calendar.dateInterval(of: .day, for: day)!
     }
 
+    private var sleepItems: [CalendarBlockItem] {
+        healthEntries.filter { $0.kind == .sleep }.map { CalendarBlockItem($0) }
+    }
+
+    /// Workouts share lanes with planned blocks; sleep never takes a lane.
+    private var laneBlocks: [CalendarBlockItem] {
+        blocks + healthEntries.filter { $0.kind != .sleep }.map { CalendarBlockItem($0) }
+    }
+
+    private var agendaItems: [CalendarBlockItem] {
+        (blocks + healthEntries.map { CalendarBlockItem($0) })
+            .sorted { ($0.schedule.startAt ?? $0.schedule.plannedDay) < ($1.schedule.startAt ?? $1.schedule.plannedDay) }
+    }
+
     private var maximumOverlappingColumns: Int {
         placements(in: dayInterval).map(\.laneCount).max() ?? 1
     }
@@ -41,11 +58,17 @@ struct CalendarDayTimeline: View {
         return GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
                 hourGrid(in: interval, width: geometry.size.width)
+                ForEach(sleepItems) { item in
+                    let frame = bandFrame(item, in: interval)
+                    sleepBand(item)
+                        .frame(width: max(80, geometry.size.width - labelWidth - 8), height: frame.height)
+                        .offset(x: labelWidth, y: frame.y)
+                }
                 ForEach(layout) { placement in
                     let lanes = max(1, placement.laneCount)
                     let available = max(80, geometry.size.width - labelWidth - 8)
                     let laneWidth = available / CGFloat(lanes)
-                    timelineCard(placement.block)
+                    laneCard(placement.block)
                         .frame(width: max(44, laneWidth - 6), height: placement.height, alignment: .topLeading)
                         .offset(x: labelWidth + CGFloat(placement.lane) * laneWidth, y: placement.y)
                 }
@@ -77,6 +100,61 @@ struct CalendarDayTimeline: View {
                 .accessibilityHidden(true)
             }
         }
+    }
+
+    private func bandFrame(_ item: CalendarBlockItem, in interval: DateInterval) -> (y: CGFloat, height: CGFloat) {
+        let start = max(item.schedule.startAt ?? interval.start, interval.start)
+        let end = min(item.schedule.endAt ?? interval.end, interval.end)
+        let y = CGFloat(start.timeIntervalSince(interval.start) / 60) * pointsPerMinute
+        return (y, max(24, CGFloat(end.timeIntervalSince(start) / 60) * pointsPerMinute))
+    }
+
+    /// Behind the cards and blind to taps, so planned blocks on top
+    /// stay fully interactive.
+    private func sleepBand(_ item: CalendarBlockItem) -> some View {
+        RoundedRectangle(cornerRadius: KadoRadius.sm)
+            .fill(Color.kadoBackgroundSecondary)
+            .overlay(alignment: .topTrailing) {
+                Label(item.title, systemImage: "bed.double.fill")
+                    .font(.caption2)
+                    .lineLimit(1)
+                    .foregroundStyle(Color.kadoForegroundSecondary)
+                    .padding(6)
+            }
+            .allowsHitTesting(false)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(item.title)
+            .accessibilityValue(item.schedule.timeLabel)
+            .accessibilityIdentifier(AccessibilityID.Calendar.health(item.id))
+    }
+
+    @ViewBuilder
+    private func laneCard(_ block: CalendarBlockItem) -> some View {
+        if block.isFromHealth { workoutCard(block) } else { timelineCard(block) }
+    }
+
+    /// Read-only: no button, no menu, no completion.
+    private func workoutCard(_ block: CalendarBlockItem) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Label(block.title, systemImage: "figure.run")
+                .font(.caption.weight(.semibold))
+                .lineLimit(2)
+            Text(block.schedule.timeLabel)
+                .font(.caption2)
+                .lineLimit(2)
+            Text("Health", comment: "Calendar timeline caption: this entry comes from Apple Health.")
+                .font(.caption2)
+                .lineLimit(1)
+        }
+        .foregroundStyle(Color.kadoForegroundSecondary)
+        .padding(8)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(Color.kadoBackgroundSecondary, in: RoundedRectangle(cornerRadius: KadoRadius.sm))
+        .overlay(RoundedRectangle(cornerRadius: KadoRadius.sm).strokeBorder(Color.kadoHairline))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("\(block.title) workout", comment: "VoiceOver label for a Health workout on the Calendar, e.g. 'Running workout'."))
+        .accessibilityValue(Text("\(block.schedule.timeLabel), from Health", comment: "VoiceOver value for a Health workout: its time range and source."))
+        .accessibilityIdentifier(AccessibilityID.Calendar.health(block.id))
     }
 
     private func timelineCard(_ block: CalendarBlockItem) -> some View {
@@ -148,8 +226,19 @@ struct CalendarDayTimeline: View {
     /// needed: the same chronological events expand as regular rows.
     private var accessibleAgenda: some View {
         LazyVStack(alignment: .leading, spacing: 12) {
-            ForEach(blocks.sorted { ($0.schedule.startAt ?? $0.schedule.plannedDay) < ($1.schedule.startAt ?? $1.schedule.plannedDay) }) { block in
-                if let task = block.task {
+            ForEach(agendaItems) { block in
+                if block.isFromHealth {
+                    VStack(alignment: .leading) {
+                        Label(block.title, systemImage: block.healthKind == .sleep ? "bed.double.fill" : "figure.run")
+                        Text(block.schedule.timeLabel).font(.caption)
+                    }
+                    .foregroundStyle(Color.kadoForegroundSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .background(Color.kadoBackgroundSecondary, in: RoundedRectangle(cornerRadius: KadoRadius.card))
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier(AccessibilityID.Calendar.health(block.id))
+                } else if let task = block.task {
                     TaskRowView(item: task, schedule: block.schedule, showsDate: false,
                         onToggle: { onToggle(block) }, onEdit: { onEdit(block) }, onDelete: { onDelete(block) })
                         .padding(12)
@@ -198,7 +287,7 @@ struct CalendarDayTimeline: View {
 
     private func placements(in interval: DateInterval) -> [Placement] {
         var placements: [Placement] = []
-        let sorted = blocks.sorted { ($0.schedule.startAt ?? interval.start) < ($1.schedule.startAt ?? interval.start) }
+        let sorted = laneBlocks.sorted { ($0.schedule.startAt ?? interval.start) < ($1.schedule.startAt ?? interval.start) }
         var laneEnds: [Date] = []
         for block in sorted {
             guard let originalStart = block.schedule.startAt else { continue }
@@ -242,6 +331,13 @@ private enum CalendarTimelinePreview {
     static let meeting = TaskListItem(title: "Meeting with Thomas", dueDate: day, isFromGoogle: true, schedules: [meetingSchedule])
     static let readingSchedule = TaskScheduleItem(plannedDay: day, startAt: calendar.date(byAdding: .minute, value: 30, to: start)!, endAt: end)
     static let reading = TaskListItem(title: "Read a chapter", dueDate: day, completedAt: .now, schedules: [readingSchedule])
+    static let health = [
+        HealthTimelineEntry(id: UUID(), kind: .sleep,
+            interval: DateInterval(start: day, end: calendar.date(bySettingHour: 7, minute: 10, second: 0, of: day)!)),
+        HealthTimelineEntry(id: UUID(), kind: .workout(name: "Running"),
+            interval: DateInterval(start: calendar.date(bySettingHour: 7, minute: 30, second: 0, of: day)!,
+                                   end: calendar.date(bySettingHour: 8, minute: 15, second: 0, of: day)!)),
+    ]
     static let blocks = [
         CalendarBlockItem(id: meetingSchedule.id, title: meeting.title, schedule: meetingSchedule, task: meeting),
         CalendarBlockItem(id: readingSchedule.id, title: reading.title, schedule: readingSchedule, task: reading, isComplete: true)
@@ -265,6 +361,7 @@ private enum CalendarTimelinePreview {
     ScrollViewReader { proxy in
         ScrollView {
             CalendarDayTimeline(day: CalendarTimelinePreview.day, blocks: CalendarTimelinePreview.blocks,
+                healthEntries: CalendarTimelinePreview.health,
                 onToggle: { _ in }, onEdit: { _ in }, onDelete: { _ in })
                 .padding()
         }
@@ -273,4 +370,15 @@ private enum CalendarTimelinePreview {
     .background(Color.kadoBackground)
     .kadoTheme()
     .preferredColorScheme(.dark)
+}
+
+#Preview("Health overlay") {
+    ScrollView {
+        CalendarDayTimeline(day: CalendarTimelinePreview.day, blocks: CalendarTimelinePreview.blocks,
+            healthEntries: CalendarTimelinePreview.health,
+            onToggle: { _ in }, onEdit: { _ in }, onDelete: { _ in })
+            .padding()
+    }
+    .background(Color.kadoBackground)
+    .kadoTheme()
 }

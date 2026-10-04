@@ -8,6 +8,10 @@ struct CalendarBlockItem: Identifiable {
     let task: TaskListItem?
     let habitID: UUID?
     let isComplete: Bool
+    /// Non-nil for a read-only Health entry (sleep or workout).
+    let healthKind: HealthTimelineEntry.Kind?
+
+    var isFromHealth: Bool { healthKind != nil }
 
     init(_ record: ScheduleBlockRecord, on day: Date, calendar: Calendar) {
         id = record.id
@@ -32,14 +36,30 @@ struct CalendarBlockItem: Identifiable {
             habitID = nil
             isComplete = false
         }
+        healthKind = nil
     }
 
-    init(id: UUID = UUID(), title: String, schedule: TaskScheduleItem, task: TaskListItem? = nil, habitID: UUID? = nil, isComplete: Bool = false) {
+    init(id: UUID = UUID(), title: String, schedule: TaskScheduleItem, task: TaskListItem? = nil, habitID: UUID? = nil, isComplete: Bool = false, healthKind: HealthTimelineEntry.Kind? = nil) {
         self.id = id
         self.title = title
         self.schedule = schedule
         self.task = task
         self.habitID = habitID
         self.isComplete = isComplete
+        self.healthKind = healthKind
+    }
+
+    init(_ entry: HealthTimelineEntry) {
+        id = entry.id
+        switch entry.kind {
+        case .sleep: title = String(localized: "Sleep", comment: "Calendar timeline: a sleep session read from Health.")
+        case .workout(let name): title = name
+        }
+        schedule = TaskScheduleItem(id: entry.id, plannedDay: entry.interval.start,
+                                    startAt: entry.interval.start, endAt: entry.interval.end)
+        task = nil
+        habitID = nil
+        isComplete = false
+        healthKind = entry.kind
     }
 }

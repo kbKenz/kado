@@ -135,6 +135,23 @@
         }
       }
     },
+    "%@ workout" : {
+      "comment" : "VoiceOver label for a Health workout on the Calendar, e.g. 'Running workout'.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ workout"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Entraînement : %@"
+          }
+        }
+      }
+    },
     "%@, %@" : {
       "comment" : "VoiceOver label for a binary or negative habit row. First arg: habit name. Second arg: localized completion state ('done' or 'not done').",
       "localizations" : {
@@ -165,6 +182,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@, compteur, objectif %2$lld"
+          }
+        }
+      }
+    },
+    "%@, from Health" : {
+      "comment" : "VoiceOver value for a Health workout: its time range and source.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@, from Health"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@, depuis Santé"
           }
         }
       }
@@ -3781,6 +3815,23 @@
         }
       }
     },
+    "Health" : {
+      "comment" : "Calendar timeline caption: this entry comes from Apple Health.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Health"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Santé"
+          }
+        }
+      }
+    },
     "HIIT" : {
       "comment" : "Workout type shown on the Calendar timeline.",
       "extractionState" : "manual",
@@ -7231,6 +7282,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Passer"
+          }
+        }
+      }
+    },
+    "Sleep" : {
+      "comment" : "Calendar timeline: a sleep session read from Health.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sommeil"
           }
         }
       }

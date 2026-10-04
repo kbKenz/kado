@@ -11,6 +11,17 @@ struct PlannerCalendarView: View {
     @Environment(\.googleCalendarConnection) private var googleCalendar
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AppStorage(DevModeDefaults.key, store: DevModeDefaults.sharedDefaults) private var isDevMode = false
+    @Environment(\.healthTimelineProvider) private var healthProvider
+    @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(HealthCalendarDefaults.key) private var showsHealth = false
+    @State private var healthEntries: [HealthTimelineEntry] = []
+
+    /// Reload when the day, the opt-in, or foreground state changes.
+    private struct HealthReloadKey: Hashable {
+        let day: Date
+        let isEnabled: Bool
+        let isActive: Bool
+    }
 
     @Query(sort: \ScheduleBlockRecord.plannedDay) private var blocks: [ScheduleBlockRecord]
     @Query(filter: #Predicate<TaskRecord> { $0.archivedAt == nil && $0.externalCancelledAt == nil }, sort: \TaskRecord.createdAt)
@@ -59,6 +70,15 @@ struct PlannerCalendarView: View {
                 }
             }
             .onAppear { if selectedDay == nil { selectedDay = calendar.startOfDay(for: civilToday) } }
+            .task(id: HealthReloadKey(day: day, isEnabled: showsHealth, isActive: scenePhase == .active)) {
+                guard scenePhase == .active else { return }
+                let loaded = await HealthTimelineLoader(provider: healthProvider, calendar: calendar)
+                    .entries(on: day, isEnabled: showsHealth)
+                // A superseded load (the user moved to another day) must not
+                // overwrite the newer day's entries.
+                guard !Task.isCancelled else { return }
+                healthEntries = loaded
+            }
             .sheet(item: $sheet) { selection in
                 switch selection {
                 case .newTask(let day): TaskFormView(defaultDay: day)
@@ -206,7 +226,7 @@ struct PlannerCalendarView: View {
                         Text("Planned time").font(.caption).foregroundStyle(Color.kadoForegroundSecondary)
                     }
                     CalendarDayTimeline(
-                        day: day, blocks: timed,
+                        day: day, blocks: timed, healthEntries: healthEntries,
                         onToggle: { if let taskID = $0.task?.id { toggleTask(taskID) } },
                         onEdit: openBlock,
                         onDelete: { deletingTaskID = $0.task?.id }

@@ -11,26 +11,29 @@ struct HealthCalendarSection: View {
     @AppStorage(HealthCalendarDefaults.key) private var showsHealth = false
     @State private var isRequesting = false
 
-    private static let logger = Logger(subsystem: "dev.scastiel.kado", category: "health-calendar")
-
     var body: some View {
         if provider.isAvailable {
             Section {
                 Toggle(isOn: toggleBinding) {
-                    Label("Health on Calendar", systemImage: "heart.text.square")
+                    HStack {
+                        Label("Health on Calendar", systemImage: "heart.text.square")
+                        if isRequesting { ProgressView() }
+                    }
                 }
                 .disabled(isRequesting)
                 .accessibilityIdentifier(AccessibilityID.Settings.healthOnCalendarToggle)
                 if showsHealth {
-                    Button("Open Health") {
-                        // Undocumented but long-stable scheme; a failure
-                        // simply does nothing, and the footer still guides.
+                    // Undocumented but long-stable scheme; a failure
+                    // simply does nothing, and the footer still guides.
+                    Button {
                         if let url = URL(string: "x-apple-health://") { openURL(url) }
+                    } label: {
+                        Label("Open Health", systemImage: "arrow.up.right.square")
                     }
                 }
             } footer: {
                 if showsHealth {
-                    Text("No data showing? Check Settings → Health → Data Access & Devices → Kadō.")
+                    Text("No data showing? Check Settings → Privacy & Security → Health → Kadō.")
                 } else {
                     Text("Show your sleep and workouts on the Calendar. Read-only, and the data stays on your device.")
                 }
@@ -43,7 +46,7 @@ struct HealthCalendarSection: View {
     /// taps in one runloop tick cannot both request.
     private var toggleBinding: Binding<Bool> {
         Binding(
-            get: { showsHealth },
+            get: { showsHealth || isRequesting },
             set: { isOn in
                 guard isOn else { showsHealth = false; return }
                 guard !isRequesting else { return }
@@ -54,7 +57,7 @@ struct HealthCalendarSection: View {
                         try await provider.requestAuthorization()
                         showsHealth = true
                     } catch {
-                        Self.logger.error("Health authorization failed: \(String(describing: type(of: error)), privacy: .public)")
+                        Logger.healthCalendar.error("Health authorization failed: \(String(describing: type(of: error)), privacy: .public)")
                         showsHealth = false
                     }
                 }

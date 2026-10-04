@@ -33,14 +33,14 @@
         }
       }
     },
-    "No data showing? Check Settings → Health → Data Access & Devices → Kadō." : {
+    "No data showing? Check Settings → Privacy & Security → Health → Kadō." : {
       "comment" : "Footer under the Health on Calendar toggle when on; tells where to check Health access.",
       "extractionState" : "manual",
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucune donnée ? Vérifie Réglages → Santé → Accès aux données et appareils → Kadō."
+            "value" : "Aucune donnée ? Vérifie Réglages → Confidentialité et sécurité → Santé → Kadō."
           }
         }
       }

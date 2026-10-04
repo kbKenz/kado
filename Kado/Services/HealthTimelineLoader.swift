@@ -10,7 +10,6 @@ struct HealthTimelineLoader {
     let provider: any HealthTimelineProviding
     let calendar: Calendar
 
-    private static let logger = Logger(subsystem: "dev.scastiel.kado", category: "health-calendar")
 
     func entries(on day: Date, isEnabled: Bool) async -> [HealthTimelineEntry] {
         guard isEnabled, provider.isAvailable,
@@ -30,7 +29,7 @@ struct HealthTimelineLoader {
         } catch is CancellationError {
             return []
         } catch {
-            Self.logger.error("Health \(kind, privacy: .public) query failed: \(String(describing: type(of: error)), privacy: .public)")
+            Logger.healthCalendar.error("Health \(kind, privacy: .public) query failed: \(String(describing: type(of: error)), privacy: .public)")
             return []
         }
     }

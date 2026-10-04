@@ -286,10 +286,18 @@ struct HabitRowView: View {
     /// point, so it is the minus that gives way. Decrement is disabled
     /// at zero so "no completion" stays equivalent to "not started
     /// today" (matches CompletionLogger semantics).
+    /// Without an increment action (Today on a future day) the row shows
+    /// the count alone, like the binary check and the timer chip, which
+    /// also disappear when there is nothing to log.
+    @ViewBuilder
     private var counterStepper: some View {
-        ViewThatFits(in: .horizontal) {
-            counterStepperFull
-            counterStepperPlusOnly
+        if onCounterIncrement == nil {
+            countLabel(counterCountText)
+        } else {
+            ViewThatFits(in: .horizontal) {
+                counterStepperFull
+                counterStepperPlusOnly
+            }
         }
     }
 

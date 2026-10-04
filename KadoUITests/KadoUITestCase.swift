@@ -50,6 +50,7 @@ class KadoUITestCase: XCTestCase {
     ///   - appearanceAnnouncement: leave Today's Appearance
     ///     announcement due. Every other run starts with it put away.
     ///   - tipNudgeReady: start old enough for the tip nudge to be due.
+    ///   - startOnNow: open on the Now tab instead of Today.
     ///   - archiveFirstHabit: start with the first seeded habit already
     ///     archived, for tests of the Archived list that don't need to
     ///     drive Today's long-press menu to get one there — see
@@ -70,7 +71,8 @@ class KadoUITestCase: XCTestCase {
         supporter: Bool = false,
         habitTheme: String? = nil,
         appearanceAnnouncement: Bool = false,
-        tipNudgeReady: Bool = false
+        tipNudgeReady: Bool = false,
+        startOnNow: Bool = false
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestRun"]
@@ -101,6 +103,9 @@ class KadoUITestCase: XCTestCase {
         }
         if tipNudgeReady {
             app.launchArguments.append("-uiTestTipNudgeReady")
+        }
+        if startOnNow, !app.launchArguments.contains("-uiTestStartOnNow") {
+            app.launchArguments.append("-uiTestStartOnNow")
         }
         if let habitTheme {
             app.launchArguments += ["-uiTestHabitTheme", habitTheme]

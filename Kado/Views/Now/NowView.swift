@@ -36,6 +36,20 @@ struct NowView: View {
             }
             .background(Color.kadoBackground.ignoresSafeArea())
             .navigationTitle("Now")
+            // On the stack, not inside the TimelineView branch the clock rebuilds.
+            .sheet(isPresented: $showingStartSomething) {
+                StartSomethingSheet(
+                    candidates: startCandidates(),
+                    onPick: { item in
+                        showingStartSomething = false
+                        start(item, blockID: nil)
+                    },
+                    onStartNew: { title, kind in
+                        showingStartSomething = false
+                        startNew(title, kind)
+                    }
+                )
+            }
         }
         .modifier(NowPresentations(
             confirmingFinish: $confirmingFinish,
@@ -60,12 +74,6 @@ struct NowView: View {
                     if let next = screen.upNext { upNext(next) }
                 }
                 .padding()
-            }
-            .sheet(isPresented: $showingStartSomething) {
-                StartSomethingSheet(candidates: input.startCandidates) { item in
-                    showingStartSomething = false
-                    start(item, blockID: nil)
-                }
             }
         }
     }
@@ -142,6 +150,18 @@ struct NowView: View {
         run {
             try tracker.finish(markDone: markDone, in: modelContext)
             WidgetReloader.reloadAll(using: modelContext)
+        }
+    }
+
+    private func startCandidates() -> [NowItem] {
+        (try? builder.build(now: .now, in: modelContext).startCandidates) ?? []
+    }
+
+    /// A new habit changes widgets, so they refresh after the save.
+    private func startNew(_ title: String, _ kind: QuickStartKind) {
+        run {
+            try tracker.startNew(title: title, kind: kind, in: modelContext)
+            if kind == .habit { WidgetReloader.reloadAll(using: modelContext) }
         }
     }
 

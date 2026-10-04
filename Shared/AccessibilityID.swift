@@ -394,6 +394,9 @@ enum AccessibilityID {
         static let elapsed = "now.elapsed"
         static let upNext = "now.upNext"
         static let startSomething = "now.startSomething"
+        static let quickStartTitle = "now.quickStart.title"
+        static let quickStartKind = "now.quickStart.kind"
+        static let quickStartStart = "now.quickStart.start"
         static func candidate(_ id: UUID) -> String { "now.candidate.\(id.uuidString)" }
     }
 

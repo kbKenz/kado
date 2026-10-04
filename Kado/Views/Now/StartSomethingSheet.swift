@@ -10,6 +10,7 @@ struct StartSomethingSheet: View {
     @State private var title = ""
     @State private var kind: QuickStartKind = .task
     /// Set synchronously before acting so a second tap cannot start twice.
+    /// Never reset: every path dismisses the sheet, so each presentation starts fresh.
     @State private var starting = false
     // Focus is a nicety: the screen works when the runtime ignores it.
     @FocusState private var titleFocused: Bool

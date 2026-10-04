@@ -26,4 +26,29 @@ final class NowQuickStartTests: KadoUITestCase {
         XCTAssertTrue(finish.waitForExistence(timeout: 10), "Starting should open a running session.")
         capture(app, "3-running-session")
     }
+
+    @MainActor
+    func testQuickStartHabitFromEmptyNow() {
+        let app = launchApp(startOnNow: true)
+
+        let startSomething = app.buttons[AccessibilityID.Now.startSomething]
+        XCTAssertTrue(startSomething.waitForExistence(timeout: 15), "The empty Now screen never appeared.")
+        startSomething.tap()
+
+        let field = app.textFields[AccessibilityID.Now.quickStartTitle]
+        XCTAssertTrue(field.waitForExistence(timeout: 10), "The quick-start sheet never appeared.")
+        // Segments are addressed by position: their labels are localized.
+        let kind = app.segmentedControls[AccessibilityID.Now.quickStartKind]
+        XCTAssertTrue(kind.waitForExistence(timeout: 5))
+        kind.buttons.element(boundBy: 1).tap()
+        field.tap()
+        field.typeText("Stretch")
+        capture(app, "4-quick-start-habit")
+        app.buttons[AccessibilityID.Now.quickStartStart].tap()
+
+        XCTAssertTrue(
+            app.buttons[AccessibilityID.Now.finish].waitForExistence(timeout: 10),
+            "Starting a habit should open a running session."
+        )
+    }
 }

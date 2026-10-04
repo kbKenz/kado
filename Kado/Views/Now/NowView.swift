@@ -23,6 +23,12 @@ struct NowView: View {
     @State private var showingStartSomething = false
     @State private var detail: NowItem?
     @State private var showingError = false
+    @State private var errorMessage: LocalizedStringResource = "Couldn't save your change. Try again."
+    /// Loaded once when the sheet is requested, not on every body pass.
+    @State private var quickStartCandidates: [NowItem] = []
+    /// Set while the sheet closes; shown from `onDismiss`, because an alert
+    /// raised while a sheet is still leaving can be dropped.
+    @State private var pendingAlert: LocalizedStringResource?
 
     /// Readable column width, so iPad does not stretch the cards.
     private static let maxContentWidth: CGFloat = 560
@@ -40,9 +46,9 @@ struct NowView: View {
             .background(Color.kadoBackground.ignoresSafeArea())
             .navigationTitle("Now")
             // On the stack, not inside the TimelineView branch the clock rebuilds.
-            .sheet(isPresented: $showingStartSomething) {
+            .sheet(isPresented: $showingStartSomething, onDismiss: showPendingAlert) {
                 StartSomethingSheet(
-                    candidates: startCandidates(),
+                    candidates: quickStartCandidates,
                     onPick: { item in
                         showingStartSomething = false
                         start(item, blockID: nil)
@@ -58,6 +64,7 @@ struct NowView: View {
             confirmingFinish: $confirmingFinish,
             detail: $detail,
             showingError: $showingError,
+            errorMessage: errorMessage,
             onFinish: finish
         ))
     }
@@ -128,7 +135,7 @@ struct NowView: View {
     }
 
     private var startSomethingButton: some View {
-        Button("Start something…") { showingStartSomething = true }
+        Button("Start something…", action: presentStartSomething)
             .buttonStyle(.bordered)
             .controlSize(.large)
             .frame(maxWidth: .infinity, alignment: .center)
@@ -166,15 +173,35 @@ struct NowView: View {
         }
     }
 
-    private func startCandidates() -> [NowItem] {
-        (try? builder.build(now: .now, in: modelContext).startCandidates) ?? []
+    /// Quick start works without candidates, so a failed load still opens the sheet.
+    private func presentStartSomething() {
+        switch loadInput(now: .now) {
+        case .success(let input): quickStartCandidates = input.startCandidates
+        case .failure: quickStartCandidates = []
+        }
+        showingStartSomething = true
     }
 
-    /// A new habit changes widgets, so they refresh after the save.
+    private func showPendingAlert() {
+        guard let message = pendingAlert else { return }
+        pendingAlert = nil
+        errorMessage = message
+        showingError = true
+    }
+
+    /// A new habit changes widgets, so they refresh after the save. Unlike a
+    /// stale tap on a card, a refused quick start would silently drop what the
+    /// user typed, so every failure is reported once the sheet has closed.
     private func startNew(_ title: String, _ kind: QuickStartKind) {
-        run {
+        do {
             try tracker.startNew(title: title, kind: kind, in: modelContext)
             if kind == .habit { WidgetReloader.reloadAll(using: modelContext) }
+        } catch WorkSessionTracker.TrackerError.sessionAlreadyOpen {
+            pendingAlert = "Finish the running session first."
+        } catch {
+            let nsError = error as NSError
+            Self.logger.error("Now action failed: \(nsError.domain, privacy: .public) \(nsError.code, privacy: .public)")
+            pendingAlert = "Couldn't save your change. Try again."
         }
     }
 
@@ -207,6 +234,7 @@ struct NowView: View {
         } catch {
             let nsError = error as NSError
             Self.logger.error("Now action failed: \(nsError.domain, privacy: .public) \(nsError.code, privacy: .public)")
+            errorMessage = "Couldn't save your change. Try again."
             showingError = true
         }
     }
@@ -217,6 +245,7 @@ private struct NowPresentations: ViewModifier {
     @Binding var confirmingFinish: Bool
     @Binding var detail: NowItem?
     @Binding var showingError: Bool
+    let errorMessage: LocalizedStringResource
     let onFinish: (Bool) -> Void
 
     func body(content: Content) -> some View {
@@ -239,7 +268,7 @@ private struct NowPresentations: ViewModifier {
             .alert("Unable to update", isPresented: $showingError) {
                 Button("Close", role: .cancel) {}
             } message: {
-                Text("Couldn't save your change. Try again.")
+                Text(errorMessage)
             }
     }
 }

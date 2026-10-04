@@ -392,6 +392,23 @@
         }
       }
     },
+    "Finish the running session first." : {
+      "comment" : "Alert message when a quick start is refused because a work session is already running.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish the running session first."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Termine d’abord la session en cours."
+          }
+        }
+      }
+    },
     "Finish this session?" : {
       "comment" : "Title of the confirmation dialog when the user taps Finish on the Now tab.",
       "localizations" : {
@@ -805,7 +822,7 @@
       }
     },
     "Start something" : {
-      "comment" : "Title of the sheet that lists tasks and habits to start now.",
+      "comment" : "Title of the sheet to start a new task or habit, or pick an existing one.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -822,7 +839,7 @@
       }
     },
     "Start something…" : {
-      "comment" : "Now tab button that opens a list of tasks and habits to start now.",
+      "comment" : "Now tab button that opens the quick start sheet for a task or habit.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4687,7 +4704,7 @@
       }
     },
     "Habit" : {
-      "comment" : "Title of the `habit` parameter on Kadō's AppIntents.",
+      "comment" : "Habit option of the Task/Habit switch in the Start something sheet; also the `habit` parameter title on Kadō's AppIntents.",
       "extractionState" : "stale",
       "localizations" : {
         "fr" : {

@@ -4105,7 +4105,7 @@
       }
     },
     "Habits" : {
-      "comment" : "Label for the habit-count row in the import confirmation sheet, and the Settings section heading above the Archived habits row.",
+      "comment" : "Label for the habit-count row in the import confirmation sheet, the Settings section heading above the Archived habits row, and the Today habits header on past and future days.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6055,7 +6055,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pas prévues ce jour-là"
+            "value" : "Non prévues ce jour-là"
           }
         }
       }

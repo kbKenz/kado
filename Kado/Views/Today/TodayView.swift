@@ -2,7 +2,8 @@ import SwiftData
 import SwiftUI
 import KadoCore
 
-/// The Today tab — lists habits due today and handles tap-to-toggle
+/// The Today tab — shows the day picked in the day strip (today by
+/// default): lists habits due that day and handles tap-to-toggle
 /// for binary and negative habits, inline counter / timer logging,
 /// and a long-press context menu for the secondary actions
 /// (specific-value sheets, edit, archive).
@@ -101,6 +102,7 @@ struct TodayView: View {
     var body: some View {
         // Snapshotted once per pass, so the strip's cells share it
         // instead of each re-snapshotting every habit.
+        let days = stripDays
         let progressInput = stripProgressInput
         NavigationStack(path: $path) {
             content
@@ -108,7 +110,7 @@ struct TodayView: View {
                 .background(Color.kadoBackground.ignoresSafeArea())
                 .safeAreaInset(edge: .top, spacing: 0) {
                     DayStrip(
-                        days: stripDays,
+                        days: days,
                         selection: stripSelection,
                         today: today,
                         progress: { stripProgress(for: $0, input: progressInput) }
@@ -118,7 +120,14 @@ struct TodayView: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .background(Color.kadoBackground, ignoresSafeAreaEdges: [])
                 }
-                .onChange(of: stripDays) { _, days in
+                .onChange(of: today) { _, newToday in
+                    // A day picked while it was in the future follows
+                    // today again once it becomes today.
+                    if let selectedDay, calendar.isDate(selectedDay, inSameDayAs: newToday) {
+                        self.selectedDay = nil
+                    }
+                }
+                .onChange(of: days) { _, days in
                     if let selectedDay,
                        let clamped = DayStripRange.clamp(selectedDay, to: days),
                        clamped != selectedDay {
@@ -257,7 +266,7 @@ struct TodayView: View {
         case .newHabit:
             NewHabitFormView(model: NewHabitFormModel())
         case .newTask:
-            TaskFormView(defaultDay: dayKind == .today ? nil : displayedDay)
+            TaskFormView(defaultDay: dayKind == .future ? displayedDay : nil)
         case .editTask(let id):
             TaskFormView(taskID: id)
         case .editHabit(let habitID):
@@ -441,8 +450,11 @@ struct TodayView: View {
                 Text(dayKind == .today ? "Not scheduled today" : "Not scheduled that day")
                     .foregroundStyle(Color.kadoForegroundSecondary)
             } footer: {
-                Text("Tap to open detail, or long-press to edit or archive.")
-                    .foregroundStyle(Color.kadoForegroundSecondary)
+                // Archive is a today-only action, so the hint is too.
+                if dayKind == .today {
+                    Text("Tap to open detail, or long-press to edit or archive.")
+                        .foregroundStyle(Color.kadoForegroundSecondary)
+                }
             }
         }
     }

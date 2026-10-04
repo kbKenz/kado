@@ -14,7 +14,6 @@
 		BE58C7602F940AAF0020146E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE58C75F2F940AAF0020146E /* WidgetKit.framework */; };
 		BE58C7622F940AAF0020146E /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE58C7612F940AAF0020146E /* SwiftUI.framework */; };
 		BE58C76F2F940AB10020146E /* KadoWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = BE58C75D2F940AAF0020146E /* KadoWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		BE7563B02FF9D739001CB541 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE7563AF2FF9D739001CB541 /* StoreKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,7 +62,6 @@
 		BE58C75F2F940AAF0020146E /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		BE58C7612F940AAF0020146E /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		BE58C7752F940AC60020146E /* KadoWidgetsExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = KadoWidgetsExtension.entitlements; sourceTree = "<group>"; };
-		BE7563AF2FF9D739001CB541 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		BE7563B12FF9D7F7001CB541 /* Tips.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Tips.storekit; sourceTree = "<group>"; };
 		BEC0DE0130000001000000A2 /* KadoUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KadoUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -127,7 +125,6 @@
 				BECA1E003000000100000003 /* GoogleSignIn in Frameworks */,
 				BECA1E003000000100000004 /* GoogleSignInSwift in Frameworks */,
 				BE0A541C2F942EA000E09C34 /* KadoCore in Frameworks */,
-				BE7563B02FF9D739001CB541 /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,7 +185,6 @@
 		BE58C75E2F940AAF0020146E /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				BE7563AF2FF9D739001CB541 /* StoreKit.framework */,
 				BE58C75F2F940AAF0020146E /* WidgetKit.framework */,
 				BE58C7612F940AAF0020146E /* SwiftUI.framework */,
 			);
@@ -464,7 +460,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -528,7 +524,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -560,7 +556,7 @@
 				CODE_SIGN_ENTITLEMENTS = Kado/Kado.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Kado/Info.plist;
@@ -577,7 +573,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.11;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.kbkenz.kado;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -599,7 +595,7 @@
 				CODE_SIGN_ENTITLEMENTS = Kado/Kado.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Kado/Info.plist;
@@ -616,7 +612,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.11;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.kbkenz.kado;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -634,11 +630,11 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.11;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado.KadoTests;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.kbkenz.kado.KadoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -656,11 +652,11 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.11;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado.KadoTests;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.kbkenz.kado.KadoTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -680,7 +676,7 @@
 				CODE_SIGN_ENTITLEMENTS = KadoWidgetsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = KadoWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = KadoWidgets;
@@ -692,7 +688,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.11;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado.KadoWidgets;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.kbkenz.kado.KadoWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -712,7 +708,7 @@
 				CODE_SIGN_ENTITLEMENTS = KadoWidgetsExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = KadoWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = KadoWidgets;
@@ -724,7 +720,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				MARKETING_VERSION = 1.11;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado.KadoWidgets;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.kbkenz.kado.KadoWidgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
@@ -741,11 +737,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.11;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado.KadoUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.kbkenz.kado.KadoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -762,11 +758,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 21;
-				DEVELOPMENT_TEAM = VKY5EKKU47;
+				DEVELOPMENT_TEAM = BZHU82SRFP;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.11;
-				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado.KadoUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = dev.kbkenz.kado.KadoUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

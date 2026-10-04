@@ -10051,6 +10051,30 @@
           }
         }
       }
+    },
+    "iCloud sync is off in this build" : {
+      "comment" : "Settings iCloud row title when the build is signed without iCloud.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La synchro iCloud est désactivée dans cette version"
+          }
+        }
+      }
+    },
+    "Your data stays on this device. Use Backup to move it to another device." : {
+      "comment" : "Settings iCloud row subtitle when the build is signed without iCloud.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tes données restent sur cet appareil. Utilise la sauvegarde pour les transférer vers un autre appareil."
+          }
+        }
+      }
     }
   },
   "version" : "1.1"

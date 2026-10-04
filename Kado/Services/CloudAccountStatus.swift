@@ -25,4 +25,9 @@ enum CloudAccountStatus: Equatable, Sendable {
     /// (server-side or network). Usually recovers without user
     /// action.
     case temporarilyUnavailable
+
+    /// This build is signed without iCloud (``CloudSync/isEnabled`` is
+    /// false). Never produced by CloudKit; set by
+    /// `DisabledCloudAccountStatusObserver`.
+    case disabledInBuild
 }

@@ -16,7 +16,10 @@ struct KadoApp: App {
     @Environment(\.scenePhase) private var scenePhase
 
     @State private var devModeController = DevModeController()
-    @State private var cloudAccountStatus = DefaultCloudAccountStatusObserver()
+    /// No `CKContainer` is created when sync is off: without the iCloud
+    /// entitlement that call traps at launch.
+    @State private var cloudAccountStatus: any CloudAccountStatusObserving =
+        CloudSync.isEnabled ? DefaultCloudAccountStatusObserver() : DisabledCloudAccountStatusObserver()
     @State private var googleCalendarConnection = GoogleCalendarConnection()
     @State private var healthTimelineProvider = HealthKitTimelineProvider()
     @State private var notificationScheduler: any NotificationScheduling

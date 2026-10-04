@@ -109,6 +109,7 @@ struct SyncStatusSection: View {
         case .restricted: return "lock.icloud.fill"
         case .temporarilyUnavailable: return "exclamationmark.icloud.fill"
         case .couldNotDetermine: return "icloud"
+        case .disabledInBuild: return "icloud.slash"
         }
     }
 
@@ -116,7 +117,7 @@ struct SyncStatusSection: View {
         switch status {
         case .available: return .green
         case .noAccount, .restricted, .temporarilyUnavailable: return .orange
-        case .couldNotDetermine: return .secondary
+        case .couldNotDetermine, .disabledInBuild: return .secondary
         }
     }
 
@@ -132,6 +133,8 @@ struct SyncStatusSection: View {
             return String(localized: "iCloud is temporarily unavailable")
         case .couldNotDetermine:
             return String(localized: "Checking iCloud…")
+        case .disabledInBuild:
+            return String(localized: "iCloud sync is off in this build")
         }
     }
 
@@ -147,13 +150,15 @@ struct SyncStatusSection: View {
             return String(localized: "Your account is signed in but iCloud can’t be reached right now. Try again in a few minutes.")
         case .couldNotDetermine:
             return String(localized: "Kadō is checking your iCloud status.")
+        case .disabledInBuild:
+            return String(localized: "Your data stays on this device. Use Backup to move it to another device.")
         }
     }
 
     private func showsSettingsLink(for status: CloudAccountStatus) -> Bool {
         switch status {
         case .noAccount, .restricted: return true
-        case .available, .temporarilyUnavailable, .couldNotDetermine: return false
+        case .available, .temporarilyUnavailable, .couldNotDetermine, .disabledInBuild: return false
         }
     }
 }
@@ -172,6 +177,10 @@ struct SyncStatusSection: View {
 
 #Preview("Temporarily unavailable") {
     SyncStatusPreview(status: .temporarilyUnavailable)
+}
+
+#Preview("Off in this build") {
+    SyncStatusPreview(status: .disabledInBuild)
 }
 
 #Preview("Checking") {

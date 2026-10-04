@@ -106,6 +106,6 @@ struct SharedStoreTests {
 
     @Test("App Group identifier matches the entitlement convention")
     func appGroupIdentifierIsStable() {
-        #expect(SharedStore.appGroupID == "group.dev.scastiel.kado")
+        #expect(SharedStore.appGroupID == "group.dev.kbkenz.kado")
     }
 }

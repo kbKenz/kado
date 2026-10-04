@@ -17,7 +17,7 @@ import SwiftData
 nonisolated public enum SharedStore {
     /// App Group identifier. Must match the entitlement string on
     /// both the main app and the widget extension targets.
-    public static let appGroupID = "group.dev.scastiel.kado"
+    public static let appGroupID = "group.dev.kbkenz.kado"
 
     /// App Group container root if the entitlement is active.
     public static func appGroupContainerURL() -> URL? {
@@ -94,20 +94,26 @@ nonisolated public enum SharedStore {
     /// SQLite read-only traps at the first fetch because the
     /// on-disk metadata references a container the process can't
     /// reach.
+    ///
+    /// When ``CloudSync/isEnabled`` is false (free Personal Team
+    /// builds), the store opens with `cloudKitDatabase: .none` and stays
+    /// on this device.
     public static func productionContainer() throws -> ModelContainer {
         let schema = Schema(versionedSchema: KadoSchemaV7.self)
+        let database: ModelConfiguration.CloudKitDatabase =
+            CloudSync.isEnabled ? .private(CloudContainerID.kado) : .none
         let configuration: ModelConfiguration
         if let target = productionStoreURL() {
             migrateLegacyStoreIfNeeded(from: legacyStoreURL(), to: target)
             configuration = ModelConfiguration(
                 schema: schema,
                 url: target,
-                cloudKitDatabase: .private(CloudContainerID.kado)
+                cloudKitDatabase: database
             )
         } else {
             configuration = ModelConfiguration(
                 schema: schema,
-                cloudKitDatabase: .private(CloudContainerID.kado)
+                cloudKitDatabase: database
             )
         }
         return try ModelContainer(

@@ -273,6 +273,8 @@ enum AccessibilityID {
         /// or negative habit gets instead of a stepper. A leaf `Button`;
         /// its label is localized, hence the identifier.
         static let toggle = "dayEdit.toggle"
+        /// The note field; also names its dictation and cleanup buttons.
+        static let note = "dayEdit.note"
         /// The caption warning that logging a pre-start day moves the
         /// habit's start back to it (issue #104).
         static let backdateNotice = "dayEdit.backdateNotice"

@@ -327,12 +327,14 @@ struct DayEditPopover: View {
                 .font(.callout)
                 .focused($isNoteFocused)
                 .accessibilityLabel(String(localized: "Note"))
+                .accessibilityIdentifier(AccessibilityID.DayEdit.note)
                 .onChange(of: noteText) { _, newValue in
                     if newValue.count > noteCharLimit {
                         noteText = String(newValue.prefix(noteCharLimit))
                     }
                 }
                 .onSubmit { commitNote() }
+                .assistedInput($noteText, characterLimit: noteCharLimit, identifier: AccessibilityID.DayEdit.note)
 
                 HStack {
                     Text("\(noteText.count)/\(noteCharLimit)")

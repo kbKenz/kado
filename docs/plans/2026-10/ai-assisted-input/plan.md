@@ -265,7 +265,7 @@ its engine is not available.
 
 ---
 
-### Task 7a: Adopt in habit name and day note
+### Task 7a: Adopt in habit name and day note ✅
 
 **Goal**: the feature is live in the habit fields.
 
@@ -280,6 +280,13 @@ its engine is not available.
   and note UI tests still pass).
 - Screenshots of both fields, light + dark, iPhone + iPad.
 - VoiceOver walk-through of both fields.
+
+- Done 2026-10-04: suite green; PreStartDay, DayCompletionCelebration,
+  OverviewDayEdit, DayEditPopover UI tests 10/10. Live in the app on
+  the simulator: "um read read more books every day" → "Read more
+  books every day.", Undo restored it. The mic **is** offered in the
+  app on the simulator (the unit-test host reported no on-device
+  recognizer); live dictation still to be tried by hand.
 
 **Commit message (suggested)**: `feat(ai-input): offer voice input and cleanup in habit name and day note`
 

@@ -77,6 +77,7 @@ struct NewHabitFormView: View {
                 .focused($nameFocused)
                 .submitLabel(.done)
                 .accessibilityIdentifier(AccessibilityID.NewHabit.nameField)
+                .assistedInput($model.name, identifier: AccessibilityID.NewHabit.nameField)
         }
         .listRowBackground(Color.kadoBackgroundSecondary)
     }

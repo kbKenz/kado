@@ -69,7 +69,7 @@ its engine is not available.
 
 ---
 
-### Task 2: Service protocols, stand-ins, environment entries
+### Task 2: Service protocols, stand-ins, environment entries ✅
 
 **Goal**: the two seams exist and are injectable; nothing real yet.
 
@@ -77,16 +77,18 @@ its engine is not available.
 - `Kado/Services/SpeechTranscribing.swift` — protocol
   (`isAvailable`, `requestAuthorization() async -> Bool`,
   `transcribe() -> AsyncThrowingStream<String, Error>`, `stop()`),
-  plus `AssistedInputError` enum (`permissionDenied`,
-  `unavailable`, `failed`).
+  and `UnavailableSpeechTranscriber`. `AssistedInputError` enum
+  (`permissionDenied`, `unavailable`, `failed`) in its own file.
 - `Kado/Services/TextCleaning.swift` — protocol (`isAvailable`,
   `clean(_:) async throws -> String`) and `UnavailableTextCleaner`.
 - `Kado/Preview Content/MockSpeechTranscriber.swift`,
-  `MockTextCleaner.swift` — scripted partials / scripted result or
-  error. `@unchecked Sendable` with the one-line comment, per
+  `MockTextCleaner.swift` — hand-driven: `send(_:)` / `fail(_:)`
+  partials; scripted result, with `holdsUntilReleased` + `release()`
+  to test taps during a running cleanup. `@unchecked Sendable` with the one-line comment, per
   `CLAUDE.md`.
 - `Kado/App/EnvironmentValues+Services.swift` — `@Entry var
-  speechTranscriber` (default: unavailable mock) and `@Entry var
+  speechTranscriber` (default: `UnavailableSpeechTranscriber()`,
+  production code, not a Debug mock) and `@Entry var
   textCleaner` (default: `UnavailableTextCleaner()`).
 - `KadoTests/EnvironmentValuesServicesTests.swift` — defaults are
   the unavailable stand-ins.

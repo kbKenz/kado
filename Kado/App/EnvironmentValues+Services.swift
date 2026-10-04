@@ -126,4 +126,16 @@ extension EnvironmentValues {
     /// watching any other instance would simply never see a
     /// celebration. Previews inject their own to drive it by hand.
     @Entry var dayCompletionCelebration: DayCompletionCelebration = .shared
+
+    /// On-device dictation behind `.assistedInput(_:)`. Default reports
+    /// itself unavailable so previews and unit tests never open the
+    /// microphone; the main app injects the real transcriber at scene
+    /// build.
+    @Entry var speechTranscriber: any SpeechTranscribing = UnavailableSpeechTranscriber()
+
+    /// On-device text cleanup behind `.assistedInput(_:)`. Default
+    /// reports itself unavailable so previews and unit tests never call
+    /// the language model; the main app injects the real cleaner at
+    /// scene build.
+    @Entry var textCleaner: any TextCleaning = UnavailableTextCleaner()
 }

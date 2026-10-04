@@ -39,13 +39,13 @@ its engine is not available.
 
 ## Task list
 
-### Task 1: `AssistedTextEditing` pure logic (tests first)
+### Task 1: `AssistedTextEditing` pure logic (tests first) ✅
 
-**Goal**: every text rule in one tested, UI-free struct.
+**Goal**: every text rule in one tested, UI-free type.
 
 **Changes**:
-- `Kado/Services/AssistedTextEditing.swift` — `nonisolated struct`
-  with:
+- `Kado/Services/AssistedTextEditing.swift` — `nonisolated enum`
+  (namespace, static functions; it holds no state) with:
   - `appending(_ transcript: String, to base: String) -> String` —
     one space between non-empty base and transcript, none if base is
     empty or ends in whitespace; empty transcript returns base.

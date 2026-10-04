@@ -260,8 +260,8 @@ its engine is not available.
 
 ## Open questions
 
-- [ ] Should Settings have a switch to turn the AI helpers off?
-      Default for this plan: no switch; each control hides when
+- [x] Should Settings have a switch to turn the AI helpers off?
+      **Decided 2026-10-04: no switch.** Each control hides when
       unavailable.
 - [ ] FR strings need review by a native speaker before merge
       (`CLAUDE.md` localisation rule).

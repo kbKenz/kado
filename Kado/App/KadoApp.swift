@@ -186,6 +186,7 @@ struct KadoApp: App {
                     UITestSupport.seedProductionIfRequested(
                         using: devModeController.productionContainerForUITests()
                     )
+                    UITestSupport.seedNowBlockIfRequested(using: container.mainContext)
                 }
                 #endif
         }

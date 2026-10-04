@@ -105,6 +105,10 @@ nonisolated enum UITestSupport {
         /// Open on Now like a real launch. UI runs otherwise open on
         /// Today, where the suite has always started.
         static let startOnNow = "-uiTestStartOnNow"
+        /// Insert one task, "Research", with a schedule block that is
+        /// current at launch (ten minutes ago to fifty from now), so
+        /// Now suggests it with a Start button.
+        static let seedNowBlock = "-uiTestSeedNowBlock"
     }
 
     /// UI runs open on Today, where the suite has always started;
@@ -309,6 +313,27 @@ nonisolated enum UITestSupport {
         if !DevModeDefaults.sharedDefaults.bool(forKey: DevModeDefaults.key) {
             WidgetSnapshotBuilder.rebuildAndWrite(using: context)
         }
+    }
+
+    /// Inserts the task and current block `-uiTestSeedNowBlock` asks for.
+    /// On the mounted container's context, for the reason
+    /// `seedProductionIfRequested` gives.
+    @MainActor
+    static func seedNowBlockIfRequested(using context: ModelContext) {
+        guard isRunningUITests,
+              ProcessInfo.processInfo.arguments.contains(Argument.seedNowBlock)
+        else { return }
+        let count = (try? context.fetchCount(FetchDescriptor<TaskRecord>())) ?? 0
+        guard count == 0 else { return }
+        let task = TaskRecord(title: "Research")
+        context.insert(task)
+        context.insert(ScheduleBlockRecord(
+            plannedDay: Calendar.current.startOfDay(for: .now),
+            startAt: .now.addingTimeInterval(-10 * 60),
+            endAt: .now.addingTimeInterval(50 * 60),
+            task: task
+        ))
+        try? context.save()
     }
 
     /// Archives one seeded habit, if this run asked for it. Called

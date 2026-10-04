@@ -7464,6 +7464,23 @@
         }
       }
     },
+    "Saves for %@" : {
+      "comment" : "Log sheet footer when logging a day other than today; %@ is the short date.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saves for %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistré pour le %@"
+          }
+        }
+      }
+    },
     "Saves as today's completion. If you already logged a session today, it will be replaced. Setting it to 0 clears it." : {
       "comment" : "Footer text in the timer-log sheet: single-completion-per-day semantics, and that 0 clears the day's session.",
       "localizations" : {

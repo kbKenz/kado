@@ -74,8 +74,8 @@ struct TodayView: View {
         case newTask
         case editTask(UUID)
         case editHabit(UUID)
-        case logCounter(UUID)
-        case logTimer(UUID)
+        case logCounter(UUID, Date)
+        case logTimer(UUID, Date)
         /// The Tip Jar, reached from the nudge at the bottom of the
         /// list. A sheet rather than a `navigationDestination`, so the
         /// detour doesn't leave the Tip Jar sitting on Today's
@@ -91,8 +91,8 @@ struct TodayView: View {
             case .newTask: "new-task"
             case .editTask(let id): "edit-task-\(id)"
             case .editHabit(let habitID): "edit-\(habitID)"
-            case .logCounter(let habitID): "counter-\(habitID)"
-            case .logTimer(let habitID): "timer-\(habitID)"
+            case .logCounter(let habitID, let day): "counter-\(habitID)-\(day.timeIntervalSinceReferenceDate)"
+            case .logTimer(let habitID, let day): "timer-\(habitID)-\(day.timeIntervalSinceReferenceDate)"
             case .tipJar: "tip-jar"
             case .appearance: "appearance"
             }
@@ -275,15 +275,15 @@ struct TodayView: View {
             } else {
                 HabitUnavailableView()
             }
-        case .logCounter(let habitID):
+        case .logCounter(let habitID, let day):
             if let record = record(for: habitID) {
-                CounterLogSheet(habit: record)
+                CounterLogSheet(habit: record, day: day)
             } else {
                 HabitUnavailableView()
             }
-        case .logTimer(let habitID):
+        case .logTimer(let habitID, let day):
             if let record = record(for: habitID) {
-                TimerLogSheet(habit: record)
+                TimerLogSheet(habit: record, day: day)
             } else {
                 HabitUnavailableView()
             }
@@ -652,8 +652,8 @@ struct TodayView: View {
 
     private func logSheetCallback(for item: TodayRow) -> (() -> Void)? {
         switch item.habit.type {
-        case .counter: return { sheet = .logCounter(item.id) }
-        case .timer: return { sheet = .logTimer(item.id) }
+        case .counter: return { sheet = .logCounter(item.id, displayedDay) }
+        case .timer: return { sheet = .logTimer(item.id, displayedDay) }
         case .binary, .negative: return nil
         }
     }

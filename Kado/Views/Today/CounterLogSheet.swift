@@ -12,6 +12,10 @@ import KadoCore
 struct CounterLogSheet: View {
     let habit: HabitRecord
 
+    /// The habit day this sheet logs to. `nil` means today — the case
+    /// for every caller except Today's day strip.
+    var day: Date? = nil
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.calendar) private var calendar
     @Environment(\.locale) private var locale
@@ -79,6 +83,8 @@ struct CounterLogSheet: View {
                 } footer: {
                     if isOutOfRange {
                         Text("Enter a number no higher than \(Self.valueRange.upperBound).")
+                    } else if let otherDayLabel {
+                        Text("Saves for \(otherDayLabel)")
                     } else {
                         Text("Saves as today's completion. Setting it to 0 clears today's progress.")
                     }
@@ -110,9 +116,18 @@ struct CounterLogSheet: View {
         }
     }
 
+    private var logDay: Date { day ?? today }
+
+    /// The short date for the footer when logging a day other than
+    /// today; `nil` for today, which keeps the sheet's usual text.
+    private var otherDayLabel: String? {
+        guard let day, !calendar.isDate(day, inSameDayAs: today) else { return nil }
+        return day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().locale(locale))
+    }
+
     private func todayValue() -> Int {
         let existing = habit.completions?.first {
-            calendar.isDate($0.date, inSameDayAs: today)
+            calendar.isDate($0.date, inSameDayAs: logDay)
         }
         return Int(existing?.value ?? 0)
     }
@@ -121,7 +136,7 @@ struct CounterLogSheet: View {
         guard let value else { return }
         CompletionLogger(calendar: calendar).setCounter(
             for: habit,
-            on: dayBoundary.loggingInstant(for: .now, on: today),
+            on: dayBoundary.loggingInstant(for: .now, on: logDay),
             to: Double(value),
             in: modelContext
         )

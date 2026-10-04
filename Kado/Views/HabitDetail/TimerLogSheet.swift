@@ -9,6 +9,10 @@ import KadoCore
 struct TimerLogSheet: View {
     let habit: HabitRecord
 
+    /// The habit day this sheet logs to. `nil` means today — the case
+    /// for every caller except Today's day strip.
+    var day: Date? = nil
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.calendar) private var calendar
     @Environment(\.locale) private var locale
@@ -71,6 +75,8 @@ struct TimerLogSheet: View {
                 } footer: {
                     if isOutOfRange {
                         Text("Enter a number no higher than \(Self.minutesRange.upperBound).")
+                    } else if let otherDayLabel {
+                        Text("Saves for \(otherDayLabel)")
                     } else {
                         Text("Saves as today's completion. If you already logged a session today, it will be replaced. Setting it to 0 clears it.")
                     }
@@ -102,9 +108,18 @@ struct TimerLogSheet: View {
         }
     }
 
+    private var logDay: Date { day ?? today }
+
+    /// The short date for the footer when logging a day other than
+    /// today; `nil` for today, which keeps the sheet's usual text.
+    private var otherDayLabel: String? {
+        guard let day, !calendar.isDate(day, inSameDayAs: today) else { return nil }
+        return day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().locale(locale))
+    }
+
     private func defaultMinutes() -> Int {
         let existing = habit.completions?.first {
-            calendar.isDate($0.date, inSameDayAs: today)
+            calendar.isDate($0.date, inSameDayAs: logDay)
         }
         if let existing {
             // The day's own value, 0 included — not floored to 1. A
@@ -123,7 +138,7 @@ struct TimerLogSheet: View {
     private func save() {
         guard let minutes else { return }
         let logger = CompletionLogger(calendar: calendar)
-        let instant = dayBoundary.loggingInstant(for: .now, on: today)
+        let instant = dayBoundary.loggingInstant(for: .now, on: logDay)
         if minutes == 0 {
             // `logTimerSession` would keep a zero-second record; clearing
             // returns the day to missed, as stepping the popover to 0 does.

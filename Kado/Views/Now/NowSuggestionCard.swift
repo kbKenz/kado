@@ -11,7 +11,7 @@ struct NowSuggestionCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(isCurrent ? "NOW" : "NEXT")
+            (isCurrent ? Text("NOW") : Text("NEXT"))
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.kadoForegroundSecondary)
                 .accessibilityHidden(true)
@@ -22,6 +22,7 @@ struct NowSuggestionCard: View {
                     .multilineTextAlignment(.leading)
             }
             .buttonStyle(.plain)
+            .accessibilityHint(Text("Opens details"))
             .accessibilityIdentifier(AccessibilityID.Now.title)
             // One sentence: planned range, then how far it is from now.
             VStack(alignment: .leading, spacing: 12) {
@@ -31,7 +32,7 @@ struct NowSuggestionCard: View {
                     .foregroundStyle(Color.kadoForegroundSecondary)
             }
             .accessibilityElement(children: .combine)
-            Button(isCurrent ? "Start" : "Start early", action: onStart)
+            Button(startTitle, action: onStart)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .accessibilityIdentifier(AccessibilityID.Now.start)
@@ -40,6 +41,8 @@ struct NowSuggestionCard: View {
         .padding()
         .background(Color.kadoBackgroundSecondary, in: RoundedRectangle(cornerRadius: KadoRadius.card))
     }
+
+    private var startTitle: LocalizedStringKey { isCurrent ? "Start" : "Start early" }
 
     private var relative: LocalizedStringKey {
         let minutes = Int(abs(block.start.timeIntervalSince(now)) / 60)

@@ -24,6 +24,7 @@ struct NowSessionCard: View {
                     .multilineTextAlignment(.leading)
             }
             .buttonStyle(.plain)
+            .accessibilityHint(Text("Opens details"))
             .accessibilityIdentifier(AccessibilityID.Now.title)
             details
             buttons
@@ -73,15 +74,16 @@ struct NowSessionCard: View {
     private func progress(_ range: ClosedRange<Date>) -> some View {
         let planned = range.upperBound.timeIntervalSince(range.lowerBound)
         let worked = open.session.elapsed(at: now)
-        let left = Int((planned - worked) / 60)
+        // Progress is worked time against the planned duration (a budget), not the clock.
+        let remaining = planned - worked
         return VStack(alignment: .leading, spacing: 4) {
             ProgressView(value: min(worked, planned), total: max(planned, 1))
                 .tint(Color.kadoAccent)
             Group {
-                if left >= 0 {
-                    Text("\(left) min left")
+                if remaining > 0 {
+                    Text("\(Int(ceil(remaining / 60))) min left")
                 } else {
-                    Text("\(-left) min over")
+                    Text("\(Int(floor(-remaining / 60))) min over")
                 }
             }
             .font(.footnote)
@@ -118,10 +120,12 @@ struct NowSessionCard: View {
 }
 
 extension ClosedRange where Bound == Date {
-    /// "9:00 AM–10:00 AM" in the user's locale.
+    /// "9:00 – 10:00 AM" in the user's locale; just the start when the range is empty.
     var nowTimeText: String {
-        lowerBound.formatted(date: .omitted, time: .shortened)
-            + "–" + upperBound.formatted(date: .omitted, time: .shortened)
+        guard lowerBound < upperBound else {
+            return lowerBound.formatted(date: .omitted, time: .shortened)
+        }
+        return (lowerBound..<upperBound).formatted(.interval.hour().minute())
     }
 }
 

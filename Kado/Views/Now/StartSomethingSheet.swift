@@ -6,11 +6,17 @@ struct StartSomethingSheet: View {
     let candidates: [NowItem]
     let onPick: (NowItem) -> Void
     @Environment(\.dismiss) private var dismiss
+    /// Set synchronously before `onPick` so a second tap cannot start twice.
+    @State private var picking = false
 
     var body: some View {
         NavigationStack {
             List(candidates) { item in
-                Button { onPick(item) } label: {
+                Button {
+                    guard !picking else { return }
+                    picking = true
+                    onPick(item)
+                } label: {
                     Label(item.title, systemImage: icon(for: item))
                         .foregroundStyle(Color.kadoForeground)
                 }

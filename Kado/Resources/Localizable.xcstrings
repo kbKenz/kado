@@ -4,23 +4,6 @@
     "" : {
 
     },
-    "%@ — %@" : {
-      "comment" : "Now tab Up next line: block title, em dash, planned start time.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ — %@"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%@ — %@"
-          }
-        }
-      }
-    },
     "%lld min left" : {
       "comment" : "Now tab: minutes left of the planned block while a session runs. min is short for minutes.",
       "localizations" : {
@@ -48,7 +31,7 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "needs_review",
-                  "value" : "%lld min restantes"
+                  "value" : "%lld min restante"
                 }
               },
               "other" : {
@@ -273,6 +256,40 @@
         }
       }
     },
+    "Couldn't load Now" : {
+      "comment" : "Now tab error state title when today's plan cannot be read.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't load Now"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible de charger Maintenant"
+          }
+        }
+      }
+    },
+    "Couldn't save your change. Try again." : {
+      "comment" : "Alert message on the Now tab when starting, pausing, resuming or finishing a session fails to save.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save your change. Try again."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible d'enregistrer ta modification. Réessaie."
+          }
+        }
+      }
+    },
     "Date" : {
       "comment" : "Row label for a task's planned day in the task form's schedule section.",
       "localizations" : {
@@ -336,7 +353,7 @@
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "Fait le marque comme terminé. Pas encore le garde ouvert pour plus tard."
+            "value" : "« Fait » le marque comme terminé. « Pas encore » le garde ouvert pour plus tard."
           }
         }
       }
@@ -599,6 +616,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "MAINTENANT"
+          }
+        }
+      }
+    },
+    "Opens details" : {
+      "comment" : "VoiceOver hint on the title button of the Now tab: it opens the task or habit details.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens details"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvre les détails"
           }
         }
       }
@@ -889,6 +923,23 @@
         }
       }
     },
+    "Try again in a moment." : {
+      "comment" : "Now tab error state description.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try again in a moment."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réessaie dans un instant."
+          }
+        }
+      }
+    },
     "Unable to update" : {
       "comment" : "Alert title when a Now tab action (start, pause, resume, finish) fails to save.",
       "localizations" : {
@@ -984,6 +1035,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "À suivre"
+          }
+        }
+      }
+    },
+    "Up next: %@ at %@" : {
+      "comment" : "VoiceOver label of the Up next line on the Now tab: block title, then its planned start time.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up next: %@ at %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "À suivre : %1$@ à %2$@"
           }
         }
       }

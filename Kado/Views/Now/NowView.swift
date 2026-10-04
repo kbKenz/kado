@@ -1,3 +1,4 @@
+import OSLog
 import SwiftData
 import SwiftUI
 import KadoCore
@@ -7,62 +8,75 @@ struct NowView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dayBoundary) private var dayBoundary
     @Environment(\.frequencyEvaluator) private var frequencyEvaluator
+    // Read so returning to the foreground re-renders at once.
+    @Environment(\.scenePhase) private var scenePhase
 
-    // Observed only so the view re-reads after any change; the builder
-    // fetches its own records and returns values.
-    @Query private var sessions: [WorkSessionRecord]
+    // These queries only trigger a re-render after data changes; the
+    // builder fetches its own records and returns values.
+    @Query(filter: #Predicate<WorkSessionRecord> { $0.endedAt == nil }) private var sessions: [WorkSessionRecord]
     @Query private var blocks: [ScheduleBlockRecord]
     @Query private var tasks: [TaskRecord]
+    @Query private var habits: [HabitRecord]
     @Query private var completions: [CompletionRecord]
 
     @State private var confirmingFinish = false
     @State private var showingStartSomething = false
     @State private var detail: NowItem?
-    @State private var errorMessage: String?
+    @State private var showingError = false
+
+    private static let logger = Logger(subsystem: "dev.scastiel.kado", category: "now")
 
     var body: some View {
         NavigationStack {
             // Re-resolve every minute so suggestions move with the clock.
             TimelineView(.everyMinute) { context in
-                let input = (try? builder.build(now: context.date, in: modelContext))
-                    ?? NowInputBuilder.Input(blocks: [], openSession: nil, startCandidates: [])
-                let screen = NowResolver(boundary: dayBoundary)
-                    .resolve(now: context.date, blocks: input.blocks, openSession: input.openSession)
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 32) {
-                        main(screen.state, now: context.date)
-                        if let next = screen.upNext { upNext(next) }
-                    }
-                    .padding()
-                }
-                .sheet(isPresented: $showingStartSomething) {
-                    StartSomethingSheet(candidates: input.startCandidates) { item in
-                        showingStartSomething = false
-                        start(item, blockID: nil)
-                    }
-                }
+                content(now: context.date)
             }
             .background(Color.kadoBackground.ignoresSafeArea())
             .navigationTitle("Now")
         }
-        .confirmationDialog("Finish this session?", isPresented: $confirmingFinish, titleVisibility: .visible) {
-            Button("Done") { finish(markDone: true) }
-                .accessibilityIdentifier(AccessibilityID.Now.finishDone)
-            Button("Not yet") { finish(markDone: false) }
-                .accessibilityIdentifier(AccessibilityID.Now.finishNotYet)
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Done marks it complete. Not yet keeps it open for later.")
-        }
-        .sheet(item: $detail) { item in
-            switch item {
-            case .task(let id, _): TaskFormView(taskID: id)
-            case .habit(let id, _): NavigationStack { HabitDetailLoader(habitID: id) }
+        .modifier(NowPresentations(
+            confirmingFinish: $confirmingFinish,
+            detail: $detail,
+            showingError: $showingError,
+            onFinish: finish
+        ))
+    }
+
+    @ViewBuilder
+    private func content(now: Date) -> some View {
+        let _ = scenePhase
+        switch loadInput(now: now) {
+        case .failure:
+            ContentUnavailableView("Couldn't load Now", systemImage: "exclamationmark.triangle", description: Text("Try again in a moment."))
+        case .success(let input):
+            let screen = NowResolver(boundary: dayBoundary)
+                .resolve(now: now, blocks: input.blocks, openSession: input.openSession)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 32) {
+                    main(screen.state, now: now)
+                    if let next = screen.upNext { upNext(next) }
+                }
+                .padding()
+            }
+            .sheet(isPresented: $showingStartSomething) {
+                StartSomethingSheet(candidates: input.startCandidates) { item in
+                    showingStartSomething = false
+                    start(item, blockID: nil)
+                }
             }
         }
-        .alert("Unable to update", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
-            Button("Close", role: .cancel) {}
-        } message: { Text(errorMessage ?? "") }
+    }
+
+    private func loadInput(now: Date) -> Result<NowInputBuilder.Input, Error> {
+        do {
+            return .success(try builder.build(now: now, in: modelContext))
+        } catch {
+            // Domain and code only: no titles or other user data.
+            let nsError = error as NSError
+            Self.logger.error("Now input failed: \(nsError.domain, privacy: .public) \(nsError.code, privacy: .public)")
+            return .failure(error)
+        }
     }
 
     @ViewBuilder
@@ -99,13 +113,19 @@ struct NowView: View {
     }
 
     private func upNext(_ block: NowBlock) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        let time = block.start.formatted(date: .omitted, time: .shortened)
+        return VStack(alignment: .leading, spacing: 4) {
             Text("Up next").font(.subheadline).foregroundStyle(Color.kadoForegroundSecondary)
-            Text("\(block.item.title) — \(block.start, format: .dateTime.hour().minute())")
-                .font(.body)
-                .foregroundStyle(Color.kadoForeground)
+            HStack(spacing: 6) {
+                Text(verbatim: block.item.title)
+                Text(block.start, format: .dateTime.hour().minute())
+                    .foregroundStyle(Color.kadoForegroundSecondary)
+            }
+            .font(.body)
+            .foregroundStyle(Color.kadoForeground)
         }
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(String(localized: "Up next: \(block.item.title) at \(time)"))
         .accessibilityIdentifier(AccessibilityID.Now.upNext)
     }
 
@@ -140,8 +160,52 @@ struct NowView: View {
         }
     }
 
+    /// A stale tap (the session was opened or closed elsewhere) is a no-op:
+    /// the screen already re-renders to the real state. Anything else alerts.
     private func run(_ action: () throws -> Void) {
-        do { try action() } catch { errorMessage = error.localizedDescription }
+        do {
+            try action()
+        } catch WorkSessionTracker.TrackerError.sessionAlreadyOpen {
+            return
+        } catch WorkSessionTracker.TrackerError.noOpenSession {
+            return
+        } catch {
+            let nsError = error as NSError
+            Self.logger.error("Now action failed: \(nsError.domain, privacy: .public) \(nsError.code, privacy: .public)")
+            showingError = true
+        }
+    }
+}
+
+/// The finish dialog, the title's detail sheet and the error alert.
+private struct NowPresentations: ViewModifier {
+    @Binding var confirmingFinish: Bool
+    @Binding var detail: NowItem?
+    @Binding var showingError: Bool
+    let onFinish: (Bool) -> Void
+
+    func body(content: Content) -> some View {
+        content
+            .confirmationDialog("Finish this session?", isPresented: $confirmingFinish, titleVisibility: .visible) {
+                Button("Done") { onFinish(true) }
+                    .accessibilityIdentifier(AccessibilityID.Now.finishDone)
+                Button("Not yet") { onFinish(false) }
+                    .accessibilityIdentifier(AccessibilityID.Now.finishNotYet)
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Done marks it complete. Not yet keeps it open for later.")
+            }
+            .sheet(item: $detail) { item in
+                switch item {
+                case .task(let id, _): TaskFormView(taskID: id)
+                case .habit(let id, _): NavigationStack { HabitDetailLoader(habitID: id) }
+                }
+            }
+            .alert("Unable to update", isPresented: $showingError) {
+                Button("Close", role: .cancel) {}
+            } message: {
+                Text("Couldn't save your change. Try again.")
+            }
     }
 }
 

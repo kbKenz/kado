@@ -22,6 +22,8 @@ nonisolated final class SpeechRecognitionSession: @unchecked Sendable {
     /// `stop()` and the recognizer's final callback can both tear down,
     /// from different threads; only the first one does.
     private let isTornDown = OSAllocatedUnfairLock(initialState: false)
+    /// Error codes and stages only — never the transcript.
+    private let logger = Logger(subsystem: "dev.scastiel.kado", category: "dictation")
 
     init(recognizer: SFSpeechRecognizer, continuation: AsyncThrowingStream<String, Error>.Continuation) {
         self.recognizer = recognizer
@@ -32,13 +34,19 @@ nonisolated final class SpeechRecognitionSession: @unchecked Sendable {
 
     func start() throws {
         let audioSession = AVAudioSession.sharedInstance()
-        try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
-        try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        do {
+            try audioSession.setCategory(.record, mode: .measurement, options: .duckOthers)
+            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
+        } catch {
+            logger.error("Audio session failed: \(Self.describe(error), privacy: .public)")
+            throw AssistedInputError.failed
+        }
 
         let input = engine.inputNode
         let format = input.outputFormat(forBus: 0)
         // No usable input (no microphone, or a simulator without one).
         guard format.sampleRate > 0, format.channelCount > 0 else {
+            logger.error("No usable audio input (rate \(format.sampleRate, privacy: .public), channels \(format.channelCount, privacy: .public))")
             deactivateAudioSession()
             throw AssistedInputError.unavailable
         }
@@ -56,6 +64,7 @@ nonisolated final class SpeechRecognitionSession: @unchecked Sendable {
         do {
             try engine.start()
         } catch {
+            logger.error("Audio engine failed to start: \(Self.describe(error), privacy: .public)")
             tearDown()
             throw AssistedInputError.failed
         }
@@ -79,6 +88,9 @@ nonisolated final class SpeechRecognitionSession: @unchecked Sendable {
         guard isFinal || error != nil else { return }
 
         let stopped = stopRequested.withLock { $0 }
+        if let error {
+            logger.log("Recognition ended with \(Self.describe(error), privacy: .public) (stopped: \(stopped, privacy: .public))")
+        }
         if let failure = SpeechTranscriptionEnding.failure(for: error, stopRequested: stopped) {
             continuation.finish(throwing: failure)
         } else {
@@ -101,6 +113,11 @@ nonisolated final class SpeechRecognitionSession: @unchecked Sendable {
         task?.cancel()
         task = nil
         deactivateAudioSession()
+    }
+
+    private static func describe(_ error: any Error) -> String {
+        let nsError = error as NSError
+        return "\(nsError.domain) \(nsError.code)"
     }
 
     private func deactivateAudioSession() {

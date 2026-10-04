@@ -95,7 +95,7 @@ nonisolated public enum SharedStore {
     /// on-disk metadata references a container the process can't
     /// reach.
     public static func productionContainer() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV4.self)
+        let schema = Schema(versionedSchema: KadoSchemaV7.self)
         let configuration: ModelConfiguration
         if let target = productionStoreURL() {
             migrateLegacyStoreIfNeeded(from: legacyStoreURL(), to: target)

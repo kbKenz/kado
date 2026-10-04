@@ -13,6 +13,13 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 SyncStatusSection()
+                Section {
+                    NavigationLink {
+                        GoogleCalendarSettingsView()
+                    } label: {
+                        Label("Google Calendar", systemImage: "calendar.badge.clock")
+                    }
+                }
                 DayStartSection()
                 WeekStartSection()
                 AppearanceSection()

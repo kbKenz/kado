@@ -24,6 +24,9 @@ struct CloudKitShapeTests {
             ("V2", Schema(versionedSchema: KadoSchemaV2.self)),
             ("V3", Schema(versionedSchema: KadoSchemaV3.self)),
             ("V4", Schema(versionedSchema: KadoSchemaV4.self)),
+            ("V5", Schema(versionedSchema: KadoSchemaV5.self)),
+            ("V6", Schema(versionedSchema: KadoSchemaV6.self)),
+            ("V7", Schema(versionedSchema: KadoSchemaV7.self)),
         ]
     }
 
@@ -77,5 +80,23 @@ struct CloudKitShapeTests {
         #expect(record.value == 1.0)
         #expect(record.note == nil)
         #expect(record.habit == nil)
+    }
+
+    @Test("Planning records default to optional times and relationships")
+    func planningRecordsHaveAllDefaults() {
+        let task = TaskRecord()
+        #expect(task.title.isEmpty)
+        #expect(task.notes.isEmpty)
+        #expect(task.dueDate == nil)
+        #expect(task.completedAt == nil)
+        #expect(task.archivedAt == nil)
+        #expect(task.externalEventID == nil)
+        #expect(task.externalCancelledAt == nil)
+        #expect(task.scheduleBlocks?.isEmpty ?? true)
+        let block = ScheduleBlockRecord()
+        #expect(block.startAt == nil)
+        #expect(block.endAt == nil)
+        #expect(block.task == nil)
+        #expect(block.habit == nil)
     }
 }

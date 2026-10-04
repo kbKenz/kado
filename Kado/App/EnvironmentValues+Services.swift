@@ -28,6 +28,9 @@ private struct StreakCalculatorKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
+    /// Appointments and one-off task dates use civil midnight independently of habit rollover.
+    @Entry var civilToday: Date = Calendar.current.startOfDay(for: .now)
+
     var habitScoreCalculator: any HabitScoreCalculating {
         get { self[HabitScoreCalculatorKey.self] }
         set { self[HabitScoreCalculatorKey.self] = newValue }

@@ -349,6 +349,7 @@ class KadoUITestCase: XCTestCase {
     /// given name from Today's `+`, and waits for the sheet to go away.
     @MainActor
     func createHabit(named name: String, in app: XCUIApplication) {
+        app.buttons[AccessibilityID.Today.addButton].firstMatch.tap()
         app.buttons[AccessibilityID.Today.newHabitButton].firstMatch.tap()
         let field = app.textFields[AccessibilityID.NewHabit.nameField]
         XCTAssertTrue(field.waitForExistence(timeout: 10), "The New Habit sheet never appeared.")

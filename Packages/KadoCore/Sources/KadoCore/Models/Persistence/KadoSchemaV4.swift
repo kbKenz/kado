@@ -142,6 +142,3 @@ public extension KadoSchemaV4 {
         }
     }
 }
-
-public typealias HabitRecord = KadoSchemaV4.HabitRecord
-public typealias CompletionRecord = KadoSchemaV4.CompletionRecord

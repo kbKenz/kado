@@ -1,12 +1,12 @@
 # Measurable goal progress
 
 Date: 2026-10-04
-Status: Proposed for written-spec review
+Status: Implemented and verified locally
 Scope: Fork backlog item 8. Builds on the local Tasks, Calendar, and Goals implementation.
 
 ## Intent and constraints
 
-The user selected measurable goal progress as the next feature and approved manual logging, completed-task counting, and summing one selected habit. Goals should connect daily work to a numeric outcome while preserving canonical completion history. Existing work remains intact. Native builds and simulator verification are deferred at the user's request; portable tests must distinguish their coverage from native validation.
+The user selected measurable goal progress as the next feature and approved manual logging, completed-task counting, and summing one selected habit. Goals should connect daily work to a numeric outcome while preserving canonical completion history. Existing work remains intact. Native build and simulator verification completed after Xcode 26.5 became available.
 
 ## Product behavior
 
@@ -48,11 +48,11 @@ Provide contextual English/French strings and accessibility labels for progress 
 
 ## Persistence and portability
 
-Add schema V7, freezing V1–V6 model bodies. Add CloudKit-compatible defaulted/optional measurement fields to GoalRecord and a GoalProgressEntryRecord with nullable ownership and inverse relationship. Preserve current-schema aliases and update every app/widget/dev/preview/test container pin. Declare V6-to-V7 migration and test it with a populated V6 store once the native toolchain works. Current goals migrate with measurement disabled.
+Add schema V7, freezing V1–V6 model bodies. Add CloudKit-compatible defaulted/optional measurement fields to GoalRecord and a GoalProgressEntryRecord with nullable ownership and inverse relationship. Preserve current-schema aliases and update every app/widget/dev/preview/test container pin. Declare V6-to-V7 migration and test it with a populated V6 store. Current goals migrate with measurement disabled.
 
 Use stable UUID source identity for the selected habit. Keep manual entries distinct from task/habit completion. All model fields must satisfy the project's CloudKit shape constraints; production CloudKit deployment remains a release step.
 
-Advance JSON/CSV to format 4. Export measurement configuration and manual entries with IDs, goal references, dates, notes, and timestamps. Preserve formats 1–3 import. Older imports cannot express measurement changes and must retain existing measurement and manual entries when merging existing goal IDs. Format 4 imports validate finite values, mode/unit invariants, duplicate identity handling, and goal references before mutation. A missing selected habit is an explicit unavailable source, allowing backups to retain configuration after legitimate source deletion. Reject a source that exists but belongs to a different goal. Preserve the importer's existing merge/rollback policy and include manual-entry counts in previews and summaries.
+Advance JSON/CSV to format 4. Export measurement configuration and manual entries with IDs, goal references, dates, notes, and timestamps. Preserve formats 1–3 import. Older imports cannot express measurement changes and must retain existing measurement and manual entries when merging existing goal IDs. Format 4 imports validate finite values, mode/unit invariants, duplicate identity handling, and goal references before mutation. A missing selected habit is an explicit unavailable source, allowing backups to retain configuration after legitimate source deletion. A retained source ID that now belongs to a different goal is also unavailable, rather than a malformed backup; this preserves valid exports after unlinking or reassignment. Preserve the importer's existing merge/rollback policy and include manual-entry counts in previews and summaries.
 
 ## Verification and acceptance
 
@@ -61,7 +61,7 @@ Advance JSON/CSV to format 4. Export measurement configuration and manual entrie
 - JSON/CSV executable round trips cover configuration, entries, escaped notes, older formats, missing sources, and malformed references. Test actual production coders, with any platform shims documented.
 - Native tests cover migration, persistence across relaunch, safe goal deletion, importer atomicity, and store swaps. Write them now; run when compatible Xcode is available.
 - Parse changed Swift, lint project/property lists, validate localization JSON, and run diff whitespace checks. These checks do not prove the native app compiles.
-- Document checks actually run and leave build/UI/CloudKit validation pending. No push, release, or CloudKit deployment is included.
+- Document checks actually run and record native build/UI validation and leave production CloudKit validation pending. No push, release, or CloudKit deployment is included.
 
 ## Deferred scope
 

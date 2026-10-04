@@ -8,7 +8,7 @@ import Foundation
 /// still emits a single row with the four completion columns empty, so
 /// it survives the round-trip.
 ///
-/// **What "lossless" covers here**: habits and completions. The
+/// **What "lossless" covers here**: goals, habits, completions, tasks and planned blocks. The
 /// envelope fields `exportedAt` and `appVersion` are provenance rather
 /// than user data and are not carried — a decoded document stamps
 /// `exportedAt` from the injected clock and leaves `appVersion` empty.
@@ -21,7 +21,7 @@ nonisolated public struct CSVBackupCoder: Sendable {
     /// The column contract. Order is part of the format: `decode`
     /// requires an exact match, which doubles as the "is this even a
     /// Kadō CSV" check.
-    public static let columns = [
+    public static let legacyColumns = [
         "format_version",
         "habit_id",
         "habit_name",
@@ -40,20 +40,74 @@ nonisolated public struct CSVBackupCoder: Sendable {
         "note"
     ]
 
+    /// Format 2 preserves the original habit columns and adds explicit
+    /// entity rows. Empty irrelevant cells stay easy to inspect in a
+    /// spreadsheet; IDs restore the graph when the file is imported.
+    public static let planningColumns = legacyColumns + [
+        "entity_type", "task_id", "task_title", "task_notes", "due_date",
+        "updated_at", "completed_at", "external_account_id", "external_calendar_id",
+        "external_event_id", "external_url", "external_updated_at", "external_cancelled_at",
+        "schedule_block_id", "planned_day", "start_at", "end_at",
+        "linked_task_id", "linked_habit_id", "habit_sort_order"
+    ]
+
+    /// Format 3 appends goal metadata and owner links without changing
+    /// any position in the 36-column planning format. Goal rows reuse
+    /// the shared lifecycle timestamp columns.
+    public static let goalColumns = planningColumns + [
+        "goal_id", "goal_name", "goal_details", "goal_status",
+        "goal_start_date", "goal_target_date", "linked_goal_id"
+    ]
+
+    public static let columns = goalColumns + [
+        "measurement_enabled", "progress_mode", "progress_baseline", "progress_target", "progress_unit", "progress_habit_id",
+        "progress_entry_id", "progress_date", "progress_amount", "progress_note"
+    ]
+
     private let now: @Sendable () -> Date
 
-    public init(now: @escaping @Sendable () -> Date = Date.init) {
+    public init(now: @escaping @Sendable () -> Date = { Date() }) {
         self.now = now
     }
 
     // MARK: - Encoding
 
     public func encode(_ document: BackupDocument) -> Data {
+        // Writing the current header migrates older in-memory DTOs to
+        // the current format. Every row must declare that same version.
+        let formatVersion = String(BackupDocument.currentFormatVersion)
         var rows: [[String]] = [Self.columns]
 
+        for goal in document.goals {
+            rows.append(Self.row([
+                "format_version": formatVersion, "entity_type": "goal",
+                "goal_id": goal.id.uuidString, "goal_name": goal.name,
+                "goal_details": goal.details, "goal_status": goal.status.rawValue,
+                "goal_start_date": goal.startDate.map(Self.encode(date:)) ?? "",
+                "goal_target_date": goal.targetDate.map(Self.encode(date:)) ?? "",
+                "created_at": Self.encode(date: goal.createdAt), "updated_at": Self.encode(date: goal.updatedAt),
+                "completed_at": goal.completedAt.map(Self.encode(date:)) ?? "",
+                "archived_at": goal.archivedAt.map(Self.encode(date:)) ?? "",
+                "measurement_enabled": String((goal.measurement ?? GoalMeasurement()).enabled),
+                "progress_mode": (goal.measurement ?? GoalMeasurement()).mode.rawValue,
+                "progress_baseline": String((goal.measurement ?? GoalMeasurement()).baseline),
+                "progress_target": String((goal.measurement ?? GoalMeasurement()).target),
+                "progress_unit": (goal.measurement ?? GoalMeasurement()).unit,
+                "progress_habit_id": goal.measurement?.habitID?.uuidString ?? ""
+            ]))
+        }
+
+        for entry in document.goalProgressEntries {
+            rows.append(Self.row([
+                "format_version": formatVersion, "entity_type": "goal_progress",
+                "progress_entry_id": entry.id.uuidString, "linked_goal_id": entry.goalID.uuidString,
+                "progress_date": Self.encode(date: entry.date), "progress_amount": String(entry.amount), "progress_note": entry.note ?? "",
+                "created_at": Self.encode(date: entry.createdAt), "updated_at": Self.encode(date: entry.updatedAt)
+            ]))
+        }
         for habit in document.habits {
             let metadata = [
-                String(document.formatVersion),
+                formatVersion,
                 habit.id.uuidString,
                 habit.name,
                 Self.encode(frequency: habit.frequency),
@@ -68,19 +122,43 @@ nonisolated public struct CSVBackupCoder: Sendable {
             ]
 
             if habit.completions.isEmpty {
-                rows.append(metadata + ["", "", "", ""])
+                rows.append(Self.habitRow(metadata + ["", "", "", ""], sortOrder: habit.sortOrder, goalID: habit.goalID))
             } else {
                 for completion in habit.completions {
-                    rows.append(metadata + [
+                    rows.append(Self.habitRow(metadata + [
                         completion.id.uuidString,
                         Self.encode(date: completion.date),
                         String(completion.value),
                         completion.note ?? ""
-                    ])
+                    ], sortOrder: habit.sortOrder, goalID: habit.goalID))
                 }
             }
         }
 
+        for task in document.tasks {
+            rows.append(Self.row([
+                "format_version": formatVersion, "entity_type": "task",
+                "task_id": task.id.uuidString, "task_title": task.title, "task_notes": task.notes,
+                "due_date": task.dueDate.map(Self.encode(date:)) ?? "",
+                "created_at": Self.encode(date: task.createdAt), "updated_at": Self.encode(date: task.updatedAt),
+                "completed_at": task.completedAt.map(Self.encode(date:)) ?? "",
+                "archived_at": task.archivedAt.map(Self.encode(date:)) ?? "",
+                "external_account_id": task.externalAccountID ?? "", "external_calendar_id": task.externalCalendarID ?? "",
+                "external_event_id": task.externalEventID ?? "", "external_url": task.externalURL ?? "",
+                "external_updated_at": task.externalUpdatedAt.map(Self.encode(date:)) ?? "",
+                "external_cancelled_at": task.externalCancelledAt.map(Self.encode(date:)) ?? "",
+                "linked_goal_id": task.goalID?.uuidString ?? ""
+            ]))
+        }
+        for block in document.scheduleBlocks {
+            rows.append(Self.row([
+                "format_version": formatVersion, "entity_type": "schedule_block",
+                "schedule_block_id": block.id.uuidString, "planned_day": Self.encode(date: block.plannedDay),
+                "start_at": block.startAt.map(Self.encode(date:)) ?? "", "end_at": block.endAt.map(Self.encode(date:)) ?? "",
+                "created_at": Self.encode(date: block.createdAt), "updated_at": Self.encode(date: block.updatedAt),
+                "linked_task_id": block.taskID?.uuidString ?? "", "linked_habit_id": block.habitID?.uuidString ?? ""
+            ]))
+        }
         return Data(CSVWriter.write(rows).utf8)
     }
 
@@ -100,29 +178,112 @@ nonisolated public struct CSVBackupCoder: Sendable {
             throw BackupError.invalidCSV
         }
 
-        guard let header = rows.first, header == Self.columns else {
+        guard let header = rows.first,
+              header == Self.columns || header == Self.goalColumns || header == Self.planningColumns || header == Self.legacyColumns else {
             throw BackupError.invalidCSV
         }
 
+        let isLegacy = header == Self.legacyColumns
+        let headerVersion = isLegacy ? 1 : header == Self.planningColumns ? 2 : header == Self.goalColumns ? 3 : 4
+        var goals: [GoalBackup] = []
+        var entries: [GoalProgressEntry] = []
+        var seenEntryIDs = Set<UUID>()
+        var tasks: [TaskBackup] = []
+        var blocks: [ScheduleBlockBackup] = []
+        var seenTaskIDs: Set<UUID> = []
+        var seenBlockIDs: Set<UUID> = []
+        var seenGoalIDs: Set<UUID> = []
         var order: [UUID] = []
         var habits: [UUID: HabitBackup] = [:]
         var seenCompletionIDs: Set<UUID> = []
-        var formatVersion = BackupDocument.currentFormatVersion
+        var formatVersion = headerVersion
+        var declaredVersion: Int?
 
         for (offset, row) in rows.dropFirst().enumerated() {
             // Header occupies line 1, so the first data row is line 2.
             // Assumes no blank lines, which the reader skips silently.
             let line = offset + 2
 
-            guard row.count == Self.columns.count else {
+            guard row.count == header.count else {
                 throw BackupError.malformedRow(line: line)
             }
 
             guard let version = Int(row[0]) else { throw BackupError.invalidCSV }
-            guard version <= BackupDocument.currentFormatVersion else {
+            guard (1...BackupDocument.currentFormatVersion).contains(version) else {
                 throw BackupError.unsupportedVersion(version)
             }
+            // A header cannot represent a newer format. Mixed row
+            // versions would make optional-link merge rules ambiguous.
+            guard version <= headerVersion,
+                  declaredVersion == nil || declaredVersion == version else { throw BackupError.invalidCSV }
+            declaredVersion = version
             formatVersion = version
+
+            func field(_ name: String) -> String {
+                guard let index = header.firstIndex(of: name) else { return "" }
+                return row[index]
+            }
+            if !isLegacy {
+                switch field("entity_type") {
+                case "goal_progress":
+                    guard version >= 4, let id = UUID(uuidString: field("progress_entry_id")),
+                          let goalID = UUID(uuidString: field("linked_goal_id")), let amount = Double(field("progress_amount")), amount.isFinite, amount > 0 else { throw BackupError.invalidCSV }
+                    guard seenEntryIDs.insert(id).inserted else { continue }
+                    entries.append(GoalProgressEntry(id: id, goalID: goalID, date: try Self.decodeDate(field("progress_date")), amount: amount, note: Self.optionalString(field("progress_note")), createdAt: try Self.decodeDate(field("created_at")), updatedAt: try Self.decodeDate(field("updated_at"))))
+                    continue
+                case "goal":
+                    guard version >= 3,
+                          let id = UUID(uuidString: field("goal_id")),
+                          let status = GoalStatus(rawValue: field("goal_status")) else { throw BackupError.invalidCSV }
+                    guard seenGoalIDs.insert(id).inserted else { continue }
+                    var measurement: GoalMeasurement?
+                    if version >= 4 {
+                        guard let mode = GoalProgressMode(rawValue: field("progress_mode")),
+                              let baseline = Double(field("progress_baseline")), let target = Double(field("progress_target")) else { throw BackupError.invalidCSV }
+                        measurement = GoalMeasurement(enabled: try Self.decodeBool(field("measurement_enabled")), mode: mode, baseline: baseline, target: target, unit: field("progress_unit"), habitID: try Self.decodeOptionalUUID(field("progress_habit_id")))
+                        guard measurement!.isValid else { throw BackupError.invalidCSV }
+                    }
+                    goals.append(GoalBackup(
+                        id: id, name: field("goal_name"), details: field("goal_details"), status: status,
+                        startDate: try Self.decodeOptionalDate(field("goal_start_date")),
+                        targetDate: try Self.decodeOptionalDate(field("goal_target_date")),
+                        createdAt: try Self.decodeDate(field("created_at")), updatedAt: try Self.decodeDate(field("updated_at")),
+                        completedAt: try Self.decodeOptionalDate(field("completed_at")), archivedAt: try Self.decodeOptionalDate(field("archived_at")), measurement: measurement
+                    ))
+                    continue
+                case "task":
+                    guard let id = UUID(uuidString: field("task_id")) else { throw BackupError.invalidCSV }
+                    guard seenTaskIDs.insert(id).inserted else { continue }
+                    tasks.append(TaskBackup(
+                        id: id, title: field("task_title"), notes: field("task_notes"),
+                        dueDate: try Self.decodeOptionalDate(field("due_date")),
+                        createdAt: try Self.decodeDate(field("created_at")), updatedAt: try Self.decodeDate(field("updated_at")),
+                        completedAt: try Self.decodeOptionalDate(field("completed_at")), archivedAt: try Self.decodeOptionalDate(field("archived_at")),
+                        externalAccountID: Self.optionalString(field("external_account_id")),
+                        externalCalendarID: Self.optionalString(field("external_calendar_id")),
+                        externalEventID: Self.optionalString(field("external_event_id")),
+                        externalURL: Self.optionalString(field("external_url")),
+                        externalUpdatedAt: try Self.decodeOptionalDate(field("external_updated_at")),
+                        externalCancelledAt: try Self.decodeOptionalDate(field("external_cancelled_at")),
+                        goalID: version >= 3 ? try Self.decodeOptionalUUID(field("linked_goal_id")) : nil
+                    ))
+                    continue
+                case "schedule_block":
+                    guard let id = UUID(uuidString: field("schedule_block_id")) else { throw BackupError.invalidCSV }
+                    guard seenBlockIDs.insert(id).inserted else { continue }
+                    blocks.append(ScheduleBlockBackup(
+                        id: id, plannedDay: try Self.decodeDate(field("planned_day")),
+                        startAt: try Self.decodeOptionalDate(field("start_at")), endAt: try Self.decodeOptionalDate(field("end_at")),
+                        createdAt: try Self.decodeDate(field("created_at")), updatedAt: try Self.decodeDate(field("updated_at")),
+                        taskID: try Self.decodeOptionalUUID(field("linked_task_id")), habitID: try Self.decodeOptionalUUID(field("linked_habit_id"))
+                    ))
+                    continue
+                case "habit":
+                    break
+                default:
+                    throw BackupError.invalidCSV
+                }
+            }
 
             guard let habitID = UUID(uuidString: row[1]) else {
                 throw BackupError.invalidCSV
@@ -145,7 +306,9 @@ nonisolated public struct CSVBackupCoder: Sendable {
                     remindersEnabled: try Self.decodeBool(row[9]),
                     reminderHour: try Self.decodeInt(row[10]),
                     reminderMinute: try Self.decodeInt(row[11]),
-                    completions: []
+                    completions: [],
+                    sortOrder: isLegacy ? 0 : try Self.decodeInt(field("habit_sort_order")),
+                    goalID: version >= 3 ? try Self.decodeOptionalUUID(field("linked_goal_id")) : nil
                 )
                 order.append(habitID)
             }
@@ -183,8 +346,33 @@ nonisolated public struct CSVBackupCoder: Sendable {
             formatVersion: formatVersion,
             exportedAt: now(),
             appVersion: "",
-            habits: order.compactMap { habits[$0] }
+            habits: order.compactMap { habits[$0] },
+            tasks: tasks,
+            scheduleBlocks: blocks,
+            goals: goals, goalProgressEntries: entries
         )
+    }
+
+    private static func row(_ fields: [String: String]) -> [String] {
+        columns.map { fields[$0] ?? "" }
+    }
+
+    private static func habitRow(_ legacy: [String], sortOrder: Int, goalID: UUID?) -> [String] {
+        var fields = Dictionary(uniqueKeysWithValues: zip(legacyColumns, legacy))
+        fields["entity_type"] = "habit"
+        fields["habit_sort_order"] = String(sortOrder)
+        fields["linked_goal_id"] = goalID?.uuidString ?? ""
+        return row(fields)
+    }
+
+    private static func optionalString(_ field: String) -> String? {
+        field.isEmpty ? nil : field
+    }
+
+    private static func decodeOptionalUUID(_ field: String) throws -> UUID? {
+        guard !field.isEmpty else { return nil }
+        guard let id = UUID(uuidString: field) else { throw BackupError.invalidCSV }
+        return id
     }
 
     // MARK: - Field encoding

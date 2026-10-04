@@ -216,7 +216,7 @@ struct NewHabitFormModelTests {
         model.typeKind = .counter
         model.counterTarget = 12
 
-        let saved = model.save(in: container.mainContext)
+        let saved = try model.save(in: container.mainContext)
 
         #expect(saved.id == original.id)
         #expect(original.name == "New name")
@@ -282,7 +282,7 @@ struct NewHabitFormModelTests {
         let model = NewHabitFormModel()
         model.name = "Fresh"
 
-        let saved = model.save(in: container.mainContext)
+        let saved = try model.save(in: container.mainContext)
         #expect(saved.name == "Fresh")
 
         let all = try container.mainContext.fetch(FetchDescriptor<HabitRecord>())
@@ -397,7 +397,7 @@ struct NewHabitFormModelTests {
         let model = NewHabitFormModel(editing: original)
         model.remindersEnabled = true
         model.reminderTime = Calendar.current.date(bySettingHour: 8, minute: 5, second: 0, of: .now)!
-        _ = model.save(in: container.mainContext)
+        _ = try model.save(in: container.mainContext)
 
         #expect(original.remindersEnabled == true)
         #expect(original.reminderHour == 8)
@@ -417,7 +417,7 @@ struct NewHabitFormModelTests {
         let model = NewHabitFormModel(editing: original)
         model.color = .teal
         model.icon = "figure.pool.swim"
-        _ = model.save(in: container.mainContext)
+        _ = try model.save(in: container.mainContext)
 
         #expect(original.color == .teal)
         #expect(original.icon == "figure.pool.swim")

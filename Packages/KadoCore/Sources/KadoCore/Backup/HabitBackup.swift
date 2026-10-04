@@ -15,7 +15,9 @@ public struct HabitBackup: Hashable, Codable, Sendable {
     public var remindersEnabled: Bool
     public var reminderHour: Int
     public var reminderMinute: Int
+    public var sortOrder: Int
     public var completions: [CompletionBackup]
+    public var goalID: UUID?
 
     public init(
         id: UUID,
@@ -29,7 +31,9 @@ public struct HabitBackup: Hashable, Codable, Sendable {
         remindersEnabled: Bool,
         reminderHour: Int,
         reminderMinute: Int,
-        completions: [CompletionBackup]
+        completions: [CompletionBackup],
+        sortOrder: Int = 0,
+        goalID: UUID? = nil
     ) {
         self.id = id
         self.name = name
@@ -43,6 +47,31 @@ public struct HabitBackup: Hashable, Codable, Sendable {
         self.reminderHour = reminderHour
         self.reminderMinute = reminderMinute
         self.completions = completions
+        self.sortOrder = sortOrder
+        self.goalID = goalID
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, frequency, type, createdAt, archivedAt, color, icon
+        case remindersEnabled, reminderHour, reminderMinute, completions, sortOrder, goalID
+    }
+
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        name = try values.decode(String.self, forKey: .name)
+        frequency = try values.decode(Frequency.self, forKey: .frequency)
+        type = try values.decode(HabitType.self, forKey: .type)
+        createdAt = try values.decode(Date.self, forKey: .createdAt)
+        archivedAt = try values.decodeIfPresent(Date.self, forKey: .archivedAt)
+        color = try values.decode(HabitColor.self, forKey: .color)
+        icon = try values.decode(String.self, forKey: .icon)
+        remindersEnabled = try values.decode(Bool.self, forKey: .remindersEnabled)
+        reminderHour = try values.decode(Int.self, forKey: .reminderHour)
+        reminderMinute = try values.decode(Int.self, forKey: .reminderMinute)
+        completions = try values.decode([CompletionBackup].self, forKey: .completions)
+        sortOrder = try values.decodeIfPresent(Int.self, forKey: .sortOrder) ?? 0
+        goalID = try values.decodeIfPresent(UUID.self, forKey: .goalID)
     }
 }
 
@@ -67,7 +96,9 @@ public extension HabitBackup {
             completions: completions
                 .filter { $0.habitID == habit.id }
                 .sorted { $0.date < $1.date }
-                .map(CompletionBackup.init(completion:))
+                .map(CompletionBackup.init(completion:)),
+            sortOrder: habit.sortOrder,
+            goalID: habit.goalID
         )
     }
 
@@ -85,7 +116,9 @@ public extension HabitBackup {
             icon: icon,
             remindersEnabled: remindersEnabled,
             reminderHour: reminderHour,
-            reminderMinute: reminderMinute
+            reminderMinute: reminderMinute,
+            sortOrder: sortOrder,
+            goalID: goalID
         )
     }
 

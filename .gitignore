@@ -8,6 +8,7 @@ Icon?
 # Xcode
 build/
 DerivedData/
+/work/
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
 *.xcodeproj/project.xcworkspace/xcuserdata/
@@ -52,6 +53,9 @@ fastlane/test_output
 *.env
 .env.local
 secrets.plist
+# Personal Google OAuth client configuration. Client IDs are public identifiers;
+# keep per-developer setup local and never add tokens or client secrets.
+Config/GoogleCalendar.local.xcconfig
 # App Store Connect API private keys. `Scripts/appstore.py` looks for
 # AuthKey_<id>.p8 in ~/.appstoreconnect/private_keys first, but falls back
 # to the repo root — and a key committed once is a key that has to be

@@ -2,9 +2,8 @@ import SwiftData
 import SwiftUI
 import KadoCore
 
-/// Modal sheet for creating a new habit. Scoped to the four core
-/// fields (name, frequency, type) — icon, color, reminders, and
-/// createdAt editing land with later PRs.
+/// Create or edit a habit and its optional goal assignment using
+/// draft values; the current store resolves identities when saving.
 struct NewHabitFormView: View {
     @Bindable var model: NewHabitFormModel
 
@@ -17,6 +16,8 @@ struct NewHabitFormView: View {
     @FocusState private var nameFocused: Bool
     @State private var saveTick: Int = 0
     @State private var showingPermissionDeniedAlert = false
+    @State private var isSaving = false
+    @State private var saveError: String?
 
     var body: some View {
         NavigationStack {
@@ -26,6 +27,7 @@ struct NewHabitFormView: View {
                 frequencySection
                 typeSection
                 reminderSection
+                GoalPickerSection(selectedGoalID: $model.selectedGoalID)
             }
             .scrollContentBackground(.hidden)
             .background(Color.kadoBackground.ignoresSafeArea())
@@ -40,7 +42,7 @@ struct NewHabitFormView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
-                        .disabled(!model.isValid)
+                        .disabled(!model.isValid || isSaving)
                         .accessibilityIdentifier(AccessibilityID.NewHabit.saveButton)
                 }
             }
@@ -60,6 +62,11 @@ struct NewHabitFormView: View {
                 Button(String(localized: "Not now"), role: .cancel) {}
             } message: {
                 Text(String(localized: "Enable notifications in Settings to receive this reminder."))
+            }
+            .alert("Unable to save habit", isPresented: saveErrorBinding) {
+                Button("Close", role: .cancel) {}
+            } message: {
+                Text(saveError ?? "")
             }
         }
     }
@@ -190,8 +197,10 @@ struct NewHabitFormView: View {
     }
 
     private func save() {
-        guard model.isValid else { return }
+        guard model.isValid, !isSaving else { return }
+        isSaving = true
         Task {
+            defer { isSaving = false }
             if model.remindersEnabled {
                 let status = await notificationScheduler.requestAuthorizationIfNeeded()
                 if status == .denied {
@@ -199,10 +208,18 @@ struct NewHabitFormView: View {
                     return
                 }
             }
-            model.save(in: modelContext, createdAt: dayBoundary.loggingInstant(for: .now))
-            saveTick += 1
-            dismiss()
+            do {
+                try model.save(in: modelContext, createdAt: dayBoundary.loggingInstant(for: .now))
+                saveTick += 1
+                dismiss()
+            } catch {
+                saveError = error.localizedDescription
+            }
         }
+    }
+
+    private var saveErrorBinding: Binding<Bool> {
+        Binding(get: { saveError != nil }, set: { if !$0 { saveError = nil } })
     }
 
     private func openNotificationSettings() {

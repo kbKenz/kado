@@ -1,0 +1,356 @@
+import KadoCore
+import SwiftData
+import SwiftUI
+
+/// Internal calendar for planned blocks. All completion controls
+/// resolve and update the linked task; ScheduleBlock stores no status.
+struct PlannerCalendarView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.calendar) private var calendar
+    @Environment(\.civilToday) private var civilToday
+    @Environment(\.googleCalendarConnection) private var googleCalendar
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @AppStorage(DevModeDefaults.key, store: DevModeDefaults.sharedDefaults) private var isDevMode = false
+
+    @Query(sort: \ScheduleBlockRecord.plannedDay) private var blocks: [ScheduleBlockRecord]
+    @Query(filter: #Predicate<TaskRecord> { $0.archivedAt == nil && $0.externalCancelledAt == nil }, sort: \TaskRecord.createdAt)
+    private var records: [TaskRecord]
+
+    @State private var selectedDay: Date?
+    @State private var sheet: CalendarSheet?
+    @State private var deletingTaskID: UUID?
+    @State private var errorMessage: String?
+
+    private enum CalendarSheet: Identifiable {
+        case newTask(Date)
+        case editTask(UUID)
+        case habit(UUID)
+
+        var id: String {
+            switch self {
+            case .newTask(let date): "new-\(date.timeIntervalSinceReferenceDate)"
+            case .editTask(let id): "task-\(id)"
+            case .habit(let id): "habit-\(id)"
+            }
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                dayNavigation
+                agenda
+            }
+            .background(Color.kadoBackground.ignoresSafeArea())
+            .navigationTitle("Calendar")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    NavigationLink { GoogleCalendarSettingsView() } label: {
+                        Label("Google Calendar", systemImage: "arrow.triangle.2.circlepath")
+                    }
+                    .accessibilityIdentifier(AccessibilityID.Calendar.googleSettings)
+                }
+                ToolbarItem(placement: .primaryAction) {
+                    Button { sheet = .newTask(day) } label: {
+                        Label("New task", systemImage: "plus")
+                    }
+                    .accessibilityIdentifier(AccessibilityID.Calendar.newTask)
+                }
+            }
+            .onAppear { if selectedDay == nil { selectedDay = calendar.startOfDay(for: civilToday) } }
+            .sheet(item: $sheet) { selection in
+                switch selection {
+                case .newTask(let day): TaskFormView(defaultDay: day)
+                case .editTask(let id): TaskFormView(taskID: id)
+                case .habit(let id):
+                    NavigationStack {
+                        HabitDetailLoader(habitID: id)
+                            .toolbar {
+                                ToolbarItem(placement: .cancellationAction) {
+                                    Button("Close") { sheet = nil }
+                                }
+                            }
+                    }
+                }
+            }
+            .confirmationDialog("Remove this task?", isPresented: deleteBinding, titleVisibility: .visible, presenting: pendingDeletion) { item in
+                Button(item.isFromGoogle ? String(localized: "Remove from planner") : String(localized: "Delete task"), role: .destructive) { deleteTask(item.id) }
+                    .accessibilityIdentifier(AccessibilityID.Tasks.deleteConfirm)
+                Button("Cancel", role: .cancel) {}
+            } message: { item in
+                Text(item.isFromGoogle
+                    ? String(localized: "The imported task and its completion history will be archived. The event stays in Google Calendar.")
+                    : String(localized: "This removes the task and its planned calendar blocks."))
+            }
+            .alert("Unable to update task", isPresented: errorBinding) {
+                Button("Close", role: .cancel) {}
+            } message: { Text(errorMessage ?? "") }
+        }
+    }
+
+    private var day: Date { selectedDay ?? calendar.startOfDay(for: civilToday) }
+
+    private var dayBinding: Binding<Date> {
+        Binding(get: { day }, set: { selectedDay = calendar.startOfDay(for: $0) })
+    }
+
+    private var dayNavigation: some View {
+        VStack(spacing: 12) {
+            dayHeader
+            HStack(spacing: 4) {
+                ForEach(weekDays, id: \.self) { date in
+                    Button { selectedDay = date } label: {
+                        VStack(spacing: 6) {
+                            Text(date.formatted(.dateTime.weekday(.narrow)))
+                                .font(.caption)
+                            Text(date.formatted(.dateTime.day()))
+                                .font(.subheadline.weight(.semibold))
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                        .background(calendar.isDate(date, inSameDayAs: day) ? Color.kadoAccentTint : Color.clear, in: RoundedRectangle(cornerRadius: KadoRadius.card))
+                        .foregroundStyle(Color.kadoForeground)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(date.formatted(date: .complete, time: .omitted))
+                    .accessibilityAddTraits(calendar.isDate(date, inSameDayAs: day) ? .isSelected : [])
+                    .accessibilityIdentifier(AccessibilityID.Calendar.weekDay(dateKey(date)))
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.bottom, 12)
+        .background(Color.kadoBackgroundSecondary)
+    }
+
+    @ViewBuilder
+    private var dayHeader: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(spacing: 4) {
+                selectedDatePicker
+                HStack {
+                    weekNavigationButton(-1)
+                    Spacer()
+                    todayButton
+                    Spacer()
+                    weekNavigationButton(1)
+                }
+            }
+        } else {
+            HStack {
+                weekNavigationButton(-1)
+                selectedDatePicker
+                weekNavigationButton(1)
+                todayButton
+            }
+        }
+    }
+
+    private var selectedDatePicker: some View {
+        DatePicker("Selected day", selection: dayBinding, displayedComponents: .date)
+            .labelsHidden()
+            .frame(maxWidth: .infinity)
+            .accessibilityIdentifier(AccessibilityID.Calendar.datePicker)
+    }
+
+    private var todayButton: some View {
+        Button("Today") { selectedDay = calendar.startOfDay(for: civilToday) }
+            .font(.subheadline)
+            .accessibilityIdentifier(AccessibilityID.Calendar.today)
+    }
+
+    private func weekNavigationButton(_ offset: Int) -> some View {
+        Button { advanceWeek(offset) } label: {
+            Image(systemName: offset < 0 ? "chevron.left" : "chevron.right")
+                .frame(minWidth: 44, minHeight: 44)
+        }
+        .accessibilityLabel(offset < 0 ? Text("Previous week") : Text("Next week"))
+        .accessibilityIdentifier(offset < 0 ? AccessibilityID.Calendar.previousWeek : AccessibilityID.Calendar.nextWeek)
+    }
+
+    private var agenda: some View {
+        let dayBlocks = visibleBlocks
+        let timed = dayBlocks.filter { $0.schedule.startAt != nil }
+        let untimed = dayBlocks.filter { $0.schedule.startAt == nil }
+        let unscheduled = tasksWithoutBlocks
+        return ScrollViewReader { proxy in
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    if googleCalendar.isSyncing {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                            Text("Syncing Google Calendar…").font(.caption)
+                        }
+                    } else if let syncError = googleCalendar.errorMessage {
+                        Text(syncError)
+                            .font(.caption)
+                            .foregroundStyle(Color.kadoForegroundSecondary)
+                    }
+                    if !untimed.isEmpty || !unscheduled.isEmpty {
+                        anyTimeSection(blocks: untimed, tasks: unscheduled)
+                    }
+                    if dayBlocks.isEmpty && unscheduled.isEmpty {
+                        ContentUnavailableView {
+                            Label("Your day is open", systemImage: "calendar")
+                        } description: {
+                            Text("Add a task to plan this day. Start and end times are optional.")
+                        } actions: {
+                            Button("Add task") { sheet = .newTask(day) }
+                                .buttonStyle(.borderedProminent)
+                        }
+                        .padding(.vertical, 16)
+                    }
+                    HStack {
+                        Text("Timeline").font(.headline)
+                        Spacer()
+                        Text("Planned time").font(.caption).foregroundStyle(Color.kadoForegroundSecondary)
+                    }
+                    CalendarDayTimeline(
+                        day: day, blocks: timed,
+                        onToggle: { if let taskID = $0.task?.id { toggleTask(taskID) } },
+                        onEdit: openBlock,
+                        onDelete: { deletingTaskID = $0.task?.id }
+                    )
+                    Text("Tap a block to open it. Long-press for completion and other actions.")
+                        .font(.footnote)
+                        .foregroundStyle(Color.kadoForegroundSecondary)
+                }
+                .padding(16)
+            }
+            .refreshable {
+                guard googleCalendar.isConnected, !isDevMode else { return }
+                await googleCalendar.sync(using: modelContext)
+            }
+            .onAppear {
+                if !timed.isEmpty {
+                    let intervalStart = calendar.startOfDay(for: day)
+                    let firstHour = timed.compactMap(\.schedule.startAt)
+                        .map { max(0, calendar.component(.hour, from: max($0, intervalStart)) - 1) }.min() ?? 8
+                    if let anchor = calendar.date(bySettingHour: firstHour, minute: 0, second: 0, of: day) {
+                        proxy.scrollTo(anchor, anchor: .top)
+                    }
+                }
+            }
+        }
+    }
+
+    private func anyTimeSection(blocks: [CalendarBlockItem], tasks: [TaskListItem]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Any time").font(.headline)
+            ForEach(blocks) { block in
+                if let task = block.task {
+                    TaskRowView(item: task, schedule: block.schedule, showsDate: false,
+                        onToggle: { toggleTask(task.id) }, onEdit: { sheet = .editTask(task.id) }, onDelete: { deletingTaskID = task.id })
+                } else {
+                    Button { openBlock(block) } label: {
+                        HStack {
+                            Image(systemName: "repeat")
+                            Text(block.title)
+                            Spacer()
+                        }
+                        .frame(minHeight: 44)
+                    }
+                }
+                Divider()
+            }
+            ForEach(tasks) { task in
+                TaskRowView(item: task, showsDate: false,
+                    onToggle: { toggleTask(task.id) }, onEdit: { sheet = .editTask(task.id) }, onDelete: { deletingTaskID = task.id })
+                Divider()
+            }
+        }
+        .padding(12)
+        .background(Color.kadoBackgroundSecondary, in: RoundedRectangle(cornerRadius: KadoRadius.card))
+    }
+
+    private var visibleBlocks: [CalendarBlockItem] {
+        blocks.filter { block in
+            if let task = block.task, task.archivedAt != nil || task.externalCancelledAt != nil { return false }
+            if let habit = block.habit, habit.archivedAt != nil { return false }
+            guard block.task != nil || block.habit != nil else { return false }
+            return TaskScheduleItem(block).belongs(to: day, calendar: calendar)
+        }
+        .map { CalendarBlockItem($0, on: day, calendar: calendar) }
+    }
+
+    private var tasksWithoutBlocks: [TaskListItem] {
+        records.map { TaskListItem($0) }.filter { item in
+            guard let dueDate = item.dueDate, calendar.isDate(dueDate, inSameDayAs: day) else { return false }
+            return !item.schedules.contains { $0.belongs(to: day, calendar: calendar) }
+        }
+    }
+
+    private var weekDays: [Date] {
+        let start = calendar.dateInterval(of: .weekOfYear, for: day)?.start ?? day
+        return (0..<7).compactMap { offset in
+            calendar.date(byAdding: .day, value: offset, to: start).map { calendar.startOfDay(for: $0) }
+        }
+    }
+
+    private func dateKey(_ date: Date) -> String {
+        let values = calendar.dateComponents([.year, .month, .day], from: date)
+        return "\(values.year ?? 0)-\(values.month ?? 0)-\(values.day ?? 0)"
+    }
+
+    private func advanceWeek(_ offset: Int) {
+        if let next = calendar.date(byAdding: .weekOfYear, value: offset, to: day) {
+            selectedDay = calendar.startOfDay(for: next)
+        }
+    }
+
+    private func openBlock(_ block: CalendarBlockItem) {
+        if let task = block.task { sheet = .editTask(task.id) }
+        else if let habitID = block.habitID { sheet = .habit(habitID) }
+    }
+
+    private var pendingDeletion: TaskListItem? {
+        guard let deletingTaskID, let record = records.first(where: { $0.id == deletingTaskID }) else { return nil }
+        return TaskListItem(record)
+    }
+
+    private var deleteBinding: Binding<Bool> {
+        Binding(get: { deletingTaskID != nil }, set: { if !$0 { deletingTaskID = nil } })
+    }
+
+    private var errorBinding: Binding<Bool> {
+        Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })
+    }
+
+    private func toggleTask(_ id: UUID) {
+        guard let record = records.first(where: { $0.id == id }) else { return }
+        record.completedAt = record.completedAt == nil ? .now : nil
+        record.updatedAt = .now
+        persist()
+    }
+
+    private func deleteTask(_ id: UUID) {
+        guard let record = records.first(where: { $0.id == id }) else { return }
+        if record.externalEventID != nil {
+            record.archivedAt = .now
+            record.updatedAt = .now
+        } else {
+            modelContext.delete(record)
+        }
+        deletingTaskID = nil
+        persist()
+    }
+
+    private func persist() {
+        do { try modelContext.save() }
+        catch {
+            modelContext.rollback()
+            errorMessage = error.localizedDescription
+        }
+    }
+}
+
+#Preview("Calendar") {
+    PlannerCalendarView().modelContainer(PreviewContainer.shared).kadoTheme()
+}
+
+#Preview("Dark") {
+    PlannerCalendarView()
+        .modelContainer(PreviewContainer.shared)
+        .kadoTheme()
+        .preferredColorScheme(.dark)
+}

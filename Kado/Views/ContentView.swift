@@ -4,9 +4,8 @@ import KadoCore
 
 /// Root view of the app. Hosts the primary TabView shell.
 ///
-/// The TabView shape is intentionally minimal at bootstrap: two tabs
-/// (Today, Settings) with empty placeholder contents. Real content
-/// lands in v0.1 (Today list) and v1.0 (Settings screens).
+/// Today combines habits and tasks; Calendar plans tasks on a day
+/// timeline while Overview retains the habit history matrix.
 struct ContentView: View {
     var body: some View {
         // Deliberately no `.accessibilityIdentifier` on these tabs: one
@@ -17,6 +16,12 @@ struct ContentView: View {
         TabView {
             Tab("Today", systemImage: "list.bullet.clipboard") {
                 TodayView()
+            }
+            Tab("Calendar", systemImage: "calendar") {
+                PlannerCalendarView()
+            }
+            Tab("Goals", systemImage: "scope") {
+                GoalsView()
             }
             Tab("Overview", systemImage: "square.grid.2x2") {
                 OverviewView()

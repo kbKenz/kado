@@ -12,7 +12,7 @@ enum PreviewContainer {
     static let shared: ModelContainer = {
         do {
             let container = try ModelContainer(
-                for: HabitRecord.self, CompletionRecord.self,
+                for: HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             DevModeSeed.seed(into: container.mainContext)
@@ -37,7 +37,7 @@ enum PreviewContainer {
     static func withArchivedHabits() -> ModelContainer {
         do {
             let container = try ModelContainer(
-                for: HabitRecord.self, CompletionRecord.self,
+                for: HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             let context = container.mainContext
@@ -60,7 +60,7 @@ enum PreviewContainer {
     static func emptyContainer() -> ModelContainer {
         do {
             return try ModelContainer(
-                for: HabitRecord.self, CompletionRecord.self,
+                for: HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
         } catch {
@@ -74,7 +74,7 @@ enum PreviewContainer {
     static func noneDueTodayContainer() -> ModelContainer {
         do {
             let container = try ModelContainer(
-                for: HabitRecord.self, CompletionRecord.self,
+                for: HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             let calendar = Calendar.current

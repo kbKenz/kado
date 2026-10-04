@@ -6,8 +6,8 @@ import SwiftData
 /// previews.
 @MainActor
 public protocol BackupExporting: Sendable {
-    /// Fetch every habit (including archived) with its completions,
-    /// and wrap them in a `BackupDocument`.
+    /// Fetch the full goal, habit, task and schedule graph, including
+    /// archived records, and wrap it in a `BackupDocument`.
     func export(from context: ModelContext) throws -> BackupDocument
 
     /// Convenience: encode the document to JSON bytes with the backup's
@@ -31,7 +31,7 @@ public struct DefaultBackupExporter: BackupExporting {
     private let appVersion: String
 
     public init(
-        now: @escaping @Sendable () -> Date = Date.init,
+        now: @escaping @Sendable () -> Date = { Date() },
         appVersion: String = DefaultBackupExporter.bundleVersion()
     ) {
         self.now = now
@@ -44,10 +44,23 @@ public struct DefaultBackupExporter: BackupExporting {
         )
         let records = try context.fetch(descriptor)
         let habits = records.map(Self.backup(from:))
+        let tasks = try context.fetch(FetchDescriptor<TaskRecord>(
+            sortBy: [SortDescriptor(\.createdAt, order: .forward), SortDescriptor(\.title, order: .forward)]
+        )).map(Self.backup(from:))
+        let blocks = try context.fetch(FetchDescriptor<ScheduleBlockRecord>(
+            sortBy: [SortDescriptor(\.plannedDay, order: .forward), SortDescriptor(\.createdAt, order: .forward)]
+        )).map(Self.backup(from:))
+        let goals = try context.fetch(FetchDescriptor<GoalRecord>(
+            sortBy: [SortDescriptor(\.createdAt, order: .forward), SortDescriptor(\.name, order: .forward)]
+        )).map(Self.backup(from:))
         return BackupDocument(
             exportedAt: now(),
             appVersion: appVersion,
-            habits: habits
+            habits: habits,
+            tasks: tasks,
+            scheduleBlocks: blocks,
+            goals: goals,
+            goalProgressEntries: try context.fetch(FetchDescriptor<GoalProgressEntryRecord>(sortBy: [SortDescriptor(\.date)])).compactMap(\.snapshot)
         )
     }
 
@@ -90,7 +103,39 @@ public struct DefaultBackupExporter: BackupExporting {
             remindersEnabled: habit.remindersEnabled,
             reminderHour: habit.reminderHour,
             reminderMinute: habit.reminderMinute,
-            completions: completions
+            completions: completions,
+            sortOrder: habit.sortOrder,
+            goalID: record.goal?.id
+        )
+    }
+
+    private static func backup(from record: TaskRecord) -> TaskBackup {
+        TaskBackup(
+            id: record.id, title: record.title, notes: record.notes, dueDate: record.dueDate,
+            createdAt: record.createdAt, updatedAt: record.updatedAt,
+            completedAt: record.completedAt, archivedAt: record.archivedAt,
+            externalAccountID: record.externalAccountID, externalCalendarID: record.externalCalendarID,
+            externalEventID: record.externalEventID, externalURL: record.externalURL,
+            externalUpdatedAt: record.externalUpdatedAt, externalCancelledAt: record.externalCancelledAt,
+            goalID: record.goal?.id
+        )
+    }
+
+    private static func backup(from record: ScheduleBlockRecord) -> ScheduleBlockBackup {
+        ScheduleBlockBackup(
+            id: record.id, plannedDay: record.plannedDay,
+            startAt: record.startAt, endAt: record.endAt,
+            createdAt: record.createdAt, updatedAt: record.updatedAt,
+            taskID: record.task?.id, habitID: record.habit?.id
+        )
+    }
+
+    private static func backup(from record: GoalRecord) -> GoalBackup {
+        GoalBackup(
+            id: record.id, name: record.name, details: record.details, status: record.status,
+            startDate: record.startDate, targetDate: record.targetDate,
+            createdAt: record.createdAt, updatedAt: record.updatedAt,
+            completedAt: record.completedAt, archivedAt: record.archivedAt, measurement: record.measurement
         )
     }
 }

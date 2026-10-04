@@ -17,6 +17,7 @@ struct KadoApp: App {
 
     @State private var devModeController = DevModeController()
     @State private var cloudAccountStatus = DefaultCloudAccountStatusObserver()
+    @State private var googleCalendarConnection = GoogleCalendarConnection()
     @State private var notificationScheduler: any NotificationScheduling
     @State private var notificationManager: NotificationManager
     @State private var tipJarStore = DefaultTipJarStore(tipNudge: DefaultTipNudgeService())
@@ -136,6 +137,19 @@ struct KadoApp: App {
 
         return WindowGroup {
             rootView
+                .onOpenURL { url in
+                    _ = googleCalendarConnection.handle(url)
+                }
+                .task(id: GoogleSyncRun(isDevMode: isDevMode, isActive: scenePhase == .active)) {
+                    guard !isDevMode, scenePhase == .active else { return }
+                    // Only poll while visible. Backgrounding or switching stores cancels
+                    // the loop; the connection throttles launch/foreground retries.
+                    while !Task.isCancelled {
+                        await googleCalendarConnection.restoreAndSync(using: container.mainContext)
+                        do { try await Task.sleep(for: .seconds(60)) }
+                        catch { return }
+                    }
+                }
                 .task { await cloudAccountStatus.refresh() }
                 // A refund granted while the app was closed arrives as a
                 // missing entitlement, not an update — this is where the
@@ -171,6 +185,7 @@ struct KadoApp: App {
         }
         .modelContainer(container)
         .environment(\.cloudAccountStatus, cloudAccountStatus)
+        .environment(\.googleCalendarConnection, googleCalendarConnection)
         .environment(\.notificationScheduler, notificationScheduler)
         .environment(\.tipJarStore, tipJarStore)
         .environment(\.supporterPack, supporterPack)
@@ -183,6 +198,7 @@ struct KadoApp: App {
         // a rolling seven days and are unaffected.
         .environment(\.streakCalculator, DefaultStreakCalculator(calendar: weekCalendar))
         .environment(\.today, boundary.startOfDay(for: clockMark))
+        .environment(\.civilToday, weekCalendar.startOfDay(for: clockMark))
         .environment(\.dayBoundary, boundary)
         .environment(\.habitTheme, renderedHabitTheme)
         .onChange(of: scenePhase) { _, newPhase in
@@ -193,6 +209,12 @@ struct KadoApp: App {
             guard newPhase == .active else { return }
             reconcileAppIcon()
             guard !boundary.isDate(clockMark, inSameDayAs: .now) else {
+                // Tasks use civil days even when habits roll over later.
+                // A foreground return after midnight must refresh both
+                // Today and task forms without waiting for the habit edge.
+                if !boundary.calendar.isDate(clockMark, inSameDayAs: .now) {
+                    clockMark = .now
+                }
                 RemindersSync.rescheduleAll(using: container.mainContext)
                 return
             }
@@ -232,6 +254,7 @@ struct KadoApp: App {
             reconcileAppIcon()
         }
         .onChange(of: isDevMode) { oldValue, newValue in
+            googleCalendarConnection.cancelPendingSync()
             if newValue && !oldValue {
                 devModeController.activateDevMode()
             } else if !newValue && oldValue {
@@ -260,6 +283,11 @@ struct KadoApp: App {
     private struct RolloverTick: Equatable {
         let mark: Date
         let hour: Int
+    }
+
+    private struct GoogleSyncRun: Equatable {
+        let isDevMode: Bool
+        let isActive: Bool
     }
 
     /// The next instant at which something the UI renders changes:

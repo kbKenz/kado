@@ -11,6 +11,7 @@ import KadoCore
 @Observable
 final class NewHabitFormModel {
     var name: String = ""
+    var selectedGoalID: UUID?
 
     var frequencyKind: FrequencyKind = .daily
     var daysPerWeek: Int = 3
@@ -35,9 +36,9 @@ final class NewHabitFormModel {
     /// isn't wiped when they explore the toggle.
     var reminderTime: Date = NewHabitFormModel.defaultReminderTime()
 
-    /// When non-nil, save mutates this record in place instead of
-    /// creating a new one.
-    private(set) var editingRecord: HabitRecord?
+    /// Resolve this identity from the current store at save time.
+    /// Draft state must not retain an object from a swapped store.
+    private(set) var editingHabitID: UUID?
 
     enum FrequencyKind: Hashable, CaseIterable {
         case daily, daysPerWeek, specificDays, everyNDays
@@ -60,11 +61,11 @@ final class NewHabitFormModel {
         calendar.date(bySettingHour: hour, minute: minute, second: 0, of: now) ?? now
     }
 
-    /// Pre-fill the form from an existing habit and remember the
-    /// record so `save(in:)` updates it in place.
+    /// Pre-fill with values and retain only the current habit identity.
     convenience init(editing record: HabitRecord) {
         self.init()
-        self.editingRecord = record
+        self.editingHabitID = record.id
+        self.selectedGoalID = record.goal?.id
         self.name = record.name
         switch record.frequency {
         case .daily:
@@ -103,7 +104,7 @@ final class NewHabitFormModel {
         )
     }
 
-    var isEditing: Bool { editingRecord != nil }
+    var isEditing: Bool { editingHabitID != nil }
 
     var trimmedName: String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -172,10 +173,31 @@ final class NewHabitFormModel {
     /// Inserts a new record or mutates the existing one in place,
     /// then saves. Returns the final record (new or edited).
     @discardableResult
-    func save(in context: ModelContext, createdAt: Date = .now) -> HabitRecord {
-        defer { WidgetReloader.reloadAll(using: context) }
+    func save(in context: ModelContext, createdAt: Date = .now) throws -> HabitRecord {
+        let goal: GoalRecord?
+        if let selectedGoalID {
+            let goals = try context.fetch(FetchDescriptor<GoalRecord>())
+            guard let selected = goals.first(where: { $0.id == selectedGoalID }) else {
+                throw SaveError.goalUnavailable
+            }
+            goal = selected
+        } else {
+            goal = nil
+        }
+        let record: HabitRecord
+        if let editingHabitID {
+            let habits = try context.fetch(FetchDescriptor<HabitRecord>())
+            guard let existing = habits.first(where: { $0.id == editingHabitID }) else {
+                throw SaveError.habitUnavailable
+            }
+            record = existing
+        } else {
+            record = build(createdAt: createdAt)
+            record.sortOrder = HabitSortOrder.nextSortOrder(in: context)
+            context.insert(record)
+        }
         let components = Calendar.current.dateComponents([.hour, .minute], from: reminderTime)
-        if let record = editingRecord {
+        do {
             record.name = trimmedName
             record.frequency = frequency
             record.type = type
@@ -184,14 +206,26 @@ final class NewHabitFormModel {
             record.remindersEnabled = remindersEnabled
             record.reminderHour = components.hour ?? 9
             record.reminderMinute = components.minute ?? 0
-            try? context.save()
+            record.goal = goal
+            try context.save()
+            WidgetReloader.reloadAll(using: context)
             return record
-        } else {
-            let record = build(createdAt: createdAt)
-            record.sortOrder = HabitSortOrder.nextSortOrder(in: context)
-            context.insert(record)
-            try? context.save()
-            return record
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
+    private enum SaveError: LocalizedError {
+        case habitUnavailable, goalUnavailable
+
+        var errorDescription: String? {
+            switch self {
+            case .habitUnavailable:
+                return String(localized: "This habit is no longer in the current store.")
+            case .goalUnavailable:
+                return String(localized: "This goal is no longer available. Choose another goal or remove the assignment.")
+            }
         }
     }
 }

@@ -39,8 +39,10 @@ enum AccessibilityID {
     /// Keep in step with `ContentView`.
     enum Tab: Int {
         case today = 0
-        case overview = 1
-        case settings = 2
+        case calendar = 1
+        case goals = 2
+        case overview = 3
+        case settings = 4
 
         /// The SF Symbol each tab carries, which is how the suite
         /// reaches it on iPad.
@@ -58,6 +60,8 @@ enum AccessibilityID {
         var symbolName: String {
             switch self {
             case .today: "list.bullet.clipboard"
+            case .calendar: "calendar"
+            case .goals: "scope"
             case .overview: "square.grid.2x2"
             case .settings: "gearshape"
             }
@@ -73,10 +77,12 @@ enum AccessibilityID {
         /// `.accessibilityElement(children: .combine)`, so the row is
         /// already a single element and this identifier lands on a leaf.
         static func row(_ habitID: UUID) -> String { "today.row.\(habitID.uuidString)" }
-        /// The toolbar's + button. Identified rather than matched on
+        /// The toolbar's + menu. Identified rather than matched on
         /// its label, which is localized, or on its SF Symbol name,
         /// which SwiftUI does not reliably surface for a `Label`.
+        static let addButton = "today.add"
         static let newHabitButton = "today.newHabit"
+        static let newTaskButton = "today.newTask"
 
         /// The tip nudge's two actions. Both sit on leaf buttons inside
         /// `TipNudgeBanner` rather than on the card, which would stamp
@@ -97,6 +103,69 @@ enum AccessibilityID {
         /// "Archiver" on the French simulator.
         static let archiveButton = "today.archive"
         static let archiveConfirmButton = "today.archive.confirm"
+    }
+
+    enum Goals {
+        static let newGoal = "goals.new"
+        static let emptyCreate = "goals.empty.create"
+        static func row(_ id: UUID) -> String { "goals.row.\(id.uuidString)" }
+        static let name = "goalForm.name"
+        static let details = "goalForm.details"
+        static let status = "goalForm.status"
+        static let hasStartDate = "goalForm.hasStartDate"
+        static let startDate = "goalForm.startDate"
+        static let hasTargetDate = "goalForm.hasTargetDate"
+        static let targetDate = "goalForm.targetDate"
+        static let dateError = "goalForm.dateError"
+        static let cancel = "goalForm.cancel"
+        static let save = "goalForm.save"
+        static let picker = "goalPicker.selection"
+        static let pickerCreate = "goalPicker.create"
+        static let edit = "goalDetail.edit"
+        static let actions = "goalDetail.actions"
+        static let archive = "goalDetail.archive"
+        static let restore = "goalDetail.restore"
+        static let delete = "goalDetail.delete"
+        static let deleteConfirm = "goalDetail.delete.confirm"
+        static let linkTasks = "goalDetail.linkTasks"
+        static let linkHabits = "goalDetail.linkHabits"
+        static func task(_ id: UUID) -> String { "goalDetail.task.\(id.uuidString)" }
+        static func taskCompletion(_ id: UUID) -> String { "goalDetail.completeTask.\(id.uuidString)" }
+        static func habit(_ id: UUID) -> String { "goalDetail.habit.\(id.uuidString)" }
+        static func linkItem(_ id: UUID) -> String { "goalLinks.item.\(id.uuidString)" }
+        static let linkClose = "goalLinks.close"
+        static let moveConfirm = "goalLinks.move.confirm"
+    }
+
+    enum Tasks {
+        static let rowPrefix = "task.row."
+        static func row(_ id: UUID) -> String { rowPrefix + id.uuidString }
+        static func complete(_ id: UUID) -> String { "task.complete.\(id.uuidString)" }
+        static let title = "taskForm.title"
+        static let notes = "taskForm.notes"
+        static let hasDay = "taskForm.hasDay"
+        static let day = "taskForm.day"
+        static let hasStart = "taskForm.hasStart"
+        static let hasEnd = "taskForm.hasEnd"
+        static let start = "taskForm.start"
+        static let end = "taskForm.end"
+        static let timeError = "taskForm.timeError"
+        static let save = "taskForm.save"
+        static let cancel = "taskForm.cancel"
+        static let deleteConfirm = "task.delete.confirm"
+    }
+
+    enum Calendar {
+        static let newTask = "calendar.newTask"
+        static let googleSettings = "calendar.googleSettings"
+        static let previousWeek = "calendar.previousWeek"
+        static let nextWeek = "calendar.nextWeek"
+        static let datePicker = "calendar.datePicker"
+        static let today = "calendar.today"
+        static func weekDay(_ dateKey: String) -> String { "calendar.day.\(dateKey)" }
+        static let blockPrefix = "calendar.block."
+        static func block(_ id: UUID) -> String { blockPrefix + id.uuidString }
+        static let completeMenuItem = "calendar.complete"
     }
 
     /// The counter-log and timer-log sheets (`CounterLogSheet`,

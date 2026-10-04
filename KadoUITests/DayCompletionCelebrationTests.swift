@@ -56,6 +56,7 @@ final class DayCompletionCelebrationTests: KadoUITestCase {
 
         // With the overlay up, the + in the toolbar must still open the
         // sheet — the confetti is decoration, not a modal.
+        app.buttons[AccessibilityID.Today.addButton].firstMatch.tap()
         app.buttons[AccessibilityID.Today.newHabitButton].firstMatch.tap()
         XCTAssertTrue(
             app.textFields[AccessibilityID.NewHabit.nameField].waitForExistence(timeout: 10),

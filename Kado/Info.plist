@@ -2,6 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>GIDClientID</key>
+	<string>$(GOOGLE_CALENDAR_CLIENT_ID)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>Google Calendar OAuth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>$(GOOGLE_CALENDAR_REVERSED_CLIENT_ID)</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleSpokenName</key>
 	<string>Kado</string>
 	<key>INAlternativeAppNames</key>

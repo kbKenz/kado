@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BECA1E003000000100000003 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = BECA1E003000000100000001 /* GoogleSignIn */; };
+		BECA1E003000000100000004 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = BECA1E003000000100000002 /* GoogleSignInSwift */; };
 		BE0A541C2F942EA000E09C34 /* KadoCore in Frameworks */ = {isa = PBXBuildFile; productRef = BE0A541B2F942EA000E09C34 /* KadoCore */; };
 		BE0A541E2F942EC300E09C34 /* KadoCore in Frameworks */ = {isa = PBXBuildFile; productRef = BE0A541D2F942EC300E09C34 /* KadoCore */; };
 		BE58C7602F940AAF0020146E /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE58C75F2F940AAF0020146E /* WidgetKit.framework */; };
@@ -54,6 +56,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BECA1E003000000100000005 /* GoogleCalendar.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config/GoogleCalendar.xcconfig; sourceTree = "<group>"; };
 		BE41887A2F91B4F0006126D6 /* Kado.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Kado.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE4188872F91B4F2006126D6 /* KadoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = KadoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BE58C75D2F940AAF0020146E /* KadoWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = KadoWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -121,6 +124,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BECA1E003000000100000003 /* GoogleSignIn in Frameworks */,
+				BECA1E003000000100000004 /* GoogleSignInSwift in Frameworks */,
 				BE0A541C2F942EA000E09C34 /* KadoCore in Frameworks */,
 				BE7563B02FF9D739001CB541 /* StoreKit.framework in Frameworks */,
 			);
@@ -156,6 +161,7 @@
 		BE4188712F91B4F0006126D6 = {
 			isa = PBXGroup;
 			children = (
+				BECA1E003000000100000005 /* GoogleCalendar.xcconfig */,
 				BE7563B12FF9D7F7001CB541 /* Tips.storekit */,
 				BE0A51582F94102000E09C34 /* Shared */,
 				BE58C7752F940AC60020146E /* KadoWidgetsExtension.entitlements */,
@@ -212,6 +218,8 @@
 			);
 			name = Kado;
 			packageProductDependencies = (
+				BECA1E003000000100000001 /* GoogleSignIn */,
+				BECA1E003000000100000002 /* GoogleSignInSwift */,
 				BE0A541B2F942EA000E09C34 /* KadoCore */,
 			);
 			productName = Kado;
@@ -324,6 +332,7 @@
 			mainGroup = BE4188712F91B4F0006126D6;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				BECA1E003000000100000000 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				BE0A541A2F942EA000E09C34 /* XCLocalSwiftPackageReference "Packages/KadoCore" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -543,6 +552,7 @@
 		};
 		BE41889C2F91B4F2006126D6 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BECA1E003000000100000005 /* GoogleCalendar.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconUra AppIconSakura AppIconMomiji AppIconYuyake AppIconUmi AppIconHotaru AppIconFuji";
@@ -569,7 +579,7 @@
 				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -581,6 +591,7 @@
 		};
 		BE41889D2F91B4F2006126D6 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BECA1E003000000100000005 /* GoogleCalendar.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconUra AppIconSakura AppIconMomiji AppIconYuyake AppIconUmi AppIconHotaru AppIconFuji";
@@ -607,7 +618,7 @@
 				MARKETING_VERSION = 1.11;
 				PRODUCT_BUNDLE_IDENTIFIER = dev.scastiel.kado;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -824,7 +835,28 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		BECA1E003000000100000000 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = exactVersion;
+				version = 10.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
+		BECA1E003000000100000001 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BECA1E003000000100000000 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+		BECA1E003000000100000002 /* GoogleSignInSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BECA1E003000000100000000 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignInSwift;
+		};
 		BE0A541B2F942EA000E09C34 /* KadoCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = KadoCore;

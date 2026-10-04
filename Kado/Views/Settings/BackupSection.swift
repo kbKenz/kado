@@ -216,8 +216,16 @@ private struct ImportConfirmSheet: View {
                         new: summary.newCompletions,
                         updated: summary.updatedCompletions
                     )
+                    labelRow(title: "Tasks", total: summary.totalTasks,
+                             new: summary.newTasks, updated: summary.updatedTasks)
+                    labelRow(title: "Planned blocks", total: summary.totalScheduleBlocks,
+                             new: summary.newScheduleBlocks, updated: summary.updatedScheduleBlocks)
+                    labelRow(title: "Goals", total: summary.totalGoals,
+                             new: summary.newGoals, updated: summary.updatedGoals)
+                    labelRow(title: "Progress entries", total: summary.totalGoalProgressEntries,
+                             new: summary.newGoalProgressEntries, updated: summary.updatedGoalProgressEntries)
                 } footer: {
-                    Text("Imported habits and completions will merge with your current data by matching IDs. Nothing will be deleted.")
+                    Text("Imported records merge with your current data by matching IDs, including goals and their linked tasks and habits.")
                 }
             }
             .navigationTitle("Import Kadō backup")
@@ -292,7 +300,7 @@ private enum PresentedAlert: Identifiable {
         case .importFailed(let failure):
             return Text(failure.message)
         case .importSucceeded(let summary):
-            return Text("Habits: \(summary.totalHabits) (\(summary.newHabits) new, \(summary.updatedHabits) updated)\nCompletions: \(summary.totalCompletions) (\(summary.newCompletions) new, \(summary.updatedCompletions) updated)")
+            return Text("Habits: \(summary.totalHabits) (\(summary.newHabits) new, \(summary.updatedHabits) updated)\nCompletions: \(summary.totalCompletions) (\(summary.newCompletions) new, \(summary.updatedCompletions) updated)\nTasks: \(summary.totalTasks)\nPlanned blocks: \(summary.totalScheduleBlocks)\nGoals: \(summary.totalGoals)\nProgress entries: \(summary.totalGoalProgressEntries)")
         }
     }
 }

@@ -27,15 +27,20 @@ struct KadoSchemaTests {
         #expect(KadoSchemaV4.versionIdentifier == Schema.Version(4, 0, 0))
     }
 
-    @Test("Migration plan declares V1→V2, V2→V3, and V3→V4 lightweight stages")
-    func migrationPlanShape() {
-        #expect(KadoMigrationPlan.schemas.count == 4)
-        #expect(KadoMigrationPlan.stages.count == 3)
+    @Test("V5 version identifier is 5.0.0")
+    func v5Version() {
+        #expect(KadoSchemaV5.versionIdentifier == Schema.Version(5, 0, 0))
     }
 
-    @Test("In-memory ModelContainer constructs from the current (V4) schema")
+    @Test("Migration plan declares a lightweight stage for each version through V6")
+    func migrationPlanShape() {
+        #expect(KadoMigrationPlan.schemas.count == 7)
+        #expect(KadoMigrationPlan.stages.count == 6)
+    }
+
+    @Test("In-memory ModelContainer constructs from the current (V6) schema")
     func containerBuildsFromPlan() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV4.self)
+        let schema = Schema(versionedSchema: KadoSchemaV7.self)
         let container = try ModelContainer(
             for: schema,
             migrationPlan: KadoMigrationPlan.self,
@@ -150,11 +155,60 @@ struct KadoSchemaTests {
             migrationPlan: KadoMigrationPlan.self,
             configurations: config
         )
-        let habits = try container.mainContext.fetch(FetchDescriptor<HabitRecord>())
+        let habits = try container.mainContext.fetch(FetchDescriptor<KadoSchemaV4.HabitRecord>())
         #expect(habits.count == 1)
         let habit = try #require(habits.first)
         #expect(habit.name == "V3 habit")
         #expect(habit.color == .green)
         #expect(habit.sortOrder == 0)
+    }
+
+    @Test("V4 to V5 preserves habits and completion history and accepts planning records")
+    func v4ToV5Migration() throws {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("planning-migration-\(UUID().uuidString).store")
+        defer {
+            for suffix in ["", "-wal", "-shm"] {
+                try? FileManager.default.removeItem(atPath: url.path + suffix)
+            }
+        }
+        let habitID = UUID()
+        let completionID = UUID()
+        do {
+            let schema = Schema(versionedSchema: KadoSchemaV4.self)
+            let store = try ModelContainer(
+                for: schema,
+                configurations: ModelConfiguration(schema: schema, url: url)
+            )
+            let habit = KadoSchemaV4.HabitRecord(id: habitID, name: "Existing habit", sortOrder: 9)
+            store.mainContext.insert(habit)
+            store.mainContext.insert(KadoSchemaV4.CompletionRecord(
+                id: completionID, value: 42, note: "History", habit: habit
+            ))
+            try store.mainContext.save()
+        }
+        let schema = Schema(versionedSchema: KadoSchemaV5.self)
+        let store = try ModelContainer(
+            for: schema,
+            migrationPlan: KadoMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url)
+        )
+        let habit = try #require(store.mainContext.fetch(FetchDescriptor<KadoSchemaV5.HabitRecord>()).first)
+        #expect(habit.id == habitID)
+        #expect(habit.name == "Existing habit")
+        #expect(habit.sortOrder == 9)
+        #expect(habit.scheduleBlocks?.isEmpty ?? true)
+        let completion = try #require(habit.completions?.first)
+        #expect(completion.id == completionID)
+        #expect(completion.value == 42)
+        #expect(completion.note == "History")
+        #expect(try store.mainContext.fetchCount(FetchDescriptor<KadoSchemaV5.TaskRecord>()) == 0)
+        #expect(try store.mainContext.fetchCount(FetchDescriptor<KadoSchemaV5.ScheduleBlockRecord>()) == 0)
+        let task = KadoSchemaV5.TaskRecord(title: "New task")
+        store.mainContext.insert(task)
+        store.mainContext.insert(KadoSchemaV5.ScheduleBlockRecord(task: task))
+        try store.mainContext.save()
+        #expect(try store.mainContext.fetchCount(FetchDescriptor<KadoSchemaV5.TaskRecord>()) == 1)
+        #expect(task.scheduleBlocks?.count == 1)
     }
 }

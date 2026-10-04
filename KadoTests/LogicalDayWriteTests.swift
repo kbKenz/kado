@@ -221,7 +221,7 @@ struct LogicalDayWriteTests {
 
         let model = NewHabitFormModel()
         model.name = "Stretch"
-        let record = model.save(
+        let record = try model.save(
             in: container.mainContext,
             createdAt: boundary.loggingInstant(for: atTwoAM)
         )
@@ -239,7 +239,7 @@ struct LogicalDayWriteTests {
 
         let model = NewHabitFormModel()
         model.name = "Stretch"
-        let record = model.save(
+        let record = try model.save(
             in: container.mainContext,
             createdAt: boundary.loggingInstant(for: atTwoAM)
         )

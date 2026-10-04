@@ -1,0 +1,5 @@
+// Public iOS OAuth client configuration. Local values belong in the ignored
+// GoogleCalendar.local.xcconfig file, not in this shared template.
+GOOGLE_CALENDAR_CLIENT_ID = unconfigured.apps.googleusercontent.com
+GOOGLE_CALENDAR_REVERSED_CLIENT_ID = com.googleusercontent.apps.unconfigured
+#include? "GoogleCalendar.local.xcconfig"

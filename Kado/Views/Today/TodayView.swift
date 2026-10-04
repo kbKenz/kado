@@ -25,6 +25,7 @@ struct TodayView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.calendar) private var calendar
     @Environment(\.today) private var today
+    @Environment(\.civilToday) private var civilToday
     @Environment(\.dayBoundary) private var dayBoundary
 
     @Query(
@@ -33,9 +34,17 @@ struct TodayView: View {
     )
     private var activeHabits: [HabitRecord]
 
+    @Query(
+        filter: #Predicate<TaskRecord> { $0.archivedAt == nil && $0.externalCancelledAt == nil },
+        sort: \TaskRecord.createdAt
+    )
+    private var activeTasks: [TaskRecord]
+
     @State private var path = NavigationPath()
     @State private var sheet: TodaySheet?
     @State private var confirmingArchiveOf: UUID?
+    @State private var deletingTaskID: UUID?
+    @State private var taskError: String?
     /// The latest `−` / `+` / `+5m` tap, for the haptic. Recorded by
     /// the mutation rather than observed on the row: a row keyed on
     /// its own value ticks when the day rolls over or a sync lands,
@@ -57,6 +66,8 @@ struct TodayView: View {
     /// New / Edit / Log-counter / Log-timer running in parallel.
     enum TodaySheet: Identifiable {
         case newHabit
+        case newTask
+        case editTask(UUID)
         case editHabit(UUID)
         case logCounter(UUID)
         case logTimer(UUID)
@@ -72,6 +83,8 @@ struct TodayView: View {
         var id: String {
             switch self {
             case .newHabit: "new"
+            case .newTask: "new-task"
+            case .editTask(let id): "edit-task-\(id)"
             case .editHabit(let habitID): "edit-\(habitID)"
             case .logCounter(let habitID): "counter-\(habitID)"
             case .logTimer(let habitID): "timer-\(habitID)"
@@ -92,12 +105,19 @@ struct TodayView: View {
                 }
                 .toolbar {
                     ToolbarItem(placement: .primaryAction) {
-                        Button {
-                            sheet = .newHabit
+                        Menu {
+                            Button { sheet = .newTask } label: {
+                                Label("New task", systemImage: "checklist")
+                            }
+                            .accessibilityIdentifier(AccessibilityID.Today.newTaskButton)
+                            Button { sheet = .newHabit } label: {
+                                Label("New habit", systemImage: "repeat")
+                            }
+                            .accessibilityIdentifier(AccessibilityID.Today.newHabitButton)
                         } label: {
-                            Label("New habit", systemImage: "plus")
+                            Label("Add", systemImage: "plus")
                         }
-                        .accessibilityIdentifier(AccessibilityID.Today.newHabitButton)
+                        .accessibilityIdentifier(AccessibilityID.Today.addButton)
                     }
                 }
                 .onAppear(perform: refreshCard)
@@ -123,6 +143,18 @@ struct TodayView: View {
                 } message: { _ in
                     Text("Archived habits leave Today but keep their history. You can find them in Settings › Archived habits.")
                 }
+                .confirmationDialog("Remove this task?", isPresented: taskDeleteBinding, titleVisibility: .visible, presenting: pendingTaskDeletion) { item in
+                    Button(item.isFromGoogle ? String(localized: "Remove from planner") : String(localized: "Delete task"), role: .destructive) { deleteTask(item.id) }
+                        .accessibilityIdentifier(AccessibilityID.Tasks.deleteConfirm)
+                    Button("Cancel", role: .cancel) {}
+                } message: { item in
+                    Text(item.isFromGoogle
+                        ? String(localized: "The imported task and its completion history will be archived. The event stays in Google Calendar.")
+                        : String(localized: "This removes the task and its planned calendar blocks."))
+                }
+                .alert("Unable to update task", isPresented: taskErrorBinding) {
+                    Button("Close", role: .cancel) {}
+                } message: { Text(taskError ?? "") }
         }
     }
 
@@ -131,6 +163,10 @@ struct TodayView: View {
         switch sheet {
         case .newHabit:
             NewHabitFormView(model: NewHabitFormModel())
+        case .newTask:
+            TaskFormView()
+        case .editTask(let id):
+            TaskFormView(taskID: id)
         case .editHabit(let habitID):
             if let record = record(for: habitID) {
                 NewHabitFormView(model: NewHabitFormModel(editing: record))
@@ -173,21 +209,26 @@ struct TodayView: View {
 
     @ViewBuilder
     private var content: some View {
-        if activeHabits.isEmpty {
+        if activeHabits.isEmpty && activeTasks.isEmpty {
             ContentUnavailableView {
-                Label("No habits yet", systemImage: "list.bullet.clipboard")
+                Label("No plans yet", systemImage: "list.bullet.clipboard")
             } description: {
-                Text("Habits you create will appear here.")
+                Text("Build your day with one-off tasks and recurring habits.")
             } actions: {
+                Button { sheet = .newTask } label: {
+                    Label("Create a task", systemImage: "plus")
+                }
+                .buttonStyle(.borderedProminent)
                 Button {
                     sheet = .newHabit
                 } label: {
-                    Label("Create your first habit", systemImage: "plus")
+                    Label("Create a habit", systemImage: "repeat")
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(.bordered)
             }
         } else {
             let (due, other) = sections
+            let tasks = taskSections
             List {
                 // Sampled once and passed down: letting the guard and
                 // the view each read `.now` lets them straddle the
@@ -199,12 +240,38 @@ struct TodayView: View {
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: 20, bottom: 6, trailing: 20))
                 }
+                if !tasks.due.isEmpty {
+                    Section("Tasks today & overdue") {
+                        ForEach(tasks.due) { taskRow($0) }
+                    }
+                }
+                if !tasks.inbox.isEmpty {
+                    Section {
+                        ForEach(tasks.inbox) { taskRow($0) }
+                    } header: { Text("Task inbox") }
+                    footer: { Text("Tasks without a day. Tap a task to schedule it.") }
+                }
+                if !tasks.completed.isEmpty {
+                    Section("Tasks completed today") {
+                        ForEach(tasks.completed) { taskRow($0) }
+                    }
+                }
+                if due.isEmpty && other.isEmpty && tasks.due.isEmpty && tasks.inbox.isEmpty && tasks.completed.isEmpty {
+                    Section {
+                        Text("Nothing planned for today")
+                            .foregroundStyle(Color.kadoForegroundSecondary)
+                        Text("Future tasks appear on their day in Calendar.")
+                            .font(.footnote)
+                            .foregroundStyle(Color.kadoForegroundSecondary)
+                    }
+                    .listRowBackground(Color.kadoBackgroundSecondary)
+                }
                 if !due.isEmpty {
                     Section {
                         ForEach(due) { row($0) }
                             .onMove { moveHabits(due, from: $0, to: $1) }
                     } header: {
-                        Text("Scheduled")
+                        Text("Habits today")
                             .foregroundStyle(Color.kadoForegroundSecondary)
                     }
                 }
@@ -247,6 +314,90 @@ struct TodayView: View {
             .refreshable {
                 try? await Task.sleep(for: .seconds(1))
             }
+        }
+    }
+
+    private var taskSections: (due: [TaskListItem], inbox: [TaskListItem], completed: [TaskListItem]) {
+        // Task planning uses civil days, while the existing habit rows
+        // continue to use the user's custom habit-day boundary.
+        let now = civilToday
+        let start = calendar.startOfDay(for: now)
+        let snapshots = activeTasks.map { TaskListItem($0) }
+        let pending = snapshots.filter { !$0.isComplete }
+        let due = pending.filter { item in
+            item.dueDate.map { calendar.startOfDay(for: $0) <= start } == true
+                || item.schedules.contains { $0.belongs(to: now, calendar: calendar) }
+        }.sorted { lhs, rhs in
+            let leftDate = lhs.dueDate ?? lhs.schedules.first?.plannedDay ?? .distantFuture
+            let rightDate = rhs.dueDate ?? rhs.schedules.first?.plannedDay ?? .distantFuture
+            if leftDate != rightDate { return leftDate < rightDate }
+            let leftTime = lhs.schedules.first?.startAt ?? .distantFuture
+            let rightTime = rhs.schedules.first?.startAt ?? .distantFuture
+            return leftTime == rightTime ? lhs.title.localizedStandardCompare(rhs.title) == .orderedAscending : leftTime < rightTime
+        }
+        let inbox = pending.filter { $0.dueDate == nil && $0.schedules.isEmpty }
+        let completed = snapshots.filter { item in
+            item.completedAt.map { calendar.isDate($0, inSameDayAs: now) } == true
+        }.sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
+        return (due, inbox, completed)
+    }
+
+    private func taskRow(_ item: TaskListItem) -> some View {
+        TaskRowView(item: item,
+            onToggle: { toggleTask(item.id) },
+            onEdit: { sheet = .editTask(item.id) },
+            onDelete: { deletingTaskID = item.id })
+            .listRowBackground(Color.kadoBackgroundSecondary)
+            .swipeActions(edge: .trailing) {
+                Button(role: .destructive) { deletingTaskID = item.id } label: {
+                    Label(item.isFromGoogle ? String(localized: "Remove from planner") : String(localized: "Delete task"), systemImage: "trash")
+                }
+            }
+            .swipeActions(edge: .leading) {
+                Button { toggleTask(item.id) } label: {
+                    Label(item.isComplete ? String(localized: "Mark incomplete") : String(localized: "Complete task"), systemImage: "checkmark.circle")
+                }
+                .tint(Color.kadoAccent)
+            }
+    }
+
+    private var pendingTaskDeletion: TaskListItem? {
+        guard let deletingTaskID, let record = activeTasks.first(where: { $0.id == deletingTaskID }) else { return nil }
+        return TaskListItem(record)
+    }
+
+    private var taskDeleteBinding: Binding<Bool> {
+        Binding(get: { deletingTaskID != nil }, set: { if !$0 { deletingTaskID = nil } })
+    }
+
+    private var taskErrorBinding: Binding<Bool> {
+        Binding(get: { taskError != nil }, set: { if !$0 { taskError = nil } })
+    }
+
+    private func toggleTask(_ id: UUID) {
+        guard let record = activeTasks.first(where: { $0.id == id }) else { return }
+        record.completedAt = record.completedAt == nil ? .now : nil
+        record.updatedAt = .now
+        saveTaskChanges()
+    }
+
+    private func deleteTask(_ id: UUID) {
+        guard let record = activeTasks.first(where: { $0.id == id }) else { return }
+        if record.externalEventID != nil {
+            record.archivedAt = .now
+            record.updatedAt = .now
+        } else {
+            modelContext.delete(record)
+        }
+        deletingTaskID = nil
+        saveTaskChanges()
+    }
+
+    private func saveTaskChanges() {
+        do { try modelContext.save() }
+        catch {
+            modelContext.rollback()
+            taskError = error.localizedDescription
         }
     }
 

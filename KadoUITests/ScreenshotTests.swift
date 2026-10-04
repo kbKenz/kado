@@ -62,6 +62,7 @@ final class ScreenshotTests: KadoUITestCase {
         // are the reason this shot is in the set.
         tapTab(.today, in: app)
         waitForTodayRows(in: app)
+        app.buttons[AccessibilityID.Today.addButton].firstMatch.tap()
         app.buttons[AccessibilityID.Today.newHabitButton].firstMatch.tap()
         assertReached(
             app.textFields[AccessibilityID.NewHabit.nameField],

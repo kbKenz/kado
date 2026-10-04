@@ -30,11 +30,12 @@ struct TaskDaySectionsTests {
         let items = [
             TaskListItem(title: "Older", dueDate: TestCalendar.day(-5)),
             TaskListItem(title: "Missed", dueDate: day),
-            TaskListItem(title: "Done then", completedAt: cal.date(byAdding: .hour, value: 2, to: day)),
+            TaskListItem(title: "Done then", dueDate: day, completedAt: cal.date(byAdding: .hour, value: 2, to: day)),
+            TaskListItem(title: "Planned only", schedules: [TaskScheduleItem(plannedDay: day)]),
             TaskListItem(title: "Inbox"),
         ]
         let s = TaskDaySections.make(for: day, kind: .past, items: items, calendar: cal)
-        #expect(ids(s.due) == ["Missed"])
+        #expect(Set(ids(s.due)) == ["Missed", "Planned only"])
         #expect(ids(s.completed) == ["Done then"])
         #expect(s.inbox.isEmpty)
     }
@@ -61,5 +62,39 @@ struct TaskDaySectionsTests {
         let item = TaskListItem(title: "Night", schedules: [block])
         #expect(ids(TaskDaySections.make(for: d1, kind: .future, items: [item], calendar: cal).due) == ["Night"])
         #expect(ids(TaskDaySections.make(for: d2, kind: .future, items: [item], calendar: cal).due) == ["Night"])
+    }
+
+    @Test("Planned order: timed blocks by start, then untimed by title")
+    func planOrder() {
+        let day = TestCalendar.day(3)
+        func block(_ hours: Int) -> TaskScheduleItem {
+            TaskScheduleItem(plannedDay: day,
+                             startAt: cal.date(byAdding: .hour, value: hours, to: day),
+                             endAt: cal.date(byAdding: .hour, value: hours + 1, to: day))
+        }
+        let items = [
+            TaskListItem(title: "B", dueDate: day),
+            TaskListItem(title: "Late", schedules: [block(2)]),
+            TaskListItem(title: "A", dueDate: day),
+            TaskListItem(title: "Early", schedules: [block(-4)]),
+        ]
+        for kind in [TodayDayKind.future, .past] {
+            let s = TaskDaySections.make(for: day, kind: kind, items: items, calendar: cal)
+            #expect(ids(s.due) == ["Early", "Late", "A", "B"])
+        }
+    }
+
+    @Test("A multi-day task orders by its block on the shown day")
+    func multiDayOrder() {
+        let d2 = TestCalendar.day(2), d5 = TestCalendar.day(5)
+        func block(_ day: Date, _ hours: Int) -> TaskScheduleItem {
+            TaskScheduleItem(plannedDay: day,
+                             startAt: cal.date(byAdding: .hour, value: hours, to: day),
+                             endAt: cal.date(byAdding: .hour, value: hours + 1, to: day))
+        }
+        let multi = TaskListItem(title: "Multi", schedules: [block(d2, -4), block(d5, 6)])   // 08:00 and 18:00
+        let single = TaskListItem(title: "Single", schedules: [block(d5, -3)])               // 09:00
+        let s = TaskDaySections.make(for: d5, kind: .future, items: [multi, single], calendar: cal)
+        #expect(ids(s.due) == ["Single", "Multi"])
     }
 }

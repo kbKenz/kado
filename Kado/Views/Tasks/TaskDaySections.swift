@@ -34,22 +34,30 @@ struct TaskDaySections {
                     || item.schedules.contains { $0.belongs(to: start, calendar: calendar) }
             }
             let inbox = pending.filter { $0.dueDate == nil && $0.schedules.isEmpty }
-            return TaskDaySections(due: sortedByPlan(due), inbox: inbox, completed: completedOnDay)
+            return TaskDaySections(due: sortedByPlan(due, calendar: calendar), inbox: inbox, completed: completedOnDay)
         case .past:
-            return TaskDaySections(due: sortedByPlan(pending.filter(onDay)), completed: completedOnDay)
+            return TaskDaySections(due: sortedByPlan(pending.filter(onDay), on: start, calendar: calendar), completed: completedOnDay)
         case .future:
-            return TaskDaySections(due: sortedByPlan(items.filter(onDay)))
+            return TaskDaySections(due: sortedByPlan(items.filter(onDay), on: start, calendar: calendar))
         }
     }
 
     /// Due day, then start time, then title — the order Today always used.
-    private static func sortedByPlan(_ items: [TaskListItem]) -> [TaskListItem] {
-        items.sorted { lhs, rhs in
-            let leftDate = lhs.dueDate ?? lhs.schedules.first?.plannedDay ?? .distantFuture
-            let rightDate = rhs.dueDate ?? rhs.schedules.first?.plannedDay ?? .distantFuture
+    /// With `day` (past and future views) a multi-day task orders by its
+    /// block on that day; today passes nil and keeps the first block.
+    private static func sortedByPlan(_ items: [TaskListItem], on day: Date? = nil, calendar: Calendar) -> [TaskListItem] {
+        func block(_ item: TaskListItem) -> TaskScheduleItem? {
+            if let day, let match = item.schedules.first(where: { $0.belongs(to: day, calendar: calendar) }) {
+                return match
+            }
+            return item.schedules.first
+        }
+        return items.sorted { lhs, rhs in
+            let leftDate = lhs.dueDate ?? block(lhs)?.plannedDay ?? .distantFuture
+            let rightDate = rhs.dueDate ?? block(rhs)?.plannedDay ?? .distantFuture
             if leftDate != rightDate { return leftDate < rightDate }
-            let leftTime = lhs.schedules.first?.startAt ?? .distantFuture
-            let rightTime = rhs.schedules.first?.startAt ?? .distantFuture
+            let leftTime = block(lhs)?.startAt ?? .distantFuture
+            let rightTime = block(rhs)?.startAt ?? .distantFuture
             return leftTime == rightTime
                 ? lhs.title.localizedStandardCompare(rhs.title) == .orderedAscending
                 : leftTime < rightTime

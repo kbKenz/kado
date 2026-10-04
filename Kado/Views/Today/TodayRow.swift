@@ -54,6 +54,9 @@ extension TodayRow {
         for row in records.map({ TodayRow($0) }) {
             // Days before a habit's first day aren't its days at all;
             // listing it there would let a tap backdate its start (#104).
+            // Note: raising "Day starts at" after creating a habit between
+            // midnight and the new rollover can hide it until the rollover
+            // (createdAt falls on the next logical day).
             guard row.habit.isListed(on: now, completions: row.completions, calendar: calendar) else {
                 continue
             }

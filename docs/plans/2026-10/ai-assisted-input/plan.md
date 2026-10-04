@@ -101,7 +101,7 @@ its engine is not available.
 
 ---
 
-### Task 3: `AssistedInputModel` state machine (tests first)
+### Task 3: `AssistedInputModel` state machine (tests first) ✅
 
 **Goal**: all behaviour of the control, testable without a view.
 
@@ -111,11 +111,16 @@ its engine is not available.
   - `state: State` enum — `.idle`, `.recording(base: String)`,
     `.cleaning`, `.failed(AssistedInputError)`.
   - `undoSnapshot: String?`.
-  - `toggleRecording(text: Binding)`, `clean(text: Binding)`,
-    `undo(text: Binding)`, `textDidChangeByUser()`.
+  - `toggleRecording(text:)`, `clean(text:)`, `undo(text:)`,
+    `textDidChange(to:)`, `stopIfRecording()`, `dismissFailure()`.
+    Actions return their `Task` (or `nil` when not allowed) so tests
+    await them instead of sleeping.
+  - A cleanup result is dropped if the user edited the text while
+    the model ran (their text wins).
   - Guard flags set synchronously before spawning a `Task` (the
     `TipJarView` double-tap rule in `CLAUDE.md`).
-  - Undo expiry through an injected `Clock` so tests do not sleep.
+  - Undo expiry through an injected `sleep` function so tests fire
+    it by hand.
 - `KadoTests/AssistedInputModelTests.swift`.
 
 **Tests / verification**:

@@ -92,7 +92,7 @@ final class DevModeController {
     }
 
     private func makeDevContainer() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV7.self)
+        let schema = Schema(versionedSchema: KadoSchemaV8.self)
         let configuration = ModelConfiguration(
             schema: schema,
             url: devStoreURL,

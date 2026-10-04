@@ -32,15 +32,63 @@ struct KadoSchemaTests {
         #expect(KadoSchemaV5.versionIdentifier == Schema.Version(5, 0, 0))
     }
 
-    @Test("Migration plan declares a lightweight stage for each version through V6")
-    func migrationPlanShape() {
-        #expect(KadoMigrationPlan.schemas.count == 7)
-        #expect(KadoMigrationPlan.stages.count == 6)
+    @Test("V8 version identifier is 8.0.0 and adds work sessions")
+    func v8Version() {
+        #expect(KadoSchemaV8.versionIdentifier == Schema.Version(8, 0, 0))
+        #expect(KadoSchemaV8.models.contains { $0 == KadoSchemaV8.WorkSessionRecord.self })
     }
 
-    @Test("In-memory ModelContainer constructs from the current (V6) schema")
+    @Test("V7 to V8 keeps habits, tasks and blocks and accepts work sessions")
+    func v7ToV8Migration() throws {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("sessions-migration-\(UUID().uuidString).store")
+        defer {
+            for suffix in ["", "-wal", "-shm"] {
+                try? FileManager.default.removeItem(atPath: url.path + suffix)
+            }
+        }
+        let habitID = UUID()
+        let taskID = UUID()
+        let blockID = UUID()
+        do {
+            let schema = Schema(versionedSchema: KadoSchemaV7.self)
+            let store = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url))
+            let habit = KadoSchemaV7.HabitRecord(id: habitID, name: "Read")
+            let task = KadoSchemaV7.TaskRecord(id: taskID, title: "Research")
+            store.mainContext.insert(habit)
+            store.mainContext.insert(task)
+            store.mainContext.insert(KadoSchemaV7.ScheduleBlockRecord(id: blockID, task: task))
+            try store.mainContext.save()
+        }
+        let schema = Schema(versionedSchema: KadoSchemaV8.self)
+        let store = try ModelContainer(
+            for: schema,
+            migrationPlan: KadoMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url)
+        )
+        let context = store.mainContext
+        let task = try #require(context.fetch(FetchDescriptor<KadoSchemaV8.TaskRecord>()).first)
+        #expect(task.id == taskID)
+        #expect(task.scheduleBlocks?.first?.id == blockID)
+        #expect(task.workSessions?.isEmpty ?? true)
+        #expect(try context.fetch(FetchDescriptor<KadoSchemaV8.HabitRecord>()).first?.id == habitID)
+        let block = try #require(task.scheduleBlocks?.first)
+        let session = KadoSchemaV8.WorkSessionRecord(startedAt: .now, task: task, scheduleBlock: block)
+        context.insert(session)
+        try context.save()
+        #expect(task.workSessions?.count == 1)
+        #expect(block.workSessions?.count == 1)
+    }
+
+    @Test("Migration plan declares a lightweight stage for each version through V8")
+    func migrationPlanShape() {
+        #expect(KadoMigrationPlan.schemas.count == 8)
+        #expect(KadoMigrationPlan.stages.count == 7)
+    }
+
+    @Test("In-memory ModelContainer constructs from the current (V8) schema")
     func containerBuildsFromPlan() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV7.self)
+        let schema = Schema(versionedSchema: KadoSchemaV8.self)
         let container = try ModelContainer(
             for: schema,
             migrationPlan: KadoMigrationPlan.self,

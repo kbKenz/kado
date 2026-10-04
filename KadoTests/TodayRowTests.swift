@@ -14,7 +14,7 @@ import KadoCore
 @MainActor
 struct TodayRowTests {
     private func makeContainer() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV7.self)
+        let schema = Schema(versionedSchema: KadoSchemaV8.self)
         return try ModelContainer(
             for: schema,
             migrationPlan: KadoMigrationPlan.self,

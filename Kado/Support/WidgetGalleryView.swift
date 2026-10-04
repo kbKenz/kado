@@ -260,7 +260,7 @@ private struct WidgetGalleryPreview: View {
     }
 
     private var previewContainer: ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV7.self)
+        let schema = Schema(versionedSchema: KadoSchemaV8.self)
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try! ModelContainer(for: schema, configurations: configuration)
         DevModeSeed.seed(into: container.mainContext)

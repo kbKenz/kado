@@ -5,7 +5,7 @@ import SwiftData
 /// oldest-to-newest; `stages` bridges each consecutive pair.
 public enum KadoMigrationPlan: SchemaMigrationPlan {
     public static var schemas: [any VersionedSchema.Type] {
-        [KadoSchemaV1.self, KadoSchemaV2.self, KadoSchemaV3.self, KadoSchemaV4.self, KadoSchemaV5.self, KadoSchemaV6.self, KadoSchemaV7.self]
+        [KadoSchemaV1.self, KadoSchemaV2.self, KadoSchemaV3.self, KadoSchemaV4.self, KadoSchemaV5.self, KadoSchemaV6.self, KadoSchemaV7.self, KadoSchemaV8.self]
     }
 
     public static var stages: [MigrationStage] {
@@ -30,7 +30,8 @@ public enum KadoMigrationPlan: SchemaMigrationPlan {
                 fromVersion: KadoSchemaV5.self,
                 toVersion: KadoSchemaV6.self
             ),
-            .lightweight(fromVersion: KadoSchemaV6.self, toVersion: KadoSchemaV7.self)
+            .lightweight(fromVersion: KadoSchemaV6.self, toVersion: KadoSchemaV7.self),
+            .lightweight(fromVersion: KadoSchemaV7.self, toVersion: KadoSchemaV8.self)
         ]
     }
 }

@@ -1,18 +1,18 @@
 import Foundation
 import SwiftData
 
-/// Version 7 adds goal measurements and independently stored manual contributions.
-/// Earlier schemas remain frozen; existing completion and calendar
-/// history survive through an additive lightweight migration.
-public enum KadoSchemaV7: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(7, 0, 0)
+/// Version 8 adds tracked work sessions (the Now tab). Planned blocks
+/// stay plans; actual time lives only in `WorkSessionRecord`. Additive,
+/// so V7 stores migrate lightweight.
+public enum KadoSchemaV8: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(8, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
-        [HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self, GoalProgressEntryRecord.self]
+        [HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self, GoalProgressEntryRecord.self, WorkSessionRecord.self]
     }
 }
 
-public extension KadoSchemaV7 {
+public extension KadoSchemaV8 {
     /// A goal groups ongoing habits and one-off tasks. Deleting it
     /// removes their links while preserving those items and history.
     @Model
@@ -129,6 +129,9 @@ public extension KadoSchemaV7 {
         @Relationship(deleteRule: .cascade, inverse: \ScheduleBlockRecord.task)
         public var scheduleBlocks: [ScheduleBlockRecord]? = []
 
+        @Relationship(deleteRule: .cascade, inverse: \WorkSessionRecord.task)
+        public var workSessions: [WorkSessionRecord]? = []
+
         public init(
             id: UUID = UUID(),
             title: String = "",
@@ -180,6 +183,11 @@ public extension KadoSchemaV7 {
         public var task: TaskRecord?
         public var habit: HabitRecord?
 
+        /// Sessions started from this block. Deleting the block keeps
+        /// the tracked time; the session just loses its plan link.
+        @Relationship(deleteRule: .nullify, inverse: \WorkSessionRecord.scheduleBlock)
+        public var workSessions: [WorkSessionRecord]? = []
+
         public init(
             id: UUID = UUID(),
             plannedDay: Date = .now,
@@ -222,6 +230,9 @@ public extension KadoSchemaV7 {
 
         @Relationship(deleteRule: .cascade, inverse: \ScheduleBlockRecord.habit)
         public var scheduleBlocks: [ScheduleBlockRecord]? = []
+
+        @Relationship(deleteRule: .cascade, inverse: \WorkSessionRecord.habit)
+        public var workSessions: [WorkSessionRecord]? = []
 
         public init(
             id: UUID = UUID(),
@@ -336,4 +347,53 @@ public extension KadoSchemaV7 {
             )
         }
     }
+
+    /// Real time spent on a task or habit. Open while `endedAt` is
+    /// nil; paused while `pausedAt` is set. `pausedSeconds` holds the
+    /// total of finished pauses only.
+    @Model
+    public final class WorkSessionRecord {
+        public var id: UUID = UUID()
+        public var startedAt: Date = Date()
+        public var endedAt: Date?
+        public var pausedAt: Date?
+        public var pausedSeconds: Double = 0
+        public var createdAt: Date = Date()
+        public var updatedAt: Date = Date()
+        public var task: TaskRecord?
+        public var habit: HabitRecord?
+        public var scheduleBlock: ScheduleBlockRecord?
+
+        public init(
+            id: UUID = UUID(),
+            startedAt: Date = .now,
+            endedAt: Date? = nil,
+            pausedAt: Date? = nil,
+            pausedSeconds: Double = 0,
+            createdAt: Date = .now,
+            updatedAt: Date = .now,
+            task: TaskRecord? = nil,
+            habit: HabitRecord? = nil,
+            scheduleBlock: ScheduleBlockRecord? = nil
+        ) {
+            self.id = id
+            self.startedAt = startedAt
+            self.endedAt = endedAt
+            self.pausedAt = pausedAt
+            self.pausedSeconds = pausedSeconds
+            self.createdAt = createdAt
+            self.updatedAt = updatedAt
+            self.task = task
+            self.habit = habit
+            self.scheduleBlock = scheduleBlock
+        }
+    }
 }
+
+public typealias HabitRecord = KadoSchemaV8.HabitRecord
+public typealias CompletionRecord = KadoSchemaV8.CompletionRecord
+public typealias TaskRecord = KadoSchemaV8.TaskRecord
+public typealias ScheduleBlockRecord = KadoSchemaV8.ScheduleBlockRecord
+public typealias GoalRecord = KadoSchemaV8.GoalRecord
+public typealias GoalProgressEntryRecord = KadoSchemaV8.GoalProgressEntryRecord
+public typealias WorkSessionRecord = KadoSchemaV8.WorkSessionRecord

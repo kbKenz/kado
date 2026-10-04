@@ -27,6 +27,7 @@ struct CloudKitShapeTests {
             ("V5", Schema(versionedSchema: KadoSchemaV5.self)),
             ("V6", Schema(versionedSchema: KadoSchemaV6.self)),
             ("V7", Schema(versionedSchema: KadoSchemaV7.self)),
+            ("V8", Schema(versionedSchema: KadoSchemaV8.self)),
         ]
     }
 

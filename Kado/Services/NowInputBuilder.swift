@@ -26,6 +26,7 @@ struct NowInputBuilder {
         let dayEnd = boundary.nextRollover(after: now)
         let distantPast = Date.distantPast
 
+        // A typed nil: three inline `== nil` checks time out the #Predicate type-checker.
         let noDate: Date? = nil
         let openTasks = #Predicate<TaskRecord> { task in
             task.completedAt == noDate && task.archivedAt == noDate && task.externalCancelledAt == noDate

@@ -79,16 +79,21 @@ struct NowInputBuilderTests {
         let context = try context()
         let task = TaskRecord(title: "Open")
         context.insert(task)
-        let lateNight = ScheduleBlockRecord(plannedDay: now, startAt: TestCalendar.instant(calendar, 2026, 4, 13, 23), task: task)
-        let nextDay = ScheduleBlockRecord(plannedDay: now, startAt: TestCalendar.instant(calendar, 2026, 4, 14, 5), task: task)
-        [lateNight, nextDay].forEach(context.insert)
+        func block(_ day: Int, _ hour: Int, _ minute: Int) -> ScheduleBlockRecord {
+            ScheduleBlockRecord(plannedDay: now, startAt: TestCalendar.instant(calendar, 2026, 4, day, hour, minute), task: task)
+        }
+        let beforeStart = block(13, 3, 59)
+        let atStart = block(13, 4, 0)
+        let beforeEnd = block(14, 3, 59)
+        let atEnd = block(14, 4, 0)
+        [beforeStart, atStart, beforeEnd, atEnd].forEach(context.insert)
         try context.save()
 
-        // 02:00 on the 14th with a 4 AM day start is still the 13th.
+        // 02:00 on the 14th with a 4 AM day start is still the 13th: the window is 13th 04:00 up to, not including, 14th 04:00.
         let early = TestCalendar.instant(calendar, 2026, 4, 14, 2)
         let shifted = NowInputBuilder(boundary: DayBoundary(calendar: calendar, startHour: 4), evaluator: DefaultFrequencyEvaluator(calendar: calendar))
         let input = try shifted.build(now: early, in: context)
-        #expect(input.blocks.map(\.id) == [lateNight.id])
+        #expect(Set(input.blocks.map(\.id)) == [atStart.id, beforeEnd.id])
     }
 
     @Test("A block on another day is not read")

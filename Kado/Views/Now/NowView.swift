@@ -24,6 +24,9 @@ struct NowView: View {
     @State private var detail: NowItem?
     @State private var showingError = false
 
+    /// Readable column width, so iPad does not stretch the cards.
+    private static let maxContentWidth: CGFloat = 560
+
     private static let logger = Logger(subsystem: "dev.scastiel.kado", category: "now")
 
     var body: some View {
@@ -68,12 +71,18 @@ struct NowView: View {
         case .success(let input):
             let screen = NowResolver(boundary: dayBoundary)
                 .resolve(now: now, blocks: input.blocks, openSession: input.openSession)
-            ScrollView {
-                VStack(alignment: .leading, spacing: 32) {
-                    main(screen.state, now: now)
-                    if let next = screen.upNext { upNext(next) }
+            // The group is centered when it fits and scrolls when it
+            // doesn't (large Dynamic Type): `minHeight` is the viewport.
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 32) {
+                        main(screen.state, now: now)
+                        if let next = screen.upNext { upNext(next) }
+                    }
+                    .frame(maxWidth: Self.maxContentWidth)
+                    .padding()
+                    .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
                 }
-                .padding()
             }
         }
     }
@@ -110,7 +119,10 @@ struct NowView: View {
             }
             startSomethingButton
         case .empty:
+            // ContentUnavailableView fills the height it is offered, which
+            // would push the button to the bottom: size it to its content.
             NowEmptyState()
+                .fixedSize(horizontal: false, vertical: true)
             startSomethingButton
         }
     }
@@ -119,6 +131,7 @@ struct NowView: View {
         Button("Start something…") { showingStartSomething = true }
             .buttonStyle(.bordered)
             .controlSize(.large)
+            .frame(maxWidth: .infinity, alignment: .center)
             .accessibilityIdentifier(AccessibilityID.Now.startSomething)
     }
 

@@ -112,9 +112,7 @@ enum AccessibilityID {
         static let name = "goalForm.name"
         static let details = "goalForm.details"
         static let status = "goalForm.status"
-        static let hasStartDate = "goalForm.hasStartDate"
         static let startDate = "goalForm.startDate"
-        static let hasTargetDate = "goalForm.hasTargetDate"
         static let targetDate = "goalForm.targetDate"
         static let dateError = "goalForm.dateError"
         static let cancel = "goalForm.cancel"
@@ -137,16 +135,21 @@ enum AccessibilityID {
         static let moveConfirm = "goalLinks.move.confirm"
     }
 
+    /// Controls of an `OptionalDateRow`, derived from the identifier its
+    /// picker carries (e.g. `Tasks.day`).
+    enum OptionalDate {
+        static func add(_ base: String) -> String { base + ".add" }
+        static func clear(_ base: String) -> String { base + ".clear" }
+        static func quick(_ base: String, _ pick: String) -> String { base + "." + pick }
+    }
+
     enum Tasks {
         static let rowPrefix = "task.row."
         static func row(_ id: UUID) -> String { rowPrefix + id.uuidString }
         static func complete(_ id: UUID) -> String { "task.complete.\(id.uuidString)" }
         static let title = "taskForm.title"
         static let notes = "taskForm.notes"
-        static let hasDay = "taskForm.hasDay"
         static let day = "taskForm.day"
-        static let hasStart = "taskForm.hasStart"
-        static let hasEnd = "taskForm.hasEnd"
         static let start = "taskForm.start"
         static let end = "taskForm.end"
         static let timeError = "taskForm.timeError"

@@ -10,9 +10,11 @@ final class TaskCalendarTests: KadoUITestCase {
         app.buttons[AccessibilityID.Today.addButton].firstMatch.tap()
         app.buttons[AccessibilityID.Today.newTaskButton].firstMatch.tap()
         enterTitle("Buy groceries", in: app)
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasDay].value as? String, "0")
-        XCTAssertFalse(app.switches[AccessibilityID.Tasks.hasStart].exists)
-        XCTAssertFalse(app.switches[AccessibilityID.Tasks.hasEnd].exists)
+        // No day yet: the quick picks are offered, and no time rows
+        // exist without a day.
+        expectButton(OptionalDate.quick(Tasks.day, "today"), in: app)
+        XCTAssertFalse(app.buttons[OptionalDate.add(Tasks.start)].exists)
+        XCTAssertFalse(app.buttons[OptionalDate.add(Tasks.end)].exists)
         saveTask(in: app)
 
         let row = taskRow(named: "Buy groceries", in: app)
@@ -28,9 +30,10 @@ final class TaskCalendarTests: KadoUITestCase {
         tapTab(.calendar, in: app)
         app.buttons[AccessibilityID.Calendar.newTask].tap()
         enterTitle("Plan tomorrow", in: app)
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasDay].value as? String, "1")
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasStart].value as? String, "0")
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasEnd].value as? String, "0")
+        // Opened from Calendar: the day is set, times are not.
+        expectButton(OptionalDate.clear(Tasks.day), in: app)
+        expectButton(OptionalDate.add(Tasks.start), in: app)
+        expectButton(OptionalDate.add(Tasks.end), in: app)
         saveTask(in: app)
 
         let row = taskRow(named: "Plan tomorrow", in: app)
@@ -59,8 +62,9 @@ final class TaskCalendarTests: KadoUITestCase {
         tapTab(.calendar, in: app)
         app.buttons[AccessibilityID.Calendar.newTask].tap()
         enterTitle("Deep work", in: app)
-        toggle(AccessibilityID.Tasks.hasStart, in: app)
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasEnd].value as? String, "0")
+        tapButton(OptionalDate.add(Tasks.start), in: app)
+        expectButton(OptionalDate.clear(Tasks.start), in: app)
+        expectButton(OptionalDate.add(Tasks.end), in: app)
         saveTask(in: app)
 
         let block = elements(withIdentifierPrefix: AccessibilityID.Calendar.blockPrefix, in: app).firstMatch
@@ -68,8 +72,8 @@ final class TaskCalendarTests: KadoUITestCase {
         XCTAssertTrue(block.label.contains("Deep work"))
         block.tap()
         XCTAssertTrue(app.textFields[AccessibilityID.Tasks.title].waitForExistence(timeout: 10))
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasStart].value as? String, "1")
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasEnd].value as? String, "0")
+        expectButton(OptionalDate.clear(Tasks.start), in: app)
+        expectButton(OptionalDate.add(Tasks.end), in: app)
         capture(app, "task-start-only")
     }
 
@@ -79,8 +83,9 @@ final class TaskCalendarTests: KadoUITestCase {
         tapTab(.calendar, in: app)
         app.buttons[AccessibilityID.Calendar.newTask].tap()
         enterTitle("Submit application", in: app)
-        toggle(AccessibilityID.Tasks.hasEnd, in: app)
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasStart].value as? String, "0")
+        tapButton(OptionalDate.add(Tasks.end), in: app)
+        expectButton(OptionalDate.clear(Tasks.end), in: app)
+        expectButton(OptionalDate.add(Tasks.start), in: app)
         saveTask(in: app)
 
         let row = taskRow(named: "Submit application", in: app)
@@ -88,8 +93,8 @@ final class TaskCalendarTests: KadoUITestCase {
         XCTAssertTrue(row.label.contains("Ends at"))
         row.tap()
         XCTAssertTrue(app.textFields[AccessibilityID.Tasks.title].waitForExistence(timeout: 10))
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasStart].value as? String, "0")
-        XCTAssertEqual(app.switches[AccessibilityID.Tasks.hasEnd].value as? String, "1")
+        expectButton(OptionalDate.add(Tasks.start), in: app)
+        expectButton(OptionalDate.clear(Tasks.end), in: app)
         capture(app, "task-end-only")
     }
 
@@ -112,12 +117,24 @@ final class TaskCalendarTests: KadoUITestCase {
         XCTAssertTrue(app.textFields[AccessibilityID.Tasks.title].waitForNonExistence(timeout: 10))
     }
 
+    private typealias OptionalDate = AccessibilityID.OptionalDate
+    private typealias Tasks = AccessibilityID.Tasks
+
+    /// Scrolls first: a `Form` row below the fold is not in the
+    /// hierarchy, so a bare `exists` would fail (or an absence check
+    /// pass) for the wrong reason.
     @MainActor
-    private func toggle(_ identifier: String, in app: XCUIApplication) {
-        let row = app.switches[identifier]
-        scrollTo(row, in: app)
-        let control = row.switches.firstMatch
-        (control.exists ? control : row).tap()
+    private func expectButton(_ identifier: String, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let button = app.buttons[identifier]
+        scrollTo(button, in: app, file: file, line: line)
+        XCTAssertTrue(button.exists, "Missing \(identifier)", file: file, line: line)
+    }
+
+    @MainActor
+    private func tapButton(_ identifier: String, in app: XCUIApplication) {
+        let button = app.buttons[identifier]
+        scrollTo(button, in: app)
+        button.tap()
     }
 
     @MainActor

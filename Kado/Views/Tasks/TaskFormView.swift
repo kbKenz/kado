@@ -17,10 +17,8 @@ struct TaskFormView: View {
 
     @State private var title = ""
     @State private var notes = ""
-    @State private var hasDay = false
+    /// `nil` means not set. Times exist only with a day.
     @State private var day: Date?
-    @State private var hasStart = false
-    @State private var hasEnd = false
     @State private var startTime: Date?
     @State private var endTime: Date?
     @State private var populated = false
@@ -107,23 +105,36 @@ struct TaskFormView: View {
 
     private var schedulingSection: some View {
         Section {
-            Toggle("Choose a day", isOn: $hasDay)
-                .accessibilityIdentifier(AccessibilityID.Tasks.hasDay)
-            if hasDay {
-                DatePicker("Day", selection: dayBinding, displayedComponents: .date)
-                    .accessibilityIdentifier(AccessibilityID.Tasks.day)
-                Toggle("Start time", isOn: $hasStart)
-                    .accessibilityIdentifier(AccessibilityID.Tasks.hasStart)
-                if hasStart {
-                    DatePicker("Starts", selection: startBinding, displayedComponents: .hourAndMinute)
-                        .accessibilityIdentifier(AccessibilityID.Tasks.start)
-                }
-                Toggle("End time", isOn: $hasEnd)
-                    .accessibilityIdentifier(AccessibilityID.Tasks.hasEnd)
-                if hasEnd {
-                    DatePicker("Ends", selection: endBinding, displayedComponents: .hourAndMinute)
-                        .accessibilityIdentifier(AccessibilityID.Tasks.end)
-                }
+            OptionalDateRow(
+                title: "Date",
+                addTitle: "Add date",
+                systemImage: "calendar",
+                value: dayBinding,
+                quickPicks: dayQuickPicks,
+                suggestion: { civilToday },
+                identifier: AccessibilityID.Tasks.day
+            )
+            if let day {
+                OptionalDateRow(
+                    title: "Start time",
+                    addTitle: "Add start time",
+                    systemImage: "clock",
+                    value: $startTime,
+                    kind: .time,
+                    suggestion: { ScheduleDefaults.startTime(on: day, now: .now, calendar: calendar) },
+                    identifier: AccessibilityID.Tasks.start
+                )
+                OptionalDateRow(
+                    title: "End time",
+                    addTitle: "Add end time",
+                    systemImage: "clock.badge.checkmark",
+                    value: $endTime,
+                    kind: .time,
+                    suggestion: {
+                        ScheduleDefaults.endTime(on: day, start: startTime, now: .now, calendar: calendar)
+                    },
+                    identifier: AccessibilityID.Tasks.end
+                )
                 if let scheduleError {
                     Text(scheduleError)
                         .font(.footnote)
@@ -134,7 +145,7 @@ struct TaskFormView: View {
         } header: {
             Text("Schedule (optional)")
         } footer: {
-            Text(hasDay
+            Text(day != nil
                 ? String(localized: "Start and end are optional. A task with no times appears under Any time in Calendar. Planned time does not mark a task complete.")
                 : String(localized: "Without a day, this task stays in your Today inbox. You can schedule it later."))
         }
@@ -157,16 +168,26 @@ struct TaskFormView: View {
         return url
     }
 
-    private var dayBinding: Binding<Date> {
-        Binding(get: { day ?? civilToday }, set: { day = $0 })
+    /// Clearing the day clears its times too: a time needs a day.
+    private var dayBinding: Binding<Date?> {
+        Binding(
+            get: { day },
+            set: { newDay in
+                day = newDay.map { calendar.startOfDay(for: $0) }
+                if newDay == nil {
+                    startTime = nil
+                    endTime = nil
+                }
+            }
+        )
     }
 
-    private var startBinding: Binding<Date> {
-        Binding(get: { startTime ?? day ?? civilToday }, set: { startTime = $0 })
-    }
-
-    private var endBinding: Binding<Date> {
-        Binding(get: { endTime ?? day ?? civilToday }, set: { endTime = $0 })
+    private var dayQuickPicks: [OptionalDateRow.QuickPick] {
+        let days = ScheduleDefaults.quickDays(today: civilToday, calendar: calendar)
+        return [
+            .init(id: "today", title: "Today", date: days.today),
+            .init(id: "tomorrow", title: "Tomorrow", date: days.tomorrow),
+        ]
     }
 
     private var errorBinding: Binding<Bool> {
@@ -176,9 +197,9 @@ struct TaskFormView: View {
     private var draft: TaskScheduleDraft {
         TaskScheduleDraft(
             title: title,
-            day: hasDay ? day : nil,
-            startTime: hasDay && hasStart ? startTime : nil,
-            endTime: hasDay && hasEnd ? endTime : nil
+            day: day,
+            startTime: day == nil ? nil : startTime,
+            endTime: day == nil ? nil : endTime
         )
     }
 
@@ -209,13 +230,9 @@ struct TaskFormView: View {
         selectedGoalID = snapshot?.goalID
         let firstBlock = snapshot?.schedules.first
         let scheduledDay = firstBlock?.plannedDay ?? snapshot?.dueDate ?? defaultDay
-        hasDay = scheduledDay != nil
-        let selectedDay = calendar.startOfDay(for: scheduledDay ?? civilToday)
-        day = selectedDay
-        hasStart = firstBlock?.startAt != nil
-        hasEnd = firstBlock?.endAt != nil
-        startTime = firstBlock?.startAt ?? calendar.date(bySettingHour: 9, minute: 0, second: 0, of: selectedDay)
-        endTime = firstBlock?.endAt ?? calendar.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDay)
+        day = scheduledDay.map { calendar.startOfDay(for: $0) }
+        startTime = firstBlock?.startAt
+        endTime = firstBlock?.endAt
         populated = true
         titleFocused = taskID == nil && !UITestSupport.suppressesNameAutoFocus
     }

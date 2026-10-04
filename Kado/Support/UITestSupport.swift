@@ -325,6 +325,8 @@ nonisolated enum UITestSupport {
         else { return }
         let count = (try? context.fetchCount(FetchDescriptor<TaskRecord>())) ?? 0
         guard count == 0 else { return }
+        // Within ten minutes after midnight the block's start falls on the
+        // previous day while `plannedDay` is today. Acceptable for tests.
         let task = TaskRecord(title: "Research")
         context.insert(task)
         context.insert(ScheduleBlockRecord(

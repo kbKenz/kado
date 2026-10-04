@@ -199,9 +199,7 @@ struct NowView: View {
         } catch WorkSessionTracker.TrackerError.sessionAlreadyOpen {
             pendingAlert = "Finish the running session first."
         } catch {
-            let nsError = error as NSError
-            Self.logger.error("Now action failed: \(nsError.domain, privacy: .public) \(nsError.code, privacy: .public)")
-            pendingAlert = "Couldn't save your change. Try again."
+            report(error, afterSheet: true)
         }
     }
 
@@ -233,14 +231,19 @@ struct NowView: View {
         } catch WorkSessionTracker.TrackerError.noOpenSession {
             return
         } catch {
-            let nsError = error as NSError
-            Self.logger.error("Now action failed: \(nsError.domain, privacy: .public) \(nsError.code, privacy: .public)")
-            if afterSheet {
-                pendingAlert = "Couldn't save your change. Try again."
-            } else {
-                errorMessage = "Couldn't save your change. Try again."
-                showingError = true
-            }
+            report(error, afterSheet: afterSheet)
+        }
+    }
+
+    /// Logs the failure and alerts, after the sheet has closed when `afterSheet`.
+    private func report(_ error: Error, afterSheet: Bool) {
+        let nsError = error as NSError
+        Self.logger.error("Now action failed: \(nsError.domain, privacy: .public) \(nsError.code, privacy: .public)")
+        if afterSheet {
+            pendingAlert = "Couldn't save your change. Try again."
+        } else {
+            errorMessage = "Couldn't save your change. Try again."
+            showingError = true
         }
     }
 }

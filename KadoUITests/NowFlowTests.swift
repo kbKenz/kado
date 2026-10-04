@@ -2,30 +2,22 @@ import XCTest
 
 final class NowFlowTests: KadoUITestCase {
     @MainActor
-    private func attachScreenshot(_ name: String, of app: XCUIApplication) {
-        let attachment = XCTAttachment(screenshot: app.screenshot())
-        attachment.name = name
-        attachment.lifetime = .keepAlways
-        add(attachment)
-    }
-
-    @MainActor
     func testStartPauseResumeFinishDone() {
         let app = launchApp(resetState: true, startOnNow: true, seedNowBlock: true)
         let start = app.buttons[AccessibilityID.Now.start]
         XCTAssertTrue(start.waitForExistence(timeout: 15))
-        attachScreenshot("1-suggested-current-block", of: app)
+        capture(app, "1-suggested-current-block")
         start.tap()
 
         let pause = app.buttons[AccessibilityID.Now.pause]
         XCTAssertTrue(pause.waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons[AccessibilityID.Now.finish].exists)
-        attachScreenshot("2-running", of: app)
+        capture(app, "2-running")
         pause.tap()
 
         let resume = app.buttons[AccessibilityID.Now.resume]
         XCTAssertTrue(resume.waitForExistence(timeout: 5))
-        attachScreenshot("3-paused", of: app)
+        capture(app, "3-paused")
         resume.tap()
         XCTAssertTrue(pause.waitForExistence(timeout: 5))
 
@@ -36,6 +28,10 @@ final class NowFlowTests: KadoUITestCase {
 
         XCTAssertTrue(app.buttons[AccessibilityID.Now.startSomething].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons[AccessibilityID.Now.start].exists)
+        XCTAssertFalse(app.buttons[AccessibilityID.Now.pause].exists)
+        XCTAssertFalse(app.buttons[AccessibilityID.Now.finish].exists)
+        XCTAssertFalse(app.staticTexts["Research"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)[AccessibilityID.Now.title].exists)
     }
 
     @MainActor
@@ -51,5 +47,7 @@ final class NowFlowTests: KadoUITestCase {
         XCTAssertTrue(notYet.waitForExistence(timeout: 5))
         notYet.tap()
         XCTAssertTrue(start.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons[AccessibilityID.Now.pause].exists)
+        XCTAssertFalse(app.buttons[AccessibilityID.Now.finish].exists)
     }
 }

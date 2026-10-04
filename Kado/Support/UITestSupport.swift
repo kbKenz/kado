@@ -102,6 +102,17 @@ nonisolated enum UITestSupport {
         /// here a user can change later — see the note at the top of
         /// this file.
         static let habitTheme = "-uiTestHabitTheme"
+        /// Open on Now like a real launch. UI runs otherwise open on
+        /// Today, where the suite has always started.
+        static let startOnNow = "-uiTestStartOnNow"
+    }
+
+    /// UI runs open on Today, where the suite has always started;
+    /// `-uiTestStartOnNow` opens on Now like a real launch.
+    static var initialTab: AppTab {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard arguments.contains(Argument.uiTestRun) else { return .now }
+        return arguments.contains(Argument.startOnNow) ? .now : .today
     }
 
     /// Whether `KadoApp` should stand in an owning mock for StoreKit.
@@ -174,6 +185,9 @@ nonisolated enum UITestSupport {
         // and the widget reads: a run under `-uiTestSupporter` must not
         // leave the next one owning it.
         SupporterDefaults.sharedDefaults.removeObject(forKey: SupporterDefaults.key)
+        // Today's List / Calendar choice persists, so a run that picked
+        // Calendar would start every later run in it.
+        UserDefaults.standard.removeObject(forKey: TodayView.modeDefaultsKey)
         applyTipNudgeState(arguments)
         applyAppearanceAnnouncementState(arguments)
     }
@@ -347,6 +361,7 @@ import SwiftData
 nonisolated enum UITestSupport {
     static var suppressesNameAutoFocus: Bool { false }
     static var showsWidgetGallery: Bool { false }
+    static var initialTab: AppTab { .now }
     /// `DevModeController` calls this after seeding the dev store, in
     /// every configuration; a no-op here keeps its call site free of
     /// a `#if`.

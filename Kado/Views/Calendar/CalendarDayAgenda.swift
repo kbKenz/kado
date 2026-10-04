@@ -2,14 +2,16 @@ import KadoCore
 import SwiftData
 import SwiftUI
 
-/// Internal calendar for planned blocks. All completion controls
-/// resolve and update the linked task; ScheduleBlock stores no status.
-struct PlannerCalendarView: View {
+/// One day's planned blocks on a timeline, shown by Today's Calendar
+/// mode. All completion controls resolve and update the linked task;
+/// ScheduleBlock stores no status. The day comes from Today's strip, and
+/// the toolbar items merge into Today's navigation stack.
+struct CalendarDayAgenda: View {
+    let day: Date
+
     @Environment(\.modelContext) private var modelContext
     @Environment(\.calendar) private var calendar
-    @Environment(\.civilToday) private var civilToday
     @Environment(\.googleCalendarConnection) private var googleCalendar
-    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @AppStorage(DevModeDefaults.key, store: DevModeDefaults.sharedDefaults) private var isDevMode = false
     @Environment(\.healthTimelineProvider) private var healthProvider
     @Environment(\.scenePhase) private var scenePhase
@@ -38,7 +40,6 @@ struct PlannerCalendarView: View {
     @Query(filter: #Predicate<TaskRecord> { $0.archivedAt == nil && $0.externalCancelledAt == nil }, sort: \TaskRecord.createdAt)
     private var records: [TaskRecord]
 
-    @State private var selectedDay: Date?
     @State private var sheet: CalendarSheet?
     @State private var deletingTaskID: UUID?
     @State private var errorMessage: String?
@@ -58,29 +59,17 @@ struct PlannerCalendarView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                dayNavigation
-                agenda
-            }
-            .background(Color.kadoBackground.ignoresSafeArea())
-            .navigationTitle("Calendar")
-            .navigationBarTitleDisplayMode(.inline)
+        agenda
             .toolbar {
+                // "New task" lives in Today's add menu, which is already
+                // in the toolbar in this mode.
                 ToolbarItem(placement: .topBarLeading) {
                     NavigationLink { GoogleCalendarSettingsView() } label: {
                         Label("Google Calendar", systemImage: "arrow.triangle.2.circlepath")
                     }
                     .accessibilityIdentifier(AccessibilityID.Calendar.googleSettings)
                 }
-                ToolbarItem(placement: .primaryAction) {
-                    Button { sheet = .newTask(day) } label: {
-                        Label("New task", systemImage: "plus")
-                    }
-                    .accessibilityIdentifier(AccessibilityID.Calendar.newTask)
-                }
             }
-            .onAppear { if selectedDay == nil { selectedDay = calendar.startOfDay(for: civilToday) } }
             .task(id: HealthReloadKey(day: day, isEnabled: showsHealth, isActive: scenePhase == .active)) {
                 guard scenePhase == .active else { return }
                 let loaded = await HealthTimelineLoader(provider: healthProvider, calendar: calendar)
@@ -117,86 +106,6 @@ struct PlannerCalendarView: View {
             .alert("Unable to update task", isPresented: errorBinding) {
                 Button("Close", role: .cancel) {}
             } message: { Text(errorMessage ?? "") }
-        }
-    }
-
-    private var day: Date { selectedDay ?? calendar.startOfDay(for: civilToday) }
-
-    private var dayBinding: Binding<Date> {
-        Binding(get: { day }, set: { selectedDay = calendar.startOfDay(for: $0) })
-    }
-
-    private var dayNavigation: some View {
-        VStack(spacing: 12) {
-            dayHeader
-            HStack(spacing: 4) {
-                ForEach(weekDays, id: \.self) { date in
-                    Button { selectedDay = date } label: {
-                        VStack(spacing: 6) {
-                            Text(date.formatted(.dateTime.weekday(.narrow)))
-                                .font(.caption)
-                            Text(date.formatted(.dateTime.day()))
-                                .font(.subheadline.weight(.semibold))
-                        }
-                        .frame(maxWidth: .infinity, minHeight: 48)
-                        .background(calendar.isDate(date, inSameDayAs: day) ? Color.kadoAccentTint : Color.clear, in: RoundedRectangle(cornerRadius: KadoRadius.card))
-                        .foregroundStyle(Color.kadoForeground)
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(date.formatted(date: .complete, time: .omitted))
-                    .accessibilityAddTraits(calendar.isDate(date, inSameDayAs: day) ? .isSelected : [])
-                    .accessibilityIdentifier(AccessibilityID.Calendar.weekDay(dateKey(date)))
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 12)
-        .background(Color.kadoBackgroundSecondary)
-    }
-
-    @ViewBuilder
-    private var dayHeader: some View {
-        if dynamicTypeSize.isAccessibilitySize {
-            VStack(spacing: 4) {
-                selectedDatePicker
-                HStack {
-                    weekNavigationButton(-1)
-                    Spacer()
-                    todayButton
-                    Spacer()
-                    weekNavigationButton(1)
-                }
-            }
-        } else {
-            HStack {
-                weekNavigationButton(-1)
-                selectedDatePicker
-                weekNavigationButton(1)
-                todayButton
-            }
-        }
-    }
-
-    private var selectedDatePicker: some View {
-        DatePicker("Selected day", selection: dayBinding, displayedComponents: .date)
-            .labelsHidden()
-            .frame(maxWidth: .infinity)
-            .accessibilityIdentifier(AccessibilityID.Calendar.datePicker)
-    }
-
-    private var todayButton: some View {
-        Button("Today") { selectedDay = calendar.startOfDay(for: civilToday) }
-            .font(.subheadline)
-            .accessibilityIdentifier(AccessibilityID.Calendar.today)
-    }
-
-    private func weekNavigationButton(_ offset: Int) -> some View {
-        Button { advanceWeek(offset) } label: {
-            Image(systemName: offset < 0 ? "chevron.left" : "chevron.right")
-                .frame(minWidth: 44, minHeight: 44)
-        }
-        .accessibilityLabel(offset < 0 ? Text("Previous week") : Text("Next week"))
-        .accessibilityIdentifier(offset < 0 ? AccessibilityID.Calendar.previousWeek : AccessibilityID.Calendar.nextWeek)
     }
 
     private var agenda: some View {
@@ -311,24 +220,6 @@ struct PlannerCalendarView: View {
         }
     }
 
-    private var weekDays: [Date] {
-        let start = calendar.dateInterval(of: .weekOfYear, for: day)?.start ?? day
-        return (0..<7).compactMap { offset in
-            calendar.date(byAdding: .day, value: offset, to: start).map { calendar.startOfDay(for: $0) }
-        }
-    }
-
-    private func dateKey(_ date: Date) -> String {
-        let values = calendar.dateComponents([.year, .month, .day], from: date)
-        return "\(values.year ?? 0)-\(values.month ?? 0)-\(values.day ?? 0)"
-    }
-
-    private func advanceWeek(_ offset: Int) {
-        if let next = calendar.date(byAdding: .weekOfYear, value: offset, to: day) {
-            selectedDay = calendar.startOfDay(for: next)
-        }
-    }
-
     private func openBlock(_ block: CalendarBlockItem) {
         if let task = block.task { sheet = .editTask(task.id) }
         else if let habitID = block.habitID { sheet = .habit(habitID) }
@@ -376,12 +267,18 @@ struct PlannerCalendarView: View {
 }
 
 #Preview("Calendar") {
-    PlannerCalendarView().modelContainer(PreviewContainer.shared).kadoTheme()
+    NavigationStack {
+        CalendarDayAgenda(day: Calendar.current.startOfDay(for: .now))
+    }
+    .modelContainer(PreviewContainer.shared)
+    .kadoTheme()
 }
 
 #Preview("Dark") {
-    PlannerCalendarView()
-        .modelContainer(PreviewContainer.shared)
-        .kadoTheme()
-        .preferredColorScheme(.dark)
+    NavigationStack {
+        CalendarDayAgenda(day: Calendar.current.startOfDay(for: .now))
+    }
+    .modelContainer(PreviewContainer.shared)
+    .kadoTheme()
+    .preferredColorScheme(.dark)
 }

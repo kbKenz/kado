@@ -20,17 +20,18 @@ final class TaskCalendarTests: KadoUITestCase {
         let row = taskRow(named: "Buy groceries", in: app)
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         capture(app, "today-task-inbox")
-        tapTab(.calendar, in: app)
+        openCalendar(in: app)
         XCTAssertFalse(taskRow(named: "Buy groceries", in: app).exists)
     }
 
     @MainActor
     func testAnyTimeCalendarTaskSharesCompletionWithTodayAndSurvivesRelaunch() {
         let app = launchApp(suppressNameAutoFocus: true)
-        tapTab(.calendar, in: app)
-        app.buttons[AccessibilityID.Calendar.newTask].tap()
+        openCalendar(in: app)
+        app.buttons[AccessibilityID.Today.addButton].firstMatch.tap()
+        app.buttons[AccessibilityID.Today.newTaskButton].firstMatch.tap()
         enterTitle("Plan tomorrow", in: app)
-        // Opened from Calendar: the day is set, times are not.
+        // Opened from Today's Calendar mode: the day is set, times are not.
         expectButton(OptionalDate.clear(Tasks.day), in: app)
         expectButton(OptionalDate.add(Tasks.start), in: app)
         expectButton(OptionalDate.add(Tasks.end), in: app)
@@ -46,21 +47,22 @@ final class TaskCalendarTests: KadoUITestCase {
         expectTask(id, completed: true, in: app)
         app.buttons[AccessibilityID.Tasks.complete(id)].firstMatch.tap()
         expectTask(id, completed: false, in: app)
-        tapTab(.calendar, in: app)
+        openCalendar(in: app)
         expectTask(id, completed: false, in: app)
         capture(app, "calendar-any-time-task")
 
         app.terminate()
         let relaunched = launchApp(resetState: false, suppressNameAutoFocus: true)
-        tapTab(.calendar, in: relaunched)
+        openCalendar(in: relaunched)
         expectTask(id, completed: false, in: relaunched)
     }
 
     @MainActor
     func testStartOnlyTaskAppearsOnTimelineAndKeepsOptionalEnd() {
         let app = launchApp(suppressNameAutoFocus: true)
-        tapTab(.calendar, in: app)
-        app.buttons[AccessibilityID.Calendar.newTask].tap()
+        openCalendar(in: app)
+        app.buttons[AccessibilityID.Today.addButton].firstMatch.tap()
+        app.buttons[AccessibilityID.Today.newTaskButton].firstMatch.tap()
         enterTitle("Deep work", in: app)
         tapButton(OptionalDate.add(Tasks.start), in: app)
         expectButton(OptionalDate.clear(Tasks.start), in: app)
@@ -80,8 +82,9 @@ final class TaskCalendarTests: KadoUITestCase {
     @MainActor
     func testEndOnlyTaskAppearsUnderAnyTimeAndKeepsOptionalStart() {
         let app = launchApp(suppressNameAutoFocus: true)
-        tapTab(.calendar, in: app)
-        app.buttons[AccessibilityID.Calendar.newTask].tap()
+        openCalendar(in: app)
+        app.buttons[AccessibilityID.Today.addButton].firstMatch.tap()
+        app.buttons[AccessibilityID.Today.newTaskButton].firstMatch.tap()
         enterTitle("Submit application", in: app)
         tapButton(OptionalDate.add(Tasks.end), in: app)
         expectButton(OptionalDate.clear(Tasks.end), in: app)

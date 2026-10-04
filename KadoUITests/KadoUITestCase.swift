@@ -119,6 +119,15 @@ class KadoUITestCase: XCTestCase {
         return app
     }
 
+    /// Today's calendar view (the Calendar tab moved into Today).
+    @MainActor
+    func openCalendar(in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        tapTab(.today, in: app, file: file, line: line)
+        let picker = app.segmentedControls[AccessibilityID.Today.modePicker].firstMatch
+        XCTAssertTrue(picker.waitForExistence(timeout: 10), file: file, line: line)
+        picker.buttons.element(boundBy: 1).tap()
+    }
+
     /// Switches tabs.
     ///
     /// By position on iPhone, because SwiftUI's `Tab` gives no seam for

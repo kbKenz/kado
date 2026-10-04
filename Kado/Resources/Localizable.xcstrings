@@ -5571,6 +5571,24 @@
         }
       }
     },
+    "List" : {
+      "comment" : "Name the list option of Today's List / Calendar switch.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "List"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Liste"
+          }
+        }
+      }
+    },
     "Line %lld doesn't have the expected number of columns." : {
       "comment" : "Alert message naming the CSV line with a wrong column count.",
       "localizations" : {
@@ -10811,6 +10829,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ton compte est connecté mais iCloud est injoignable pour le moment. Réessaie dans quelques minutes."
+          }
+        }
+      }
+    },
+    "View" : {
+      "comment" : "Label of the picker that switches Today between list and calendar.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "View"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vue"
           }
         }
       }

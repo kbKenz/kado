@@ -66,6 +66,13 @@ struct TodayView: View {
     /// follows the rollover instead of sticking to yesterday.
     @State private var selectedDay: Date?
 
+    enum Mode: String { case list, calendar }
+
+    static let modeDefaultsKey = "kado.todayMode"
+
+    /// List or Calendar view of the displayed day; remembered across launches.
+    @AppStorage(TodayView.modeDefaultsKey) private var mode: Mode = .list
+
     /// Single source of truth for sheets the Today surface presents.
     /// Replaces the boolean soup that would otherwise emerge from
     /// New / Edit / Log-counter / Log-timer running in parallel.
@@ -105,19 +112,33 @@ struct TodayView: View {
         let days = stripDays
         let progressInput = stripProgressInput
         NavigationStack(path: $path) {
-            content
+            Group {
+                switch mode {
+                case .list: content
+                case .calendar: CalendarDayAgenda(day: displayedDay)
+                }
+            }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.kadoBackground.ignoresSafeArea())
                 .safeAreaInset(edge: .top, spacing: 0) {
-                    DayStrip(
-                        days: days,
-                        selection: stripSelection,
-                        today: today,
-                        progress: { stripProgress(for: $0, input: progressInput) }
-                    )
-                    // A horizontal ScrollView is greedy vertically and
-                    // would take the whole inset, pushing the list away.
-                    .fixedSize(horizontal: false, vertical: true)
+                    VStack(spacing: 8) {
+                        DayStrip(
+                            days: days,
+                            selection: stripSelection,
+                            today: today,
+                            progress: { stripProgress(for: $0, input: progressInput) }
+                        )
+                        // A horizontal ScrollView is greedy vertically and
+                        // would take the whole inset, pushing the list away.
+                        .fixedSize(horizontal: false, vertical: true)
+                        Picker("View", selection: $mode) {
+                            Text("List").tag(Mode.list)
+                            Text("Calendar").tag(Mode.calendar)
+                        }
+                        .pickerStyle(.segmented)
+                        .padding(.horizontal)
+                        .accessibilityIdentifier(AccessibilityID.Today.modePicker)
+                    }
                     .background(Color.kadoBackground, ignoresSafeAreaEdges: [])
                 }
                 .onChange(of: today) { _, newToday in
@@ -266,7 +287,9 @@ struct TodayView: View {
         case .newHabit:
             NewHabitFormView(model: NewHabitFormModel())
         case .newTask:
-            TaskFormView(defaultDay: dayKind == .future ? displayedDay : nil)
+            // Calendar mode plans onto the shown day, so the task
+            // must land on it or it would not appear there.
+            TaskFormView(defaultDay: dayKind == .future || mode == .calendar ? displayedDay : nil)
         case .editTask(let id):
             TaskFormView(taskID: id)
         case .editHabit(let habitID):

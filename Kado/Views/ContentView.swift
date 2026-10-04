@@ -4,29 +4,31 @@ import KadoCore
 
 /// Root view of the app. Hosts the primary TabView shell.
 ///
-/// Today combines habits and tasks; Calendar plans tasks on a day
-/// timeline while Overview retains the habit history matrix.
+/// Now shows the current work; Today combines habits and tasks, with a
+/// calendar view of the same day; Overview keeps the habit matrix.
 struct ContentView: View {
+    @State private var selection: AppTab = UITestSupport.initialTab
+
     var body: some View {
         // Deliberately no `.accessibilityIdentifier` on these tabs: one
         // on a tab's content would stamp every element in the screen
         // beneath it, and one on its label never reaches the tab bar
         // button. The UI suite addresses tabs by position instead — see
         // `AccessibilityID.Tab`, and keep the order here in step with it.
-        TabView {
-            Tab("Today", systemImage: "list.bullet.clipboard") {
+        TabView(selection: $selection) {
+            Tab("Now", systemImage: "clock", value: AppTab.now) {
+                NowView()
+            }
+            Tab("Today", systemImage: "list.bullet.clipboard", value: AppTab.today) {
                 TodayView()
             }
-            Tab("Calendar", systemImage: "calendar") {
-                PlannerCalendarView()
-            }
-            Tab("Goals", systemImage: "scope") {
+            Tab("Goals", systemImage: "scope", value: AppTab.goals) {
                 GoalsView()
             }
-            Tab("Overview", systemImage: "square.grid.2x2") {
+            Tab("Overview", systemImage: "square.grid.2x2", value: AppTab.overview) {
                 OverviewView()
             }
-            Tab("Settings", systemImage: "gearshape") {
+            Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView()
             }
         }

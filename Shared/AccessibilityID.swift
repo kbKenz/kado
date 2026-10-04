@@ -38,8 +38,8 @@ enum AccessibilityID {
     /// localized nor user-editable, so that is what the suite addresses.
     /// Keep in step with `ContentView`.
     enum Tab: Int {
-        case today = 0
-        case calendar = 1
+        case now = 0
+        case today = 1
         case goals = 2
         case overview = 3
         case settings = 4
@@ -59,8 +59,8 @@ enum AccessibilityID {
         /// Keep in step with `ContentView`, the same as `rawValue`.
         var symbolName: String {
             switch self {
+            case .now: "clock"
             case .today: "list.bullet.clipboard"
-            case .calendar: "calendar"
             case .goals: "scope"
             case .overview: "square.grid.2x2"
             case .settings: "gearshape"
@@ -69,6 +69,8 @@ enum AccessibilityID {
     }
 
     enum Today {
+        /// The List / Calendar segmented switch under the day strip.
+        static let modePicker = "today.modePicker"
         /// One row, keyed by the habit's `UUID` so a test can address a
         /// row without depending on its name — which is both localized
         /// and user-editable.
@@ -175,13 +177,7 @@ enum AccessibilityID {
     }
 
     enum Calendar {
-        static let newTask = "calendar.newTask"
         static let googleSettings = "calendar.googleSettings"
-        static let previousWeek = "calendar.previousWeek"
-        static let nextWeek = "calendar.nextWeek"
-        static let datePicker = "calendar.datePicker"
-        static let today = "calendar.today"
-        static func weekDay(_ dateKey: String) -> String { "calendar.day.\(dateKey)" }
         static let blockPrefix = "calendar.block."
         static func block(_ id: UUID) -> String { blockPrefix + id.uuidString }
         static let completeMenuItem = "calendar.complete"

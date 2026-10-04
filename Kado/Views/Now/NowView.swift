@@ -30,7 +30,9 @@ struct NowView: View {
         NavigationStack {
             // Re-resolve every minute so suggestions move with the clock.
             TimelineView(.everyMinute) { context in
-                content(now: context.date)
+                // `max` with the wall clock: after backgrounding, the first
+                // frame can carry a stale `context.date`.
+                content(now: max(context.date, .now))
             }
             .background(Color.kadoBackground.ignoresSafeArea())
             .navigationTitle("Now")

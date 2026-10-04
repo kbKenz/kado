@@ -42,8 +42,13 @@ iPhone shows no "More" tab).
 - `NowView` is the first tab.
 - The Calendar tab is removed. `TodayView` gets a segmented List /
   Calendar switch at the top. The calendar side shows the existing
-  `PlannerCalendarView` content unchanged. The choice is kept in
+  `PlannerCalendarView` content. The choice is kept in
   `@AppStorage`.
+- The day strip (`DayStrip`, from the Today day strip work) stays above
+  both sides, and both show its `selectedDay`: List shows that day's
+  habits and tasks, Calendar shows that day's timeline. The calendar's
+  own day navigation is replaced by the strip, so there is one day
+  picker, not two.
 - `AccessibilityID.Tab` positions and SF Symbols change with the tab
   order; the UI tests that open the Calendar tab change to open Today
   and select Calendar.

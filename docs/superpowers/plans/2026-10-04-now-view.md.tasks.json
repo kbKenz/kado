@@ -1,0 +1,114 @@
+{
+  "planPath": "docs/superpowers/plans/2026-10-04-now-view.md",
+  "tasks": [
+    {
+      "id": 1,
+      "subject": "Task 1: Schema V8 with `WorkSessionRecord`",
+      "status": "pending",
+      "description": "**Goal:** Add the tracked-session model in a new schema version, migrate V7 \u2192 V8, and move every pin site to V8.\n\n**Verify:** `make test` \u2192 exit 0; summary `failedTests: 0`.\n\nSee plan section 'Task 1: Schema V8 with `WorkSessionRecord`'.\n\n```json:metadata\n{\"files\": [\"Packages/KadoCore/Sources/KadoCore/Models/Persistence/KadoSchemaV8.swift\", \"Packages/KadoCore/Sources/KadoCore/Models/Persistence/KadoSchemaV7.swift\", \"Packages/KadoCore/Sources/KadoCore/Models/Persistence/KadoMigrationPlan.swift\", \"KadoTests/KadoSchemaTests.swift\"], \"verifyCommand\": \"`make test` \\u2192 exit 0; summary `failedTests: 0`.\", \"acceptanceCriteria\": [\"`KadoSchemaV8.versionIdentifier == 8.0.0`; models list adds `WorkSessionRecord`\", \"A V7 store with a habit, a task and a block opens as V8 with all data intact and accepts a new session\", \"`CloudKitShapeTests` include V8 and pass (all relationships optional, nothing unique)\", \"No `KadoSchemaV7.self` remains outside `KadoMigrationPlan.swift`, `KadoSchemaTests.swift` migration tests, and `CloudKitShapeTests.swift`\", \"Full unit suite passes\"]}\n```"
+    },
+    {
+      "id": 2,
+      "subject": "Task 2: `WorkSession` value type",
+      "status": "pending",
+      "description": "**Goal:** One place computes worked time and paused state.\n\n**Verify:** `-only-testing:KadoTests/WorkSessionTests` \u2192 all pass.\n\nSee plan section 'Task 2: `WorkSession` value type'.\n\n```json:metadata\n{\"files\": [\"Packages/KadoCore/Sources/KadoCore/Models/WorkSession.swift\", \"KadoTests/WorkSessionTests.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/WorkSessionTests` \\u2192 all pass.\", \"acceptanceCriteria\": [\"Elapsed = (end or now) \\u2212 start \\u2212 pausedSeconds \\u2212 (open pause so far)\", \"Elapsed never goes below 0\", \"`isPaused` true only while open and `pausedAt` set\"]}\n```",
+      "blockedBy": [
+        1
+      ]
+    },
+    {
+      "id": 3,
+      "subject": "Task 3: `NowResolver`",
+      "status": "pending",
+      "description": "**Goal:** A pure function decides what Now shows and what is up next.\n\n**Verify:** `-only-testing:KadoTests/NowResolverTests` \u2192 all pass.\n\nSee plan section 'Task 3: `NowResolver`'.\n\n```json:metadata\n{\"files\": [\"Packages/KadoCore/Sources/KadoCore/Services/Now/NowModels.swift\", \"Packages/KadoCore/Sources/KadoCore/Services/Now/NowResolver.swift\", \"KadoTests/NowResolverTests.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/NowResolverTests` \\u2192 all pass.\", \"acceptanceCriteria\": [\"Open session wins (running or paused), with its block's planned range when it came from one\", \"Block whose range holds now \\u2192 `suggestedCurrent`; overlap: earlier start, then earlier `createdAt`\", \"Else next block later today \\u2192 `suggestedNext`; else `.empty`\", \"A start without an end counts as one hour; blocks with no start are ignored\", \"`upNext` is the first block starting after the shown block's start (or after now when nothing is shown), today only\", \"\\\"Today\\\" is the logical day from `DayBoundary` (day start hour)\"]}\n```",
+      "blockedBy": [
+        2
+      ]
+    },
+    {
+      "id": 4,
+      "subject": "Task 4: `WorkSessionTracker`",
+      "status": "pending",
+      "description": "**Goal:** All session writes in one service, with finish rules for tasks and habits.\n\n**Verify:** `-only-testing:KadoTests/WorkSessionTrackerTests` \u2192 all pass.\n\nSee plan section 'Task 4: `WorkSessionTracker`'.\n\n```json:metadata\n{\"files\": [\"Kado/Services/WorkSessionTracker.swift\", \"KadoTests/WorkSessionTrackerTests.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/WorkSessionTrackerTests` \\u2192 all pass.\", \"acceptanceCriteria\": [\"`start` refuses when a session is open (`TrackerError.sessionAlreadyOpen`)\", \"`pause` sets `pausedAt`; `resume` adds the pause to `pausedSeconds` and clears `pausedAt`\", \"`finish(markDone: false)` closes the session (closing an open pause first); the task stays open\", \"`finish(markDone: true)`: task \\u2192 `completedAt = now`; binary habit \\u2192 completion value 1 for the logical day; counter \\u2192 +1; timer \\u2192 completion value = worked seconds (added to an existing value for that day)\", \"`cancel` deletes the open session\", \"`openSession(in:)` returns the earliest-started open session\"]}\n```",
+      "blockedBy": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": 5,
+      "subject": "Task 5: Sessions in backups",
+      "status": "pending",
+      "description": "**Goal:** JSON and CSV export/import carry sessions losslessly.\n\n**Verify:** `-only-testing:KadoTests/PlanningPersistenceTests -only-testing:KadoTests/BackupRoundTripTests -only-testing:KadoTests/CSVRoundTripTests -only-testing:KadoTests/CSVBackupCoderTests -only-testing:KadoTests/BackupImporterTests` \u2192 all pass.\n\nSee plan section 'Task 5: Sessions in backups'.\n\n```json:metadata\n{\"files\": [\"Packages/KadoCore/Sources/KadoCore/Backup/WorkSessionBackup.swift\", \"Packages/KadoCore/Sources/KadoCore/Backup/BackupDocument.swift\", \"Packages/KadoCore/Sources/KadoCore/Backup/BackupExporter.swift\", \"Packages/KadoCore/Sources/KadoCore/Backup/BackupImporter.swift\", \"Packages/KadoCore/Sources/KadoCore/Backup/ImportSummary.swift\", \"Packages/KadoCore/Sources/KadoCore/Backup/CSV/CSVBackupCoder.swift\", \"KadoTests/PlanningPersistenceTests.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/PlanningPersistenceTests -only-testing:KadoTests/BackupRoundTripTests -only-testing:KadoTests/CSVRoundTripTests -only-testing:KadoTests/CSVBackupCoderTests -only-testing:KadoTests/BackupImporterTests` \\u2192 all pass.\", \"acceptanceCriteria\": [\"A session (with task link, block link, pause total, end) survives JSON and CSV round trips, and importing twice adds nothing\", \"Older documents (formatVersion \\u2264 4, CSV headers without session columns) still import, with no sessions\", \"Validation rejects a session that links both a task and a habit, links an unknown task/habit/block, or ends before it starts\", \"Existing backup tests pass\"]}\n```",
+      "blockedBy": [
+        1
+      ]
+    },
+    {
+      "id": 6,
+      "subject": "Task 6: `NowInputBuilder`",
+      "status": "pending",
+      "description": "**Goal:** Turn records into resolver input, skipping what cannot be worked on.\n\n**Verify:** `-only-testing:KadoTests/NowInputBuilderTests` \u2192 all pass.\n\nSee plan section 'Task 6: `NowInputBuilder`'.\n\n```json:metadata\n{\"files\": [\"Kado/Services/NowInputBuilder.swift\", \"KadoTests/NowInputBuilderTests.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/NowInputBuilderTests` \\u2192 all pass.\", \"acceptanceCriteria\": [\"Blocks are skipped when their task is completed, archived or cancelled (`externalCancelledAt`), or their habit is archived, negative, or not outstanding today (`frequencyEvaluator.isOutstanding`)\", \"Blocks without `startAt` are skipped\", \"The open session maps to `OpenSession` with its item and block ID\", \"`startCandidates` lists open tasks (title order) then outstanding non-negative habits (sort order), for \\\"Start something\\u2026\\\"\"]}\n```",
+      "blockedBy": [
+        3,
+        4
+      ]
+    },
+    {
+      "id": 7,
+      "subject": "Task 7: `NowView`",
+      "status": "pending",
+      "description": "**Goal:** The Now screen for all five states, with Start, Pause/Resume, Finish (Done / Not yet / Cancel) and Start something.\n\n**Verify:** `make test` (LocalizationCoverageTests) \u2192 pass; build and look at previews; Task 9 drives it end to end.\n\nSee plan section 'Task 7: `NowView`'.\n\n```json:metadata\n{\"files\": [\"Kado/Views/Now/NowView.swift\", \"Kado/Views/Now/NowSessionCard.swift\", \"Kado/Views/Now/NowSuggestionCard.swift\", \"Kado/Views/Now/StartSomethingSheet.swift\", \"Shared/AccessibilityID.swift\", \"Kado/Resources/Localizable.xcstrings\"], \"verifyCommand\": \"`make test` (LocalizationCoverageTests) \\u2192 pass; build and look at previews; Task 9 drives it end to end.\", \"acceptanceCriteria\": [\"Running: title, planned range, \\\"Started HH:mm\\\", live elapsed, progress with \\\"N min left\\\" / \\\"N min over\\\", Finish + Pause, Up next\", \"Paused: \\\"Paused \\u00b7 N min so far\\\", Resume in place of Pause, no live count\", \"Suggested current: \\\"Planned N min ago\\\" + Start; suggested next: \\\"In N h N min\\\" + Start early; empty: \\\"Nothing planned for the rest of today\\\" + Start something\\u2026\", \"Finish shows a confirmation dialog: Done, Not yet, Cancel\", \"Start while a session is open is impossible from the UI (only one card is shown; Start something is hidden while a session is open)\", \"Tapping the title opens the task form (`TaskFormView(taskID:)`) or the habit detail (`HabitDetailLoader(habitID:)`) in a sheet\", \"One VoiceOver sentence per card; buttons stack at accessibility sizes (`ViewThatFits`)\", \"Previews: running, paused, suggested current, suggested next, empty, plus a Dark preview\", \"Every control has an `AccessibilityID.Now` identifier; strings have EN + FR\"]}\n```",
+      "blockedBy": [
+        6
+      ]
+    },
+    {
+      "id": 8,
+      "subject": "Task 8: Tabs, and Calendar inside Today",
+      "status": "pending",
+      "description": "**Goal:** Now is the first tab; Today has a List / Calendar switch sharing the day strip; the Calendar tab is gone.\n\n**Verify:** `make test` \u2192 pass; Task 9 runs the UI suite.\n\nSee plan section 'Task 8: Tabs, and Calendar inside Today'.\n\n```json:metadata\n{\"files\": [\"Kado/App/AppTab.swift\", \"Kado/Views/Calendar/CalendarDayAgenda.swift\", \"Kado/Views/Calendar/PlannerCalendarView.swift\", \"Kado/Views/ContentView.swift\"], \"verifyCommand\": \"`make test` \\u2192 pass; Task 9 runs the UI suite.\", \"acceptanceCriteria\": [\"Tabs in order: Now (`clock`), Today, Goals, Overview, Settings\", \"Release builds open on Now; UI test runs open on Today unless launched with `-uiTestStartOnNow`\", \"Today shows a segmented List / Calendar picker under the day strip; the choice persists (`@AppStorage(\\\"kado.todayMode\\\")`)\", \"Calendar mode shows the selected strip day's timeline, health entries, and toolbar items (Google Calendar settings, New task) \\u2014 no own week row or date picker\", \"`AccessibilityID.Tab` matches the new order; `.calendar` is removed (the compiler then lists every test to fix)\", \"`AccessibilityID.Calendar.previousWeek/nextWeek/datePicker/today/weekDay` are removed with the week row (only if no test uses them)\"]}\n```",
+      "blockedBy": [
+        7
+      ]
+    },
+    {
+      "id": 9,
+      "subject": "Task 9: UI tests for Now and the Today switch",
+      "status": "pending",
+      "description": "**Goal:** Prove Start \u2192 Pause \u2192 Resume \u2192 Finish \u2192 Done works on device-like runs, and that Today's switch reaches the calendar.\n\n**Verify:** `make e2e` \u2192 only the known `LogValueSheetTests` \u00d72 and `ArchivedHabitsTests` \u00d71 may fail.\n\nSee plan section 'Task 9: UI tests for Now and the Today switch'.\n\n```json:metadata\n{\"files\": [\"KadoUITests/NowFlowTests.swift\", \"Kado/Support/UITestSupport.swift\", \"KadoUITests/KadoUITestCase.swift\"], \"verifyCommand\": \"`make e2e` \\u2192 only the known `LogValueSheetTests` \\u00d72 and `ArchivedHabitsTests` \\u00d71 may fail.\", \"acceptanceCriteria\": [\"`NowFlowTests.testStartPauseResumeFinishDone` passes: Start shows Finish + Pause; Pause shows Resume; Resume shows Pause; Finish \\u2192 Done returns to a suggested/empty state and the task is no longer suggested\", \"`NowFlowTests.testFinishNotYetKeepsTaskSuggested` passes\", \"`TaskCalendarTests` pass through `openCalendar`\", \"`make e2e`: no new failures beyond the three known ones\"]}\n```",
+      "blockedBy": [
+        8
+      ]
+    },
+    {
+      "id": 10,
+      "subject": "Task 10: Docs and visual check",
+      "status": "pending",
+      "description": "**Goal:** Record the feature and check it by eye.\n\n**Verify:** `make run` then `make shot` \u2192 `build/screenshot.png` for each state.\n\nSee plan section 'Task 10: Docs and visual check'.\n\n```json:metadata\n{\"files\": [\"docs/ROADMAP.md\", \"docs/superpowers/specs/2026-10-04-now-view-design.md\"], \"verifyCommand\": \"`make run` then `make shot` \\u2192 `build/screenshot.png` for each state.\", \"acceptanceCriteria\": [\"Screenshots of Now (running, paused, suggested, empty) and Today Calendar mode, light + dark, on iPhone and iPad simulators, plus XXXL text\", \"VoiceOver reads one sentence per Now card\", \"ROADMAP updated\", \"PR \\\"Next steps\\\" lists: CloudKit Console schema deploy for V8; FR strings native review\"]}\n```",
+      "blockedBy": [
+        9
+      ]
+    },
+    {
+      "id": 11,
+      "subject": "Task 11: `SuggestionRanker`",
+      "status": "pending",
+      "description": "**Goal:** Rank start candidates by code, with a fixed reason each, so Now suggests something in free time on every device.\n\n**Verify:** `-only-testing:KadoTests/SuggestionRankerTests` \u2192 all pass.\n\nSee plan section 'Task 11: `SuggestionRanker`'.\n\n```json:metadata\n{\"files\": [\"Packages/KadoCore/Sources/KadoCore/Services/Now/SuggestionRanker.swift\", \"KadoTests/SuggestionRankerTests.swift\", \"Kado/Services/NowInputBuilder.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/SuggestionRankerTests` \\u2192 all pass.\", \"acceptanceCriteria\": [\"Score order: overdue tasks, then tasks due today, then due tomorrow, then habits with a streak \\u2265 3, then other habits, then other tasks\", \"Ties: shorter estimated duration first when it fits the free time, then title\", \"Each candidate carries a `SuggestionReason` (`.overdue`, `.dueToday`, `.dueTomorrow`, `.keepStreak(days)`, `.habitToday`, `.openTask`)\", \"Returns at most 8\"]}\n```",
+      "blockedBy": [
+        6
+      ]
+    },
+    {
+      "id": 12,
+      "subject": "Task 12: Suggestion engines and the free-time card",
+      "status": "pending",
+      "description": "**Goal:** In the gap and empty states, Now shows one suggestion with a reason; Apple Intelligence picks it when available, the ranker otherwise.\n\n**Verify:** `-only-testing:KadoTests/NextSuggesterTests` \u2192 pass; `make test` \u2192 pass.\n\nSee plan section 'Task 12: Suggestion engines and the free-time card'.\n\n```json:metadata\n{\"files\": [\"Kado/Services/NextSuggesting.swift\", \"Kado/Services/RankedNextSuggester.swift\", \"Kado/Services/FoundationModelsNextSuggester.swift\", \"Kado/Services/NextSuggesterFactory.swift\", \"Kado/Preview Content/MockNextSuggester.swift\", \"Kado/App/EnvironmentValues+Services.swift\", \"Kado/Views/Now/NowView.swift\", \"PRIVACY.md\", \"KadoTests/NextSuggesterTests.swift\"], \"verifyCommand\": \"`-only-testing:KadoTests/NextSuggesterTests` \\u2192 pass; `make test` \\u2192 pass.\", \"acceptanceCriteria\": [\"`RankedNextSuggester` returns the first ranked candidate with its fixed reason text\", \"`FoundationModelsNextSuggester` sends only the candidate list (ID, kind, title, due, streak) and the free time; accepts an answer only if `candidateID` is in the list; any error or unknown ID \\u2192 the ranked fallback\", \"The card shows \\\"Free until HH:mm (N min)\\\", the suggested title, the reason, Start and \\\"Something else\\u2026\\\" (opens Start something)\", \"`PRIVACY.md` says the suggestion runs on device with only titles, due dates and streaks\"]}\n```",
+      "blockedBy": [
+        7,
+        11
+      ]
+    }
+  ],
+  "lastUpdated": "2026-10-05T00:01:16"
+}

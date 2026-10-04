@@ -9829,6 +9829,23 @@
         }
       }
     },
+    "Value for that day" : {
+      "comment" : "Section header of the counter-log sheet, and VoiceOver label of its number field, when logging a day other than today.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Value for that day"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Valeur ce jour-là"
+          }
+        }
+      }
+    },
     "View event" : {
       "comment" : "Open read-only details for an imported Google event task.",
       "extractionState" : "manual",

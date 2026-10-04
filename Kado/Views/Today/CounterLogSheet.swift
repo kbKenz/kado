@@ -67,7 +67,7 @@ struct CounterLogSheet: View {
                 Section {
                     HStack(alignment: .firstTextBaseline) {
                         WholeNumberField(
-                            title: "Today's value",
+                            title: valueTitle,
                             text: Binding(
                                 get: { text ?? "" },
                                 set: { text = $0 }
@@ -79,7 +79,7 @@ struct CounterLogSheet: View {
                             .foregroundStyle(Color.kadoForegroundSecondary)
                     }
                 } header: {
-                    Text("Today's value")
+                    Text(valueTitle)
                 } footer: {
                     if isOutOfRange {
                         Text("Enter a number no higher than \(Self.valueRange.upperBound).")
@@ -123,6 +123,12 @@ struct CounterLogSheet: View {
     private var otherDayLabel: String? {
         guard let day, !calendar.isDate(day, inSameDayAs: today) else { return nil }
         return day.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day().locale(locale))
+    }
+
+    /// Section header and field label; "Today's value" would be wrong
+    /// when the sheet logs another day.
+    private var valueTitle: LocalizedStringKey {
+        otherDayLabel == nil ? "Today's value" : "Value for that day"
     }
 
     private func todayValue() -> Int {

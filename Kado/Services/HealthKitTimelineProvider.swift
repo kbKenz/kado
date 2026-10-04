@@ -7,11 +7,13 @@ import KadoCore
 final class HealthKitTimelineProvider: HealthTimelineProviding {
     private let store = HKHealthStore()
     private let sleepType = HKCategoryType(.sleepAnalysis)
+    private let readTypes: Set<HKObjectType> = [HKCategoryType(.sleepAnalysis), HKObjectType.workoutType()]
 
     var isAvailable: Bool { HKHealthStore.isHealthDataAvailable() }
 
     func requestAuthorization() async throws {
-        try await store.requestAuthorization(toShare: [], read: [sleepType, HKObjectType.workoutType()])
+        guard isAvailable else { return }
+        try await store.requestAuthorization(toShare: [], read: readTypes)
     }
 
     func sleepEntries(in interval: DateInterval) async throws -> [HealthTimelineEntry] {
@@ -43,15 +45,16 @@ final class HealthKitTimelineProvider: HealthTimelineProviding {
         HKQuery.predicateForSamples(withStart: interval.start, end: interval.end, options: [])
     }
 
-    private static func sleepSample(_ sample: HKCategorySample) -> SleepSample? {
+    /// Internal for tests. Asleep stages use Apple's set, so a stage added
+    /// in a later iOS still counts as asleep.
+    static func sleepSample(_ sample: HKCategorySample) -> SleepSample? {
+        // HealthKit rejects unknown values at construction; kept as a guard.
         guard let value = HKCategoryValueSleepAnalysis(rawValue: sample.value) else { return nil }
         let stage: SleepSample.Stage
-        switch value {
-        case .inBed: stage = .inBed
-        case .awake: stage = .awake
-        case .asleepUnspecified, .asleepCore, .asleepDeep, .asleepREM: stage = .asleep
-        @unknown default: return nil
-        }
+        if HKCategoryValueSleepAnalysis.allAsleepValues.contains(value) { stage = .asleep }
+        else if value == .inBed { stage = .inBed }
+        else if value == .awake { stage = .awake }
+        else { return nil }
         return SleepSample(id: sample.uuid, stage: stage,
                            interval: DateInterval(start: sample.startDate, end: max(sample.startDate, sample.endDate)))
     }

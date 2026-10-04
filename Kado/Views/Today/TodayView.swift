@@ -320,26 +320,9 @@ struct TodayView: View {
     private var taskSections: (due: [TaskListItem], inbox: [TaskListItem], completed: [TaskListItem]) {
         // Task planning uses civil days, while the existing habit rows
         // continue to use the user's custom habit-day boundary.
-        let now = civilToday
-        let start = calendar.startOfDay(for: now)
-        let snapshots = activeTasks.map { TaskListItem($0) }
-        let pending = snapshots.filter { !$0.isComplete }
-        let due = pending.filter { item in
-            item.dueDate.map { calendar.startOfDay(for: $0) <= start } == true
-                || item.schedules.contains { $0.belongs(to: now, calendar: calendar) }
-        }.sorted { lhs, rhs in
-            let leftDate = lhs.dueDate ?? lhs.schedules.first?.plannedDay ?? .distantFuture
-            let rightDate = rhs.dueDate ?? rhs.schedules.first?.plannedDay ?? .distantFuture
-            if leftDate != rightDate { return leftDate < rightDate }
-            let leftTime = lhs.schedules.first?.startAt ?? .distantFuture
-            let rightTime = rhs.schedules.first?.startAt ?? .distantFuture
-            return leftTime == rightTime ? lhs.title.localizedStandardCompare(rhs.title) == .orderedAscending : leftTime < rightTime
-        }
-        let inbox = pending.filter { $0.dueDate == nil && $0.schedules.isEmpty }
-        let completed = snapshots.filter { item in
-            item.completedAt.map { calendar.isDate($0, inSameDayAs: now) } == true
-        }.sorted { ($0.completedAt ?? .distantPast) > ($1.completedAt ?? .distantPast) }
-        return (due, inbox, completed)
+        let s = TaskDaySections.make(for: civilToday, kind: .today,
+                                     items: activeTasks.map { TaskListItem($0) }, calendar: calendar)
+        return (s.due, s.inbox, s.completed)
     }
 
     private func taskRow(_ item: TaskListItem) -> some View {

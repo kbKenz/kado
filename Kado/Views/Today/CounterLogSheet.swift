@@ -24,7 +24,7 @@ struct CounterLogSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     /// What the field holds, as typed. Prefilled lazily in `.onAppear`
-    /// so the env calendar (not `.current`) drives today-completion
+    /// so the env calendar (not `.current`) drives the logged day's completion
     /// lookup; nil before first render. Matches `TimerLogSheet`.
     @State private var text: String?
     @State private var saveTick = 0
@@ -111,7 +111,7 @@ struct CounterLogSheet: View {
             .onSubmit { save() }
             .sensoryFeedback(.success, trigger: saveTick)
             .onAppear {
-                if text == nil { text = entry.text(for: todayValue()) }
+                if text == nil { text = entry.text(for: dayValue()) }
             }
         }
     }
@@ -131,7 +131,7 @@ struct CounterLogSheet: View {
         otherDayLabel == nil ? "Today's value" : "Value for that day"
     }
 
-    private func todayValue() -> Int {
+    private func dayValue() -> Int {
         let existing = habit.completions?.first {
             calendar.isDate($0.date, inSameDayAs: logDay)
         }

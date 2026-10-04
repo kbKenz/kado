@@ -22,7 +22,7 @@ struct TimerLogSheet: View {
 
     /// What the field holds, as typed. Prefilled lazily in `.onAppear`
     /// so the env calendar (not the unrelated `.current`) drives
-    /// today-completion lookup. `nil` before first render.
+    /// the logged day's completion lookup. `nil` before first render.
     @State private var text: String?
     @State private var saveTick = 0
 

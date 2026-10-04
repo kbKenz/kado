@@ -126,4 +126,9 @@ extension EnvironmentValues {
     /// watching any other instance would simply never see a
     /// celebration. Previews inject their own to drive it by hand.
     @Entry var dayCompletionCelebration: DayCompletionCelebration = .shared
+
+    /// Reads sleep and workouts for the Calendar overlay. Default is a
+    /// stub so previews and unit tests never touch HealthKit; the main
+    /// app injects `HealthKitTimelineProvider()` at scene build.
+    @Entry var healthTimelineProvider: any HealthTimelineProviding = PreviewHealthTimelineProvider()
 }

@@ -140,4 +140,20 @@ struct TodayRowTests {
         #expect(due.map(\.habit.name) == ["Mondays"])
         #expect(other.isEmpty)
     }
+
+    @Test("A habit is not listed before its first day")
+    func notListedBeforeFirstDay() throws {
+        let container = try makeContainer()
+        let ctx = container.mainContext
+        let habit = HabitRecord(name: "Walk", frequency: .daily, type: .binary, createdAt: now)
+        ctx.insert(habit)
+        try ctx.save()
+
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: now)!
+        let before = TodayRow.sections(from: [habit], on: yesterday, evaluator: evaluator, calendar: calendar)
+        #expect(before.due.isEmpty && before.other.isEmpty)
+
+        let onDay = TodayRow.sections(from: [habit], on: now, evaluator: evaluator, calendar: calendar)
+        #expect(onDay.due.map(\.id) == [habit.id])
+    }
 }

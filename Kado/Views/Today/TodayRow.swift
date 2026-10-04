@@ -52,6 +52,11 @@ extension TodayRow {
         // MainActor-isolated initializer as a function value to a
         // nonisolated generic loses the isolation and warns.
         for row in records.map({ TodayRow($0) }) {
+            // Days before a habit's first day aren't its days at all;
+            // listing it there would let a tap backdate its start (#104).
+            guard row.habit.isListed(on: now, completions: row.completions, calendar: calendar) else {
+                continue
+            }
             let isDue = evaluator.isDueOrLogged(
                 habit: row.habit,
                 on: now,

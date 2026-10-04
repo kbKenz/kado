@@ -6,6 +6,7 @@ import Foundation
 nonisolated public struct WorkSession: Hashable, Sendable {
     public var startedAt: Date
     public var endedAt: Date?
+    /// Set while paused. A pause still set when the session ends counts until `endedAt`.
     public var pausedAt: Date?
     /// Total of finished pauses. An open pause is counted from `pausedAt`.
     public var pausedSeconds: TimeInterval
@@ -17,13 +18,15 @@ nonisolated public struct WorkSession: Hashable, Sendable {
         self.pausedSeconds = pausedSeconds
     }
 
+    /// True until the session has an end.
     public var isOpen: Bool { endedAt == nil }
+    /// UI state: the session is running but paused right now.
     public var isPaused: Bool { isOpen && pausedAt != nil }
 
     /// Worked time at `now`: (end or now) − start − pauses.
     public func elapsed(at now: Date) -> TimeInterval {
         let end = endedAt ?? now
-        let openPause = isPaused ? max(0, end.timeIntervalSince(pausedAt!)) : 0
+        let openPause = pausedAt.map { max(0, end.timeIntervalSince(max($0, startedAt))) } ?? 0
         return max(0, end.timeIntervalSince(startedAt) - pausedSeconds - openPause)
     }
 }

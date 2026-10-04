@@ -39,4 +39,27 @@ struct WorkSessionTests {
         let session = WorkSession(startedAt: start)
         #expect(session.elapsed(at: start.addingTimeInterval(-60)) == 0.0)
     }
+
+    @Test("A pause still open at the end is not worked time")
+    func openPauseAtEnd() {
+        let session = WorkSession(
+            startedAt: start,
+            endedAt: start.addingTimeInterval(900),
+            pausedAt: start.addingTimeInterval(600)
+        )
+        #expect(session.elapsed(at: start.addingTimeInterval(5000)) == 600.0)
+        #expect(!session.isPaused)
+    }
+
+    @Test("Finished pauses and an open pause both count")
+    func finishedAndOpenPause() {
+        let session = WorkSession(startedAt: start, pausedAt: start.addingTimeInterval(600), pausedSeconds: 300)
+        #expect(session.elapsed(at: start.addingTimeInterval(900)) == 300.0)
+    }
+
+    @Test("A pause recorded before the start counts from the start")
+    func pauseBeforeStart() {
+        let session = WorkSession(startedAt: start, pausedAt: start.addingTimeInterval(-100))
+        #expect(session.elapsed(at: start.addingTimeInterval(300)) == 0.0)
+    }
 }

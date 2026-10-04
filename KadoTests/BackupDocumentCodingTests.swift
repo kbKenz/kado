@@ -72,7 +72,7 @@ struct BackupDocumentCodingTests {
             habits: []
         )
         #expect(document.formatVersion == BackupDocument.currentFormatVersion)
-        #expect(document.formatVersion == 4)
+        #expect(document.formatVersion == 5)
     }
 
     @Test("Canonical JSON encodes known top-level fields under sortedKeys")
@@ -84,7 +84,7 @@ struct BackupDocumentCodingTests {
         )
         let data = try encoder().encode(document)
         let json = String(data: data, encoding: .utf8) ?? ""
-        #expect(json == #"{"appVersion":"0.2.0","exportedAt":"2023-11-16T02:00:00Z","formatVersion":4,"goalProgressEntries":[],"goals":[],"habits":[],"scheduleBlocks":[],"tasks":[]}"#)
+        #expect(json == #"{"appVersion":"0.2.0","exportedAt":"2023-11-16T02:00:00Z","formatVersion":5,"goalProgressEntries":[],"goals":[],"habits":[],"scheduleBlocks":[],"tasks":[],"workSessions":[]}"#)
     }
 
     @Test("Decodes a hand-written fixture with every field set")

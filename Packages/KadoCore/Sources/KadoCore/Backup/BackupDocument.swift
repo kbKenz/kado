@@ -10,7 +10,7 @@ public struct BackupDocument: Hashable, Codable, Sendable {
     /// Current format version written by this app. Importers compare
     /// against `BackupDocument.currentFormatVersion` and refuse files
     /// with a higher value than they understand.
-    public static let currentFormatVersion = 4
+    public static let currentFormatVersion = 5
 
     public var formatVersion: Int
     public var exportedAt: Date
@@ -20,6 +20,7 @@ public struct BackupDocument: Hashable, Codable, Sendable {
     public var scheduleBlocks: [ScheduleBlockBackup]
     public var goals: [GoalBackup]
     public var goalProgressEntries: [GoalProgressEntry]
+    public var workSessions: [WorkSessionBackup]
 
     public init(
         formatVersion: Int = BackupDocument.currentFormatVersion,
@@ -29,7 +30,8 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         tasks: [TaskBackup] = [],
         scheduleBlocks: [ScheduleBlockBackup] = [],
         goals: [GoalBackup] = [],
-        goalProgressEntries: [GoalProgressEntry] = []
+        goalProgressEntries: [GoalProgressEntry] = [],
+        workSessions: [WorkSessionBackup] = []
     ) {
         self.formatVersion = formatVersion
         self.exportedAt = exportedAt
@@ -39,10 +41,11 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         self.scheduleBlocks = scheduleBlocks
         self.goals = goals
         self.goalProgressEntries = goalProgressEntries
+        self.workSessions = workSessions
     }
 
     private enum CodingKeys: String, CodingKey {
-        case formatVersion, exportedAt, appVersion, habits, tasks, scheduleBlocks, goals, goalProgressEntries
+        case formatVersion, exportedAt, appVersion, habits, tasks, scheduleBlocks, goals, goalProgressEntries, workSessions
     }
 
     public init(from decoder: Decoder) throws {
@@ -58,5 +61,7 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         // Versions 1 and 2 predate goals and owner-to-goal links.
         goals = try values.decodeIfPresent([GoalBackup].self, forKey: .goals) ?? []
         goalProgressEntries = try values.decodeIfPresent([GoalProgressEntry].self, forKey: .goalProgressEntries) ?? []
+        // Versions 1 to 4 predate tracked work sessions.
+        workSessions = try values.decodeIfPresent([WorkSessionBackup].self, forKey: .workSessions) ?? []
     }
 }

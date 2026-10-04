@@ -21,6 +21,9 @@ public struct ImportSummary: Hashable, Sendable {
     public var totalGoals: Int
     public var newGoals: Int
     public var updatedGoals: Int
+    public var totalWorkSessions: Int
+    public var newWorkSessions: Int
+    public var updatedWorkSessions: Int
 
     public init(
         totalHabits: Int = 0,
@@ -38,7 +41,8 @@ public struct ImportSummary: Hashable, Sendable {
         totalGoals: Int = 0,
         newGoals: Int = 0,
         updatedGoals: Int = 0,
-        totalGoalProgressEntries: Int = 0, newGoalProgressEntries: Int = 0, updatedGoalProgressEntries: Int = 0
+        totalGoalProgressEntries: Int = 0, newGoalProgressEntries: Int = 0, updatedGoalProgressEntries: Int = 0,
+        totalWorkSessions: Int = 0, newWorkSessions: Int = 0, updatedWorkSessions: Int = 0
     ) {
         self.totalHabits = totalHabits
         self.newHabits = newHabits
@@ -58,5 +62,8 @@ public struct ImportSummary: Hashable, Sendable {
         self.totalGoals = totalGoals
         self.newGoals = newGoals
         self.updatedGoals = updatedGoals
+        self.totalWorkSessions = totalWorkSessions
+        self.newWorkSessions = newWorkSessions
+        self.updatedWorkSessions = updatedWorkSessions
     }
 }

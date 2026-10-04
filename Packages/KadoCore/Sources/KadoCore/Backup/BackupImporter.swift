@@ -49,7 +49,7 @@ public struct DefaultBackupImporter: BackupImporting {
         let tasks = try existingTasks(in: context)
         let blocks = try existingBlocks(in: context)
         let goals = try existingGoals(in: context)
-        try validate(document, habits: existing, tasks: tasks, goals: goals)
+        try validate(document, habits: existing, tasks: tasks, blocks: blocks, goals: goals)
         var summary = ImportSummary()
         let progressEntries = Dictionary(try context.fetch(FetchDescriptor<GoalProgressEntryRecord>()).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         for goal in document.goals {
@@ -97,6 +97,15 @@ public struct DefaultBackupImporter: BackupImporting {
                 summary.updatedScheduleBlocks += 1
             }
         }
+        var sessionIDs = Set(try existingSessions(in: context).keys)
+        for session in document.workSessions {
+            summary.totalWorkSessions += 1
+            if sessionIDs.insert(session.id).inserted {
+                summary.newWorkSessions += 1
+            } else {
+                summary.updatedWorkSessions += 1
+            }
+        }
         if document.formatVersion >= 4 {
             for entry in document.goalProgressEntries {
                 summary.totalGoalProgressEntries += 1
@@ -113,7 +122,7 @@ public struct DefaultBackupImporter: BackupImporting {
         var tasks = try existingTasks(in: context)
         var blocks = try existingBlocks(in: context)
         var goals = try existingGoals(in: context)
-        try validate(document, habits: existing, tasks: tasks, goals: goals)
+        try validate(document, habits: existing, tasks: tasks, blocks: blocks, goals: goals)
         var summary = ImportSummary()
         var progressEntries = Dictionary(try context.fetch(FetchDescriptor<GoalProgressEntryRecord>()).map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
 
@@ -232,6 +241,33 @@ public struct DefaultBackupImporter: BackupImporting {
             record.habit = backup.habitID.flatMap { existing[$0] }
         }
 
+        // Sessions link to tasks, habits and blocks, so they come last.
+        var sessions = try existingSessions(in: context)
+        for backup in document.workSessions {
+            summary.totalWorkSessions += 1
+            let record: WorkSessionRecord
+            if let found = sessions[backup.id] {
+                record = found
+                summary.updatedWorkSessions += 1
+            } else {
+                // No relationships at construction: a linked initializer
+                // would auto-insert the record into its task's context.
+                record = WorkSessionRecord(id: backup.id)
+                context.insert(record)
+                sessions[backup.id] = record
+                summary.newWorkSessions += 1
+            }
+            record.startedAt = backup.startedAt
+            record.endedAt = backup.endedAt
+            record.pausedAt = backup.pausedAt
+            record.pausedSeconds = backup.pausedSeconds
+            record.createdAt = backup.createdAt
+            record.updatedAt = backup.updatedAt
+            record.task = backup.taskID.flatMap { tasks[$0] }
+            record.habit = backup.habitID.flatMap { existing[$0] }
+            record.scheduleBlock = backup.scheduleBlockID.flatMap { blocks[$0] }
+        }
+
         if document.formatVersion >= 4 {
             for entry in document.goalProgressEntries {
                 summary.totalGoalProgressEntries += 1
@@ -275,6 +311,11 @@ public struct DefaultBackupImporter: BackupImporting {
         return Dictionary(records.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
+    private func existingSessions(in context: ModelContext) throws -> [UUID: WorkSessionRecord] {
+        let records = try context.fetch(FetchDescriptor<WorkSessionRecord>())
+        return Dictionary(records.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
     private func existingGoals(in context: ModelContext) throws -> [UUID: GoalRecord] {
         let records = try context.fetch(FetchDescriptor<GoalRecord>())
         return Dictionary(records.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -287,6 +328,7 @@ public struct DefaultBackupImporter: BackupImporting {
         _ document: BackupDocument,
         habits: [UUID: HabitRecord],
         tasks: [UUID: TaskRecord],
+        blocks: [UUID: ScheduleBlockRecord],
         goals: [UUID: GoalRecord]
     ) throws {
         guard (1...BackupDocument.currentFormatVersion).contains(document.formatVersion) else {
@@ -334,6 +376,15 @@ public struct DefaultBackupImporter: BackupImporting {
             if let start = block.startAt, let end = block.endAt, end <= start {
                 throw BackupError.invalidJSON
             }
+        }
+        let blockIDs = Set(blocks.keys).union(document.scheduleBlocks.map(\.id))
+        guard Set(document.workSessions.map(\.id)).count == document.workSessions.count else { throw BackupError.invalidJSON }
+        for session in document.workSessions {
+            if let taskID = session.taskID, !taskIDs.contains(taskID) { throw BackupError.invalidJSON }
+            if let habitID = session.habitID, !habitIDs.contains(habitID) { throw BackupError.invalidJSON }
+            if let blockID = session.scheduleBlockID, !blockIDs.contains(blockID) { throw BackupError.invalidJSON }
+            if session.taskID != nil && session.habitID != nil { throw BackupError.invalidJSON }
+            if let end = session.endedAt, end < session.startedAt { throw BackupError.invalidJSON }
         }
     }
 

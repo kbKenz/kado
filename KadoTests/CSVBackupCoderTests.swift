@@ -165,7 +165,7 @@ struct CSVBackupCoderTests {
     @Test("format_version higher than current throws unsupportedVersion")
     func unsupportedVersion() throws {
         let csv = String(decoding: coder.encode(document([habit()])), as: UTF8.self)
-        let bumped = csv.replacingOccurrences(of: "\n4,", with: "\n99,")
+        let bumped = csv.replacingOccurrences(of: "\n5,", with: "\n99,")
         #expect(throws: BackupError.unsupportedVersion(99)) {
             try coder.decode(Data(bumped.utf8))
         }
@@ -286,8 +286,8 @@ struct CSVBackupCoderTests {
         ])), as: UTF8.self)
 
         let header = CSVBackupCoder.columns.joined(separator: ",")
-        let legacy = "4,AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,Meditate,specific_days:2|4|6,timer:600.0,2023-11-14T22:13:20Z,,blue,leaf,true,7,30,BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,2023-11-15T22:13:20Z,1.0,felt good"
-        let suffix = ["habit"] + Array(repeating: "", count: 18) + ["0"] + Array(repeating: "", count: 17)
+        let legacy = "5,AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,Meditate,specific_days:2|4|6,timer:600.0,2023-11-14T22:13:20Z,,blue,leaf,true,7,30,BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,2023-11-15T22:13:20Z,1.0,felt good"
+        let suffix = ["habit"] + Array(repeating: "", count: 18) + ["0"] + Array(repeating: "", count: 23)
         #expect(csv == header + "\n" + legacy + "," + suffix.joined(separator: ",") + "\n")
     }
 }

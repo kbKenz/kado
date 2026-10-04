@@ -8,7 +8,7 @@ import Foundation
 /// still emits a single row with the four completion columns empty, so
 /// it survives the round-trip.
 ///
-/// **What "lossless" covers here**: goals, habits, completions, tasks and planned blocks. The
+/// **What "lossless" covers here**: goals, habits, completions, tasks, planned blocks and work sessions. The
 /// envelope fields `exportedAt` and `appVersion` are provenance rather
 /// than user data and are not carried — a decoded document stamps
 /// `exportedAt` from the injected clock and leaves `appVersion` empty.
@@ -59,9 +59,17 @@ nonisolated public struct CSVBackupCoder: Sendable {
         "goal_start_date", "goal_target_date", "linked_goal_id"
     ]
 
-    public static let columns = goalColumns + [
+    /// Format 4 appends goal measurement and progress-entry columns.
+    public static let progressColumns = goalColumns + [
         "measurement_enabled", "progress_mode", "progress_baseline", "progress_target", "progress_unit", "progress_habit_id",
         "progress_entry_id", "progress_date", "progress_amount", "progress_note"
+    ]
+
+    /// Format 5 appends work-session columns. This is the header the
+    /// encoder writes. Session rows reuse `created_at`, `updated_at`,
+    /// `linked_task_id` and `linked_habit_id`.
+    public static let columns = progressColumns + [
+        "work_session_id", "started_at", "ended_at", "paused_at", "paused_seconds", "linked_schedule_block_id"
     ]
 
     private let now: @Sendable () -> Date
@@ -159,6 +167,19 @@ nonisolated public struct CSVBackupCoder: Sendable {
                 "linked_task_id": block.taskID?.uuidString ?? "", "linked_habit_id": block.habitID?.uuidString ?? ""
             ]))
         }
+        for session in document.workSessions {
+            rows.append(Self.row([
+                "format_version": formatVersion, "entity_type": "work_session",
+                "work_session_id": session.id.uuidString,
+                "started_at": Self.encode(date: session.startedAt),
+                "ended_at": session.endedAt.map(Self.encode(date:)) ?? "",
+                "paused_at": session.pausedAt.map(Self.encode(date:)) ?? "",
+                "paused_seconds": String(session.pausedSeconds),
+                "created_at": Self.encode(date: session.createdAt), "updated_at": Self.encode(date: session.updatedAt),
+                "linked_task_id": session.taskID?.uuidString ?? "", "linked_habit_id": session.habitID?.uuidString ?? "",
+                "linked_schedule_block_id": session.scheduleBlockID?.uuidString ?? ""
+            ]))
+        }
         return Data(CSVWriter.write(rows).utf8)
     }
 
@@ -179,12 +200,12 @@ nonisolated public struct CSVBackupCoder: Sendable {
         }
 
         guard let header = rows.first,
-              header == Self.columns || header == Self.goalColumns || header == Self.planningColumns || header == Self.legacyColumns else {
+              header == Self.columns || header == Self.progressColumns || header == Self.goalColumns || header == Self.planningColumns || header == Self.legacyColumns else {
             throw BackupError.invalidCSV
         }
 
         let isLegacy = header == Self.legacyColumns
-        let headerVersion = isLegacy ? 1 : header == Self.planningColumns ? 2 : header == Self.goalColumns ? 3 : 4
+        let headerVersion = isLegacy ? 1 : header == Self.planningColumns ? 2 : header == Self.goalColumns ? 3 : header == Self.progressColumns ? 4 : 5
         var goals: [GoalBackup] = []
         var entries: [GoalProgressEntry] = []
         var seenEntryIDs = Set<UUID>()
@@ -192,6 +213,8 @@ nonisolated public struct CSVBackupCoder: Sendable {
         var blocks: [ScheduleBlockBackup] = []
         var seenTaskIDs: Set<UUID> = []
         var seenBlockIDs: Set<UUID> = []
+        var sessions: [WorkSessionBackup] = []
+        var seenSessionIDs: Set<UUID> = []
         var seenGoalIDs: Set<UUID> = []
         var order: [UUID] = []
         var habits: [UUID: HabitBackup] = [:]
@@ -278,6 +301,20 @@ nonisolated public struct CSVBackupCoder: Sendable {
                         taskID: try Self.decodeOptionalUUID(field("linked_task_id")), habitID: try Self.decodeOptionalUUID(field("linked_habit_id"))
                     ))
                     continue
+                case "work_session":
+                    guard version >= 5, let id = UUID(uuidString: field("work_session_id")) else { throw BackupError.invalidCSV }
+                    guard seenSessionIDs.insert(id).inserted else { continue }
+                    guard let paused = Double(field("paused_seconds")), paused.isFinite else { throw BackupError.invalidCSV }
+                    sessions.append(WorkSessionBackup(
+                        id: id, startedAt: try Self.decodeDate(field("started_at")),
+                        endedAt: try Self.decodeOptionalDate(field("ended_at")),
+                        pausedAt: try Self.decodeOptionalDate(field("paused_at")), pausedSeconds: paused,
+                        createdAt: try Self.decodeDate(field("created_at")), updatedAt: try Self.decodeDate(field("updated_at")),
+                        taskID: try Self.decodeOptionalUUID(field("linked_task_id")),
+                        habitID: try Self.decodeOptionalUUID(field("linked_habit_id")),
+                        scheduleBlockID: try Self.decodeOptionalUUID(field("linked_schedule_block_id"))
+                    ))
+                    continue
                 case "habit":
                     break
                 default:
@@ -349,7 +386,8 @@ nonisolated public struct CSVBackupCoder: Sendable {
             habits: order.compactMap { habits[$0] },
             tasks: tasks,
             scheduleBlocks: blocks,
-            goals: goals, goalProgressEntries: entries
+            goals: goals, goalProgressEntries: entries,
+            workSessions: sessions
         )
     }
 

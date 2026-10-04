@@ -53,6 +53,9 @@ public struct DefaultBackupExporter: BackupExporting {
         let goals = try context.fetch(FetchDescriptor<GoalRecord>(
             sortBy: [SortDescriptor(\.createdAt, order: .forward), SortDescriptor(\.name, order: .forward)]
         )).map(Self.backup(from:))
+        let sessions = try context.fetch(FetchDescriptor<WorkSessionRecord>(
+            sortBy: [SortDescriptor(\.startedAt, order: .forward), SortDescriptor(\.createdAt, order: .forward)]
+        )).map(Self.backup(from:))
         return BackupDocument(
             exportedAt: now(),
             appVersion: appVersion,
@@ -60,7 +63,8 @@ public struct DefaultBackupExporter: BackupExporting {
             tasks: tasks,
             scheduleBlocks: blocks,
             goals: goals,
-            goalProgressEntries: try context.fetch(FetchDescriptor<GoalProgressEntryRecord>(sortBy: [SortDescriptor(\.date)])).compactMap(\.snapshot)
+            goalProgressEntries: try context.fetch(FetchDescriptor<GoalProgressEntryRecord>(sortBy: [SortDescriptor(\.date)])).compactMap(\.snapshot),
+            workSessions: sessions
         )
     }
 
@@ -127,6 +131,15 @@ public struct DefaultBackupExporter: BackupExporting {
             startAt: record.startAt, endAt: record.endAt,
             createdAt: record.createdAt, updatedAt: record.updatedAt,
             taskID: record.task?.id, habitID: record.habit?.id
+        )
+    }
+
+    private static func backup(from record: WorkSessionRecord) -> WorkSessionBackup {
+        WorkSessionBackup(
+            id: record.id, startedAt: record.startedAt, endedAt: record.endedAt,
+            pausedAt: record.pausedAt, pausedSeconds: record.pausedSeconds,
+            createdAt: record.createdAt, updatedAt: record.updatedAt,
+            taskID: record.task?.id, habitID: record.habit?.id, scheduleBlockID: record.scheduleBlock?.id
         )
     }
 

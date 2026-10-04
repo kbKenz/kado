@@ -35,6 +35,7 @@ struct WorkSessionTrackerTests {
         #expect(throws: WorkSessionTracker.TrackerError.sessionAlreadyOpen) {
             try tracker(now: start).start(task: task, block: nil, in: context)
         }
+        #expect(try context.fetchCount(FetchDescriptor<WorkSessionRecord>()) == 1)
     }
 
     @Test("Pause and resume add up the paused time")
@@ -136,5 +137,72 @@ struct WorkSessionTrackerTests {
         context.insert(early)
         try context.save()
         #expect(try WorkSessionTracker.openSession(in: context)?.id == early.id)
+    }
+
+    @Test("Pause, resume, finish and cancel need an open session")
+    func noOpenSession() throws {
+        let context = try context()
+        let tracker = tracker(now: start)
+        #expect(throws: WorkSessionTracker.TrackerError.noOpenSession) { try tracker.pause(in: context) }
+        #expect(throws: WorkSessionTracker.TrackerError.noOpenSession) { try tracker.resume(in: context) }
+        #expect(throws: WorkSessionTracker.TrackerError.noOpenSession) { try tracker.finish(markDone: true, in: context) }
+        #expect(throws: WorkSessionTracker.TrackerError.noOpenSession) { try tracker.cancel(in: context) }
+    }
+
+    @Test("Pausing twice keeps the first pause")
+    func pauseTwice() throws {
+        let context = try context()
+        let task = TaskRecord(title: "Research")
+        context.insert(task)
+        try tracker(now: start).start(task: task, block: nil, in: context)
+        try tracker(now: start.addingTimeInterval(600)).pause(in: context)
+        try tracker(now: start.addingTimeInterval(700)).pause(in: context)
+        let session = try #require(try WorkSessionTracker.openSession(in: context))
+        #expect(session.pausedAt == start.addingTimeInterval(600))
+    }
+
+    @Test("A binary habit with a noted zero completion becomes 1 and keeps the note")
+    func binaryKeepsNote() throws {
+        let context = try context()
+        let habit = HabitRecord(name: "Read", type: .binary)
+        context.insert(habit)
+        context.insert(CompletionRecord(date: start, value: 0, note: "felt slow", habit: habit))
+        try tracker(now: start).start(habit: habit, block: nil, in: context)
+        try tracker(now: start.addingTimeInterval(60)).finish(markDone: true, in: context)
+        #expect(habit.completions?.count == 1)
+        #expect(habit.completions?.first?.value == 1.0)
+        #expect(habit.completions?.first?.note == "felt slow")
+    }
+
+    @Test("Finishing a habit session without done logs nothing")
+    func habitNotDone() throws {
+        let context = try context()
+        let habit = HabitRecord(name: "Read", type: .binary)
+        context.insert(habit)
+        try tracker(now: start).start(habit: habit, block: nil, in: context)
+        try tracker(now: start.addingTimeInterval(60)).finish(markDone: false, in: context)
+        #expect(habit.completions?.isEmpty ?? true)
+    }
+
+    @Test("A timer habit with no worked time logs nothing")
+    func timerZeroSeconds() throws {
+        let context = try context()
+        let habit = HabitRecord(name: "Read", type: .timer(targetSeconds: 3600))
+        context.insert(habit)
+        try tracker(now: start).start(habit: habit, block: nil, in: context)
+        try tracker(now: start).finish(markDone: true, in: context)
+        #expect(habit.completions?.isEmpty ?? true)
+    }
+
+    @Test("Finishing as done keeps a completion date the task already has")
+    func taskAlreadyCompleted() throws {
+        let context = try context()
+        let task = TaskRecord(title: "Research")
+        context.insert(task)
+        let earlier = start.addingTimeInterval(-86_400)
+        task.completedAt = earlier
+        try tracker(now: start).start(task: task, block: nil, in: context)
+        try tracker(now: start.addingTimeInterval(60)).finish(markDone: true, in: context)
+        #expect(task.completedAt == earlier)
     }
 }

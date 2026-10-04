@@ -30,52 +30,59 @@ struct WorkSessionTracker {
     }
 
     func start(task: TaskRecord, block: ScheduleBlockRecord?, in context: ModelContext) throws {
+        let now = now()
         try requireNoOpenSession(in: context)
-        context.insert(WorkSessionRecord(startedAt: now(), task: task, scheduleBlock: block))
-        try context.save()
+        context.insert(WorkSessionRecord(startedAt: now, task: task, scheduleBlock: block))
+        try commit(context)
     }
 
     func start(habit: HabitRecord, block: ScheduleBlockRecord?, in context: ModelContext) throws {
+        let now = now()
         try requireNoOpenSession(in: context)
-        context.insert(WorkSessionRecord(startedAt: now(), habit: habit, scheduleBlock: block))
-        try context.save()
+        context.insert(WorkSessionRecord(startedAt: now, habit: habit, scheduleBlock: block))
+        try commit(context)
     }
 
     func pause(in context: ModelContext) throws {
+        let now = now()
         let session = try requireOpen(in: context)
         guard session.pausedAt == nil else { return }
-        session.pausedAt = now()
-        session.updatedAt = now()
-        try context.save()
+        session.pausedAt = now
+        session.updatedAt = now
+        try commit(context)
     }
 
     func resume(in context: ModelContext) throws {
+        let now = now()
         let session = try requireOpen(in: context)
-        closePause(session)
-        try context.save()
+        closePause(session, at: now)
+        try commit(context)
     }
 
-    /// Ends the open session. `markDone` completes its task or logs its
-    /// habit for the logical day the session started on.
+    /// Ends the open session. A task is done when it is finished; a habit
+    /// is logged on the day the session started.
     func finish(markDone: Bool, in context: ModelContext) throws {
+        let now = now()
         let session = try requireOpen(in: context)
-        closePause(session)
-        session.endedAt = now()
-        session.updatedAt = now()
+        closePause(session, at: now)
+        session.endedAt = now
+        session.updatedAt = now
         if markDone {
             if let task = session.task {
-                task.completedAt = now()
-                task.updatedAt = now()
+                if task.completedAt == nil {
+                    task.completedAt = now
+                    task.updatedAt = now
+                }
             } else if let habit = session.habit {
-                log(habit, workedSeconds: session.snapshot.elapsed(at: now()), startedAt: session.startedAt, in: context)
+                log(habit, workedSeconds: session.snapshot.elapsed(at: now), startedAt: session.startedAt, now: now, in: context)
             }
         }
-        try context.save()
+        try commit(context)
     }
 
     func cancel(in context: ModelContext) throws {
         context.delete(try requireOpen(in: context))
-        try context.save()
+        try commit(context)
     }
 
     // MARK: - Private
@@ -92,16 +99,27 @@ struct WorkSessionTracker {
         return session
     }
 
-    private func closePause(_ session: WorkSessionRecord) {
+    private func closePause(_ session: WorkSessionRecord, at now: Date) {
         guard let pausedAt = session.pausedAt else { return }
-        session.pausedSeconds += max(0, now().timeIntervalSince(pausedAt))
+        session.pausedSeconds += max(0, now.timeIntervalSince(pausedAt))
         session.pausedAt = nil
-        session.updatedAt = now()
+        session.updatedAt = now
     }
 
-    private func log(_ habit: HabitRecord, workedSeconds: TimeInterval, startedAt: Date, in context: ModelContext) {
+    /// Saves, and undoes the pending changes when the save fails so the
+    /// shared context is never left dirty.
+    private func commit(_ context: ModelContext) throws {
+        do {
+            try context.save()
+        } catch {
+            context.rollback()
+            throw error
+        }
+    }
+
+    private func log(_ habit: HabitRecord, workedSeconds: TimeInterval, startedAt: Date, now: Date, in context: ModelContext) {
         let logicalDay = boundary.startOfDay(for: startedAt)
-        let instant = boundary.loggingInstant(for: now(), on: logicalDay)
+        let instant = boundary.loggingInstant(for: now, on: logicalDay)
         // Completions are stamped with an instant whose civil day is the
         // logical day, so match by civil day, not by `boundary.isDate`.
         let existing = habit.completions?.first {
@@ -109,6 +127,7 @@ struct WorkSessionTracker {
         }
         switch habit.type {
         case .timer:
+            guard workedSeconds > 0 else { return }
             if let existing { existing.value += workedSeconds } else {
                 context.insert(CompletionRecord(date: instant, value: workedSeconds, habit: habit))
             }
@@ -116,10 +135,13 @@ struct WorkSessionTracker {
             if let existing { existing.value += 1 } else {
                 context.insert(CompletionRecord(date: instant, value: 1, habit: habit))
             }
-        case .binary, .negative:
+        case .binary:
             if let existing { existing.value = max(existing.value, 1) } else {
                 context.insert(CompletionRecord(date: instant, value: 1, habit: habit))
             }
+        case .negative:
+            // Now never offers negative habits; nothing to log.
+            return
         }
     }
 }

@@ -4,6 +4,105 @@
     "" : {
 
     },
+    "%@ — %@" : {
+      "comment" : "Now tab Up next line: block title, em dash, planned start time.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ — %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ — %@"
+          }
+        }
+      }
+    },
+    "%lld min left" : {
+      "comment" : "Now tab: minutes left of the planned block while a session runs. min is short for minutes.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld min left"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld min left"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld min restantes"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld min restantes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld min over" : {
+      "comment" : "Now tab: minutes a running session went past its planned block. min is short for minutes.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld min over"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld min over"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld min de dépassement"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld min de dépassement"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     ", has note" : {
       "comment" : "Appended to the calendar cell accessibility label when the day has a note attached.",
       "localizations" : {
@@ -225,6 +324,166 @@
         }
       }
     },
+    "Done marks it complete. Not yet keeps it open for later." : {
+      "comment" : "Message of the Finish dialog on the Now tab.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done marks it complete. Not yet keeps it open for later."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fait le marque comme terminé. Pas encore le garde ouvert pour plus tard."
+          }
+        }
+      }
+    },
+    "elapsed" : {
+      "comment" : "Now tab: word after the live timer (for example 48:12 elapsed).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "elapsed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "écoulé"
+          }
+        }
+      }
+    },
+    "Finish" : {
+      "comment" : "Now tab button that ends the open work session; it opens a confirmation.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminer"
+          }
+        }
+      }
+    },
+    "Finish this session?" : {
+      "comment" : "Title of the confirmation dialog when the user taps Finish on the Now tab.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finish this session?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminer cette session ?"
+          }
+        }
+      }
+    },
+    "In %lld h %lld min" : {
+      "comment" : "Now tab: time until the next planned block. h is hours, min is minutes.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %lld h %lld min"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans %lld h %lld min"
+          }
+        }
+      }
+    },
+    "In %lld min" : {
+      "comment" : "Now tab: minutes until the next planned block. min is short for minutes.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "In %lld min"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "In %lld min"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Dans %lld min"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Dans %lld min"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "NEXT" : {
+      "comment" : "Small label above the next planned task or habit later today on the Now tab. Uppercase on purpose.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NEXT"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "ENSUITE"
+          }
+        }
+      }
+    },
+    "No open tasks or habits left today." : {
+      "comment" : "Empty state description in the Start something sheet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No open tasks or habits left today."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plus aucune tâche ni habitude à faire aujourd’hui."
+          }
+        }
+      }
+    },
     "None" : {
       "comment" : "Value shown for an unset optional date or time in a read-only form.",
       "localizations" : {
@@ -259,6 +518,190 @@
         }
       }
     },
+    "Not yet" : {
+      "comment" : "Finish dialog button on the Now tab: end the session but keep the task or habit open.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pas encore"
+          }
+        }
+      }
+    },
+    "Nothing planned for the rest of today" : {
+      "comment" : "Now tab empty state title: no planned blocks are left today.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing planned for the rest of today"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rien de prévu pour le reste de la journée"
+          }
+        }
+      }
+    },
+    "Nothing to start" : {
+      "comment" : "Empty state title in the Start something sheet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing to start"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rien à démarrer"
+          }
+        }
+      }
+    },
+    "Now" : {
+      "comment" : "Navigation title of the Now tab, which shows what to work on right now.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Now"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Maintenant"
+          }
+        }
+      }
+    },
+    "NOW" : {
+      "comment" : "Small label above the task or habit being worked on, or planned for this moment, on the Now tab. Uppercase on purpose.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NOW"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MAINTENANT"
+          }
+        }
+      }
+    },
+    "Pause" : {
+      "comment" : "Now tab button that pauses the running work session.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pause"
+          }
+        }
+      }
+    },
+    "Paused · %lld min so far" : {
+      "comment" : "Now tab: shown while a work session is paused; the number is the minutes worked before the pause.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Paused · %lld min so far"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Paused · %lld min so far"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "En pause · %lld min jusqu’ici"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "En pause · %lld min jusqu’ici"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Planned %lld min ago" : {
+      "comment" : "Now tab: the current planned block started this many minutes ago. min is short for minutes.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Planned %lld min ago"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Planned %lld min ago"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Prévu il y a %lld min"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Prévu il y a %lld min"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Remove %@" : {
       "comment" : "Accessibility label of the clear button next to an optional date or time; %@ is the field name.",
       "localizations" : {
@@ -272,6 +715,125 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Retirer « %@ »"
+          }
+        }
+      }
+    },
+    "Resume" : {
+      "comment" : "Now tab button that resumes a paused work session.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resume"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Reprendre"
+          }
+        }
+      }
+    },
+    "Start" : {
+      "comment" : "Now tab button that starts a work session on the planned block that is current now.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer"
+          }
+        }
+      }
+    },
+    "Start a task or habit when you are ready." : {
+      "comment" : "Now tab empty state description.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start a task or habit when you are ready."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarre une tâche ou une habitude quand tu es prêt."
+          }
+        }
+      }
+    },
+    "Start early" : {
+      "comment" : "Now tab button that starts the next planned block before its planned start time.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start early"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer maintenant"
+          }
+        }
+      }
+    },
+    "Start something" : {
+      "comment" : "Title of the sheet that lists tasks and habits to start now.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start something"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer autre chose"
+          }
+        }
+      }
+    },
+    "Start something…" : {
+      "comment" : "Now tab button that opens a list of tasks and habits to start now.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start something…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarrer autre chose…"
+          }
+        }
+      }
+    },
+    "Started %@" : {
+      "comment" : "Now tab: the time of day the open work session started. The placeholder is a time.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Started %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Démarré à %@"
           }
         }
       }
@@ -323,6 +885,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Demain"
+          }
+        }
+      }
+    },
+    "Unable to update" : {
+      "comment" : "Alert title when a Now tab action (start, pause, resume, finish) fails to save.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unable to update"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mise à jour impossible"
           }
         }
       }
@@ -388,6 +967,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Affiche ton sommeil et tes entraînements dans le Calendrier. Lecture seule, et les données restent sur ton appareil."
+          }
+        }
+      }
+    },
+    "Up next" : {
+      "comment" : "Caption above the block planned after the current one on the Now tab.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Up next"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "À suivre"
           }
         }
       }

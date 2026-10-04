@@ -386,6 +386,21 @@ enum AccessibilityID {
         static let deleteConfirmButton = "archived.delete.confirm"
     }
 
+    /// The Now tab (`NowView`).
+    enum Now {
+        static let title = "now.title"
+        static let start = "now.start"
+        static let pause = "now.pause"
+        static let resume = "now.resume"
+        static let finish = "now.finish"
+        static let finishDone = "now.finish.done"
+        static let finishNotYet = "now.finish.notYet"
+        static let elapsed = "now.elapsed"
+        static let upNext = "now.upNext"
+        static let startSomething = "now.startSomething"
+        static func candidate(_ id: UUID) -> String { "now.candidate.\(id.uuidString)" }
+    }
+
     /// The tiles of the Debug-only widget gallery the App Store
     /// screenshot run photographs one by one. Each sits on the tile
     /// itself — the rounded container with the widget inside — which

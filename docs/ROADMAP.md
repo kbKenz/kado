@@ -107,6 +107,9 @@ decide what counts. Spec:
 ### Remaining v1.x polish
 - [x] Habit colour palettes (Kadō, Classic, plus four in the
       Supporter pack) and alternate app icons — shipped in 1.11
+- [x] Today day strip — scroll back to backfill a missed habit or
+      task, or ahead to see what is planned; future habits are
+      view-only (`docs/superpowers/specs/2026-10-04-today-day-strip-design.md`)
 - [ ] Core app themes: sepia, high contrast
 - [ ] Optional biometrics (Face ID / Touch ID) to open the app
 - [ ] Categories / tags for organization

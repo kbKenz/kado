@@ -2153,6 +2153,24 @@
         }
       }
     },
+    "Cycling" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cycling"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vélo"
+          }
+        }
+      }
+    },
     "Data" : {
       "comment" : "Settings section heading for import and export.",
       "localizations" : {
@@ -2629,6 +2647,24 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Modifier la tâche"
+          }
+        }
+      }
+    },
+    "Elliptical" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elliptical"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elliptique"
           }
         }
       }
@@ -3741,6 +3777,42 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Habitudes : %lld (%lld nouvelles, %lld mises à jour)\nRéalisation : %lld (%lld nouvelles, %lld mises à jour)\nTâches : %lld\nCréneaux planifiés : %lld\nObjectifs : %lld\nSaisies de progression : %lld"
+          }
+        }
+      }
+    },
+    "HIIT" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HIIT"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HIIT"
+          }
+        }
+      }
+    },
+    "Hiking" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiking"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Randonnée"
           }
         }
       }
@@ -6754,6 +6826,42 @@
         }
       }
     },
+    "Rowing" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rowing"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aviron"
+          }
+        }
+      }
+    },
+    "Running" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Course"
+          }
+        }
+      }
+    },
     "Save" : {
       "comment" : "Confirmation button in form toolbars and the timer-log sheet.",
       "localizations" : {
@@ -7386,6 +7494,24 @@
         }
       }
     },
+    "Strength training" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strength training"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renforcement musculaire"
+          }
+        }
+      }
+    },
     "Sunset" : {
       "comment" : "App icon picker, under the icon's Japanese name: what Yūyake means.",
       "extractionState" : "manual",
@@ -7434,6 +7560,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pack de soutien"
+          }
+        }
+      }
+    },
+    "Swimming" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Swimming"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Natation"
           }
         }
       }
@@ -9119,6 +9263,24 @@
         }
       }
     },
+    "Walking" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Walking"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marche"
+          }
+        }
+      }
+    },
     "Week" : {
       "comment" : "Settings section header above the week-start picker.",
       "localizations" : {
@@ -9207,6 +9369,24 @@
         }
       }
     },
+    "Workout" : {
+      "comment" : "Generic workout name shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Workout"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entraînement"
+          }
+        }
+      }
+    },
     "Yes / no" : {
       "comment" : "Habit type label for binary habits (done/not done, no intermediate state). Used in the new-habit picker and as the type subtitle on habit detail.",
       "localizations" : {
@@ -9237,6 +9417,24 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hier"
+          }
+        }
+      }
+    },
+    "Yoga" : {
+      "comment" : "Workout type shown on the Calendar timeline.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yoga"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yoga"
           }
         }
       }

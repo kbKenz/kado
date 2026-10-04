@@ -17,6 +17,8 @@
 	</array>
 	<key>CFBundleSpokenName</key>
 	<string>Kado</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Kadō shows your sleep and workouts on your Calendar. This data stays on your device.</string>
 	<key>INAlternativeAppNames</key>
 	<array>
 		<dict>

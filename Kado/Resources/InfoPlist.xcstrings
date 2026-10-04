@@ -1,0 +1,24 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSHealthShareUsageDescription" : {
+      "comment" : "Health permission prompt: why Kadō reads sleep and workouts.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kadō shows your sleep and workouts on your Calendar. This data stays on your device."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kadō affiche ton sommeil et tes entraînements dans ton Calendrier. Ces données restent sur ton appareil."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.1"
+}

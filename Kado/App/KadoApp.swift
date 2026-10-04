@@ -18,6 +18,7 @@ struct KadoApp: App {
     @State private var devModeController = DevModeController()
     @State private var cloudAccountStatus = DefaultCloudAccountStatusObserver()
     @State private var googleCalendarConnection = GoogleCalendarConnection()
+    @State private var healthTimelineProvider = HealthKitTimelineProvider()
     @State private var notificationScheduler: any NotificationScheduling
     @State private var notificationManager: NotificationManager
     @State private var tipJarStore = DefaultTipJarStore(tipNudge: DefaultTipNudgeService())
@@ -186,6 +187,7 @@ struct KadoApp: App {
         .modelContainer(container)
         .environment(\.cloudAccountStatus, cloudAccountStatus)
         .environment(\.googleCalendarConnection, googleCalendarConnection)
+        .environment(\.healthTimelineProvider, healthTimelineProvider)
         .environment(\.notificationScheduler, notificationScheduler)
         .environment(\.tipJarStore, tipJarStore)
         .environment(\.supporterPack, supporterPack)

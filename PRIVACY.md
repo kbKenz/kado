@@ -52,6 +52,15 @@ imports. Imported tasks and completion history remain until you delete
 them. You can additionally revoke the app's Google authorization through
 [Google Account connections](https://myaccount.google.com/connections).
 
+## Apple Health (optional)
+
+If you turn on **Health on Calendar** in Settings, Kadō asks for
+read-only access to your sleep and workouts. It reads them only to
+draw them on the Calendar, on your device. Kadō never writes to
+Health, and never stores, syncs to iCloud, exports, or sends this
+data anywhere. Turn the setting off, or remove access in
+Settings → Privacy & Security → Health → Kadō, at any time.
+
 ## Export and import
 
 JSON and CSV backups include your planning records, including imported

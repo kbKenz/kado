@@ -86,6 +86,12 @@ Reconsider either if: users file issues asking for it, reviews
 mention its absence, or a concrete workflow appears that the manual
 flow genuinely can't serve.
 
+**Not reversed by Health on Calendar (2026-10).** The Calendar can
+show sleep and workouts read from Health, opt-in from Settings. It
+is display-only: nothing completes, no score moves, and you still
+decide what counts. Spec:
+`docs/superpowers/specs/2026-10-04-health-calendar-overlay-design.md`.
+
 ---
 
 ## Next

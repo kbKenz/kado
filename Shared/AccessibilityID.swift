@@ -303,6 +303,7 @@ enum AccessibilityID {
 
     enum Settings {
         static let devModeToggle = "settings.devMode.toggle"
+        static let healthOnCalendarToggle = "settings.healthOnCalendar.toggle"
         /// The destructive button in the first-activation confirmation
         /// alert. A test that launches with the flag already confirmed
         /// never sees it.

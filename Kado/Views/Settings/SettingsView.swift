@@ -20,6 +20,7 @@ struct SettingsView: View {
                         Label("Google Calendar", systemImage: "calendar.badge.clock")
                     }
                 }
+                HealthCalendarSection()
                 DayStartSection()
                 WeekStartSection()
                 AppearanceSection()

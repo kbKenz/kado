@@ -11,34 +11,38 @@ struct DayStrip: View {
 
     @Environment(\.calendar) private var calendar
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var scrolledDay: Date?
 
     var body: some View {
-        ScrollViewReader { proxy in
-            ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 4) {
-                    ForEach(days, id: \.self) { day in
-                        DayStripCell(
-                            day: day,
-                            isSelected: calendar.isDate(day, inSameDayAs: selection),
-                            isToday: calendar.isDate(day, inSameDayAs: today),
-                            progress: progress(day),
-                            onSelect: { selection = day }
-                        )
-                        .id(day)
-                    }
+        ScrollView(.horizontal, showsIndicators: false) {
+            LazyHStack(spacing: 4) {
+                ForEach(days, id: \.self) { day in
+                    DayStripCell(
+                        day: day,
+                        isSelected: calendar.isDate(day, inSameDayAs: selection),
+                        isToday: calendar.isDate(day, inSameDayAs: today),
+                        progress: progress(day),
+                        onSelect: { selection = day }
+                    )
                 }
-                .scrollTargetLayout()
-                .padding(.horizontal, 16)
             }
-            .scrollTargetBehavior(.viewAligned)
-            .onAppear { proxy.scrollTo(selection, anchor: .center) }
-            .onChange(of: selection) { _, newValue in
-                withAnimation(reduceMotion ? nil : .snappy) {
-                    proxy.scrollTo(newValue, anchor: .center)
-                }
+            .scrollTargetLayout()
+        }
+        .contentMargins(.horizontal, 16, for: .scrollContent)
+        .scrollTargetBehavior(.viewAligned)
+        .scrollPosition(id: $scrolledDay, anchor: .center)
+        .onAppear { scrolledDay = element(for: selection) }
+        .onChange(of: selection) {
+            withAnimation(reduceMotion ? nil : KadoMotion.base) {
+                scrolledDay = element(for: selection)
             }
         }
         .padding(.vertical, 4)
+    }
+
+    /// The entry of `days` that falls on the same calendar day as `date`.
+    private func element(for date: Date) -> Date? {
+        days.first { calendar.isDate($0, inSameDayAs: date) }
     }
 }
 

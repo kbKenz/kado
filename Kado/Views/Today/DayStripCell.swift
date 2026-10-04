@@ -11,6 +11,7 @@ struct DayStripCell: View {
     let onSelect: () -> Void
 
     @Environment(\.calendar) private var calendar
+    @ScaledMetric(relativeTo: .caption2) private var ringSize: CGFloat = 14
 
     private var weekday: Weekday {
         Weekday(rawValue: calendar.component(.weekday, from: day)) ?? .monday
@@ -52,7 +53,7 @@ struct DayStripCell: View {
     private var ring: some View {
         let tint = isSelected ? Color.kadoBackground : Color.kadoAccent
         if progress.total == 0 {
-            Circle().fill(tint.opacity(0.4)).frame(width: 4, height: 4).frame(width: 14, height: 14)
+            Circle().fill(tint.opacity(0.4)).frame(width: ringSize * 0.3, height: ringSize * 0.3).frame(width: ringSize, height: ringSize)
         } else {
             ZStack {
                 Circle().stroke(tint.opacity(0.25), lineWidth: 2.5)
@@ -60,7 +61,7 @@ struct DayStripCell: View {
                     .stroke(tint, style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
             }
-            .frame(width: 14, height: 14)
+            .frame(width: ringSize, height: ringSize)
         }
     }
 

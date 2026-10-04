@@ -945,14 +945,58 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld of %2$lld habits done"
-          }
+            "value" : "%1$lld of %#@habits@"
+          },
+              "substitutions" : {
+                "habits" : {
+                  "argNum" : 2,
+                  "formatSpecifier" : "lld",
+                  "variations" : {
+                    "plural" : {
+                      "one" : {
+                        "stringUnit" : {
+                          "state" : "translated",
+                          "value" : "%arg habit done"
+                        }
+                      },
+                      "other" : {
+                        "stringUnit" : {
+                          "state" : "translated",
+                          "value" : "%arg habits done"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$lld habitudes faites sur %2$lld"
-          }
+            "value" : "%#@done@ sur %2$lld"
+          },
+              "substitutions" : {
+                "done" : {
+                  "argNum" : 1,
+                  "formatSpecifier" : "lld",
+                  "variations" : {
+                    "plural" : {
+                      "one" : {
+                        "stringUnit" : {
+                          "state" : "translated",
+                          "value" : "%arg habitude faite"
+                        }
+                      },
+                      "other" : {
+                        "stringUnit" : {
+                          "state" : "translated",
+                          "value" : "%arg habitudes faites"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
         }
       }
     },

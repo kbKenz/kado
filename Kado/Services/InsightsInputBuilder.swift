@@ -13,9 +13,18 @@ struct InsightsInputBuilder {
     let civilToday: Date
     let calendar: Calendar
 
-    func build(in context: ModelContext) throws -> InsightsInput {
-        let habitRecords = try context.fetch(FetchDescriptor<HabitRecord>())
-        let taskRecords = try context.fetch(FetchDescriptor<TaskRecord>())
+    /// `includeGoalProgress: false` leaves every goal's `progress` nil.
+    /// The History reads goal names only, and the progress re-reads
+    /// each linked habit's completions and each linked task.
+    func build(in context: ModelContext, includeGoalProgress: Bool = true) throws -> InsightsInput {
+        // Every habit's completions and every task's blocks are read
+        // below: one fetch each instead of one per record.
+        var habitDescriptor = FetchDescriptor<HabitRecord>()
+        habitDescriptor.relationshipKeyPathsForPrefetching = [\.completions]
+        var taskDescriptor = FetchDescriptor<TaskRecord>()
+        taskDescriptor.relationshipKeyPathsForPrefetching = [\.scheduleBlocks]
+        let habitRecords = try context.fetch(habitDescriptor)
+        let taskRecords = try context.fetch(taskDescriptor)
         let sessionRecords = try context.fetch(FetchDescriptor<WorkSessionRecord>())
         let goalRecords = try context.fetch(FetchDescriptor<GoalRecord>())
 
@@ -79,7 +88,7 @@ struct InsightsInputBuilder {
 
         let goals = goalRecords.map { record -> InsightsGoal in
             var progress: Double?
-            if record.measurement.enabled {
+            if includeGoalProgress, record.measurement.enabled {
                 let result = record.progress(today: civilToday, calendar: calendar)
                 if result.isAvailable { progress = result.fraction }
             }

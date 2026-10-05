@@ -252,6 +252,37 @@ struct InsightsInputBuilderTests {
         #expect(goals[unavailable.id]?.linkedHabitIDs == [binary.id])
     }
 
+    @Test("Without goal progress the input is the same, progress aside")
+    func withoutGoalProgress() throws {
+        let measured = GoalRecord(name: "Get into Cambridge", startDate: day(-30), targetDate: day(90), category: .study)
+        measured.measurement = GoalMeasurement(enabled: true, mode: .tasks, target: 4, unit: "tasks")
+        let plain = GoalRecord(name: "Read more")
+        [measured, plain].forEach(context.insert)
+        let habit = HabitRecord(name: "Read 20 pages", createdAt: day(-20), goal: plain)
+        context.insert(habit)
+        context.insert(CompletionRecord(date: time(-1, 21), value: 1, habit: habit))
+        let task = TaskRecord(title: "Book the IELTS exam", completedAt: time(-5, 17), goal: measured)
+        context.insert(task)
+        context.insert(ScheduleBlockRecord(plannedDay: day(-6), startAt: time(-6, 9), endAt: time(-6, 10), task: task))
+        context.insert(WorkSessionRecord(startedAt: time(-6, 9), endedAt: time(-6, 10), task: task))
+        try context.save()
+
+        let full = try build()
+        let skipped = try InsightsInputBuilder(civilToday: today, calendar: calendar)
+            .build(in: context, includeGoalProgress: false)
+
+        #expect(full.goals.contains { $0.progress != nil })
+        var expected = full
+        expected.goals = full.goals.map { goal in
+            var goal = goal
+            goal.progress = nil
+            return goal
+        }
+        #expect(skipped == expected)
+        #expect(skipped.habits.map(\.completions) == full.habits.map(\.completions))
+        #expect(skipped.goals.map(\.linkedTaskIDs) == full.goals.map(\.linkedTaskIDs))
+    }
+
     @Test("A goal carries its status and whether it is archived")
     func goalStatus() throws {
         let paused = GoalRecord(name: "Learn Japanese", status: .paused)

@@ -28,8 +28,8 @@ enum RemindersSync {
         // pass runs is skipped rather than kept alive past its container.
         let container = context.container
         passes.schedule(after: coalescingDelay) { [weak context, weak container] in
-            guard let context, container != nil else { return }
-            let read = Self.inputs(from: context)
+            // Read, then let go of the context before the await.
+            guard container != nil, let read = context.map(Self.inputs(from:)) else { return }
             await run(scheduler, habits: read.habits, completions: read.completions)
         }
     }

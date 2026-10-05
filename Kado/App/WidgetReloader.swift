@@ -35,13 +35,16 @@ enum WidgetReloader {
         // its context alive past its container traps in SwiftData.
         let container = context.container
         passes.schedule(after: coalescingDelay) { [weak context, weak container] in
-            guard let context, container != nil else { return }
-            await WidgetSnapshotBuilder.rebuildAndWriteInBackground(using: context) { source in
-                // Reminders share the same "after a habit mutation"
-                // cadence as widgets, and the store read the widget
-                // just made covers every habit the scheduler acts on.
-                RemindersSync.reschedule(habits: source.habits, completions: source.allCompletions)
-            }
+            // The context is used for the read only, never held across
+            // the await below: the store could be torn down meanwhile.
+            guard container != nil,
+                  let rebuild = context.map(WidgetSnapshotBuilder.beginBackgroundRebuild(using:))
+            else { return }
+            // Reminders share the same "after a habit mutation"
+            // cadence as widgets, and the store read the widget just
+            // made covers every habit the scheduler acts on.
+            RemindersSync.reschedule(habits: rebuild.source.habits, completions: rebuild.source.allCompletions)
+            await rebuild.finish()
         }
     }
 

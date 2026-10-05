@@ -202,13 +202,44 @@ public enum WidgetSnapshotBuilder {
         using context: ModelContext,
         afterRead: (Source) -> Void = { _ in }
     ) async {
-        let pass = Pass(context: context)
-        DayCompletionCelebration.shared.observe(pass.todayProgress(), on: pass.day)
-        afterRead(pass.source)
-        await Task.detached(priority: .utility) {
-            pass.write(pass.buildSeries())
-        }.value
-        WidgetCenter.shared.reloadAllTimelines()
+        let rebuild = beginBackgroundRebuild(using: context)
+        afterRead(rebuild.source)
+        await rebuild.finish()
+    }
+
+    /// The main-actor half of `rebuildAndWriteInBackground`: reads the
+    /// store and reports today's progress now, and returns the rest of
+    /// the pass. That rest holds only values, so a caller that awaits
+    /// it need not keep `context` alive meanwhile — a context outliving
+    /// its container traps when its save timer fires.
+    public static func beginBackgroundRebuild(using context: ModelContext) -> BackgroundRebuild {
+        let rebuild = BackgroundRebuild(context: context)
+        DayCompletionCelebration.shared.observe(rebuild.pass.todayProgress(), on: rebuild.pass.day)
+        return rebuild
+    }
+
+    /// A background rebuild whose store read is done.
+    nonisolated public struct BackgroundRebuild: Sendable {
+        fileprivate let pass: Pass
+
+        @MainActor
+        fileprivate init(context: ModelContext) {
+            pass = Pass(context: context)
+        }
+
+        /// The store as the pass read it.
+        public var source: Source { pass.source }
+
+        /// Builds and writes the series off the main actor, then asks
+        /// WidgetKit to reload.
+        @MainActor
+        public func finish() async {
+            let pass = pass
+            await Task.detached(priority: .utility) {
+                pass.write(pass.buildSeries())
+            }.value
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     /// Today's tally as `build` counts it — the due-or-logged habits
@@ -232,7 +263,7 @@ public enum WidgetSnapshotBuilder {
     /// logical day and week start the widget can't resolve itself, the
     /// store as values, and the ticket that orders its write against
     /// every other pass.
-    nonisolated private struct Pass: Sendable {
+    nonisolated fileprivate struct Pass: Sendable {
         let day: Date
         let calendar: Calendar
         let source: Source

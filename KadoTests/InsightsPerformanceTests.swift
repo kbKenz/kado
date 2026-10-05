@@ -6,23 +6,20 @@ import Testing
 /// much larger than most: 20 habits with a record on each of 400 days,
 /// 300 tasks, 400 sessions, five goals and two years of Health data.
 ///
-/// The target is 1.5 s per report. It does NOT hold yet with the real
-/// calculator sections. Measured on 2026-10-05 (simulator, Debug build),
-/// with the section files from the ins-engine-a and ins-engine-b branches
-/// copied into this branch:
+/// The target is 1.5 s per report.
 ///
-/// - week: 2.4–3.9 s, month: 3.3–4.6 s, year: 12.9–15.0 s.
-/// - Habits section: about 2 s for any period. `currentScore` runs over
-///   the full history (about 0.19 s per habit), and streaks are computed
-///   per habit.
-/// - Year: pulse, activity, categories and rhythm take 1.5–2.5 s each.
-///   The likely cause is `InsightsScope.outcome`, which calls
-///   `isCounted` with all of a habit's completions for every day
-///   (about 0.5 ms per call).
+/// Measured on 2026-10-06 (simulator, Debug build): 0.8–0.9 s for week,
+/// month and quarter. Before the score and the day-outcome table used a
+/// prepared schedule (`DefaultFrequencyEvaluator.Prepared`) it was 5–6 s:
+/// `currentScore` cost about 0.18 s per habit and the outcome table up
+/// to 1.6 s (quarter), because the evaluator rescanned every completion
+/// on every day. What is left is mostly streaks (about 0.4 s for the 20
+/// habits) and the all-time section (about 0.25 s).
 ///
-/// The section owners must make these faster. Until then the timing
-/// check is a known issue, so the merged branch stays green; it still
-/// records the time, and it passes as is when the sections are fast.
+/// The check stays a known issue for now: run alone it passes, but with
+/// the rest of the unit suite running in parallel the week report took
+/// 1.53 s once. It still records the time, and it passes as is when the
+/// report is fast.
 @Suite("Insights performance", .serialized)
 struct InsightsPerformanceTests {
     static let input = makeInput()
@@ -34,7 +31,7 @@ struct InsightsPerformanceTests {
         let elapsed = ContinuousClock().measure {
             _ = InsightsCalculator().report(input: input, context: context)
         }
-        withKnownIssue("Report exceeds 1.5 s with the real sections; see the suite's doc comment", isIntermittent: true) {
+        withKnownIssue("Report can exceed 1.5 s while the rest of the suite runs; see the suite's doc comment", isIntermittent: true) {
             #expect(elapsed < .milliseconds(1500), "The \(period.rawValue) report took \(elapsed)")
         }
     }

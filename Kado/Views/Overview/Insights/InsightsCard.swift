@@ -51,11 +51,11 @@ struct InsightsCard<Content: View>: View {
 #Preview("Dark") {
     VStack(spacing: 16) {
         InsightsCard(kind: .highlights) {
-            Label("Meditate: 23 days, your best streak ever", systemImage: "flame.fill")
+            Label(InsightsHighlight.streakRecord(habitName: "Read", days: 12).sentence, systemImage: "flame.fill")
                 .font(.subheadline)
         }
-        InsightsCard(kind: .allTime) {
-            Text("Since Jan 3, 2026 · 101 days")
+        InsightsCard(kind: .goals) {
+            Text("No data yet")
                 .font(.subheadline)
                 .foregroundStyle(Color.kadoForegroundSecondary)
         }

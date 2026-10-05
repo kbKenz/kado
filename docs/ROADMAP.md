@@ -28,9 +28,11 @@ the App Store release it went out in.
   device) — see `docs/plans/2026-10/ai-assisted-input/`.
 - **In progress**: Now tab — tracked work sessions, quick start for a
   new task or habit; Calendar inside Today.
+- **In progress**: Insights feed in Overview, and a category on every
+  task, habit and goal, suggested on device from the title — see
+  `docs/superpowers/specs/2026-10-05-insights-and-categories-design.md`.
 - **Next**: Live Activities + Dynamic Island for timer habits, then
-  the remaining v1.x polish items (biometrics, categories, backup
-  files).
+  the remaining v1.x polish items (biometrics, backup files).
 
 ---
 
@@ -114,7 +116,10 @@ decide what counts. Spec:
       view-only (`docs/superpowers/specs/2026-10-04-today-day-strip-design.md`)
 - [ ] Core app themes: sepia, high contrast
 - [ ] Optional biometrics (Face ID / Touch ID) to open the app
-- [ ] Categories / tags for organization
+- [x] Categories for organization — a fixed set of twelve (Work,
+      Study, Fitness…) on tasks, habits and goals, each with an icon,
+      suggested on device from the title (2026-10-05). Free tags and
+      user-made categories stay open (backlog #17, #9)
 - [ ] Manual backup as `.kado` file (zipped JSON), and restore
 - [ ] Import from Loop Habit Tracker (CSV) — the generic CSV import
       shipped in 1.7 is most of the machinery
@@ -304,7 +309,8 @@ noted inline.
 - [ ] Import from Streaks — still open
 - [ ] Core themes: light, dark, sepia, high contrast — still open
 - [ ] Optional biometrics (Face ID / Touch ID) — still open
-- [ ] Categories/tags for organization — still open
+- [x] Categories/tags for organization — fixed categories shipped
+      2026-10; free tags still open
 - [ ] Manual backup as `.kado` file, and restore — still open
 
 ### Localization
@@ -373,7 +379,10 @@ noted inline.
 - Multi-profiles on the same device
 - Real-time collaboration between unrelated users
 - Bidirectional calendar integration
-- AI-assisted habit suggestions (contrary to privacy-first ethics)
+- AI-assisted suggestions — shipped on the owner's request
+  (2026-10-05), which is the proof of need: on-device title
+  suggestions for the category, the goal and a new habit's icon.
+  Nothing leaves the device (see `PRIVACY.md`)
 
 ---
 
@@ -383,7 +392,7 @@ Order of sacrifice for what remains (most to least sacrificable):
 
 1. Import from Streaks — sacrificable
 2. Advanced themes — sacrificable
-3. Categories/tags — can wait
+3. Free tags (fixed categories shipped 2026-10) — can wait
 4. Biometrics — nice-to-have, not blocking
 5. Live Activities — worth doing, but only timer habits benefit
 

@@ -37,14 +37,20 @@ struct GoalProgressInputsTests {
     /// One store and one fetch per table, kept short on purpose. A first
     /// cut fetched every table once per goal and held the main actor for
     /// seconds; the full suite then died in a SwiftData timer trap,
-    /// though the suite passed on its own.
+    /// though the suite passed on its own. The trap is in
+    /// `ModelContext`'s autosave timer, so this test uses its own
+    /// context with autosave off, not `mainContext`, and keeps the
+    /// container alive until the last read: no timer is left behind
+    /// to fire once the container is gone.
     @Test("Matches the full-table computation for every goal, over a random store")
     func matchesFullTables() throws {
         var rng = SplitMix(state: 7)
         let calendar = TestCalendar.utc
         let today = TestCalendar.day(0)
         let store = try container()
-        let context = store.mainContext
+        defer { withExtendedLifetime(store) {} }
+        let context = ModelContext(store)
+        context.autosaveEnabled = false
         let goals = (0..<40).map { GoalRecord(name: "Goal \($0)") }
         goals.forEach(context.insert)
         let habitTypes: [HabitType] = [.counter(target: 5), .timer(targetSeconds: 600), .binary]

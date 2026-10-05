@@ -118,7 +118,7 @@ struct TodayView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.kadoBackground.ignoresSafeArea())
-            .safeAreaInset(edge: .top, spacing: 0) {
+            .pinnedTopBar {
                 TodayHeader(
                     days: days,
                     selection: stripSelection,
@@ -888,6 +888,5 @@ private struct TodayHeader: View {
             .accessibilityIdentifier(AccessibilityID.Today.modePicker)
         }
         .frame(maxWidth: .infinity)
-        .background(Color.kadoBackground, ignoresSafeAreaEdges: [])
     }
 }

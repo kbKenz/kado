@@ -22,7 +22,7 @@ struct OverviewView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.kadoBackground.ignoresSafeArea())
-            .safeAreaInset(edge: .top, spacing: 0) {
+            .pinnedTopBar {
                 OverviewModePicker(mode: $mode)
             }
             .navigationTitle("Overview")
@@ -48,7 +48,6 @@ private struct OverviewModePicker: View {
         .padding(.bottom, 6)
         .accessibilityIdentifier(AccessibilityID.Insights.modePicker)
         .frame(maxWidth: .infinity)
-        .background(Color.kadoBackground, ignoresSafeAreaEdges: [])
     }
 }
 

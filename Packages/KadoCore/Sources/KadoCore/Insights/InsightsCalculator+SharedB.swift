@@ -60,4 +60,15 @@ enum InsightsSharedB {
                 )
             }
     }
+
+    /// A negative habit: its records are slips, never times done.
+    static func isNegative(_ type: HabitType) -> Bool {
+        if case .negative = type { return true }
+        return false
+    }
+
+    static func isTimer(_ type: HabitType) -> Bool {
+        if case .timer = type { return true }
+        return false
+    }
 }

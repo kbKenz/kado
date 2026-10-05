@@ -5,7 +5,8 @@ import XCTest
 ///
 /// The icons are decorative, so what can be asserted is the category
 /// name VoiceOver reads after each title. Every screen is captured too,
-/// because a cramped row passes every assertion.
+/// because a cramped row passes every assertion. Rows are found by
+/// scrolling, so the test also runs at large text sizes.
 final class CategoryIconsTests: KadoUITestCase {
 
     @MainActor
@@ -26,23 +27,31 @@ final class CategoryIconsTests: KadoUITestCase {
         // Today: the goal gives Study, a stored category wins, the title
         // gives the rest, and a title with no match reads Other.
         tapTab(.today, in: app)
-        expectTaskRow("Contact professors at Cambridge", reads: "Study", in: app)
-        expectTaskRow("Team meeting", reads: "Work", in: app)
-        expectTaskRow("Pay the electricity bill", reads: "Money", in: app)
+        XCTAssertTrue(
+            elements(withIdentifierPrefix: AccessibilityID.Tasks.rowPrefix, in: app).firstMatch
+                .waitForExistence(timeout: 10),
+            "Today never showed a task."
+        )
         capture(app, "3-today")
+        expect(taskRow("Team meeting", reading: "Work", in: app), "Team meeting should read Work.", in: app)
+        expect(taskRow("Pay the electricity bill", reading: "Money", in: app), "The bill should read Money.", in: app)
+        expect(taskRow("Contact professors at Cambridge", reading: "Study", in: app),
+               "The goal's task should read Study.", in: app)
         let weekend = taskRow("Think about the weekend", reading: "Other", in: app)
+        expect(weekend, "A title with no match should read Other.", in: app)
         scrollTo(weekend, in: app)
         capture(app, "4-today-inbox")
 
-        // The Calendar: the meeting's block reads its category too. A
-        // block collapses its button into a plain element, so any type.
+        // The Calendar: the meeting reads its category too, on a timeline
+        // block or, at large text sizes, on an agenda row. A block
+        // collapses its button into a plain element, so any type.
         openCalendar(in: app)
         let meeting = app.descendants(matching: .any).matching(NSPredicate(
-            format: "identifier BEGINSWITH %@ AND label CONTAINS %@ AND label CONTAINS %@",
-            AccessibilityID.Calendar.blockPrefix, "Team meeting", "Work"
+            format: "(identifier BEGINSWITH %@ OR identifier BEGINSWITH %@) AND label CONTAINS %@ AND label CONTAINS %@",
+            AccessibilityID.Calendar.blockPrefix, AccessibilityID.Tasks.rowPrefix, "Team meeting", "Work"
         )).firstMatch
-        XCTAssertTrue(meeting.waitForExistence(timeout: 10), "The meeting block should read Work.")
         capture(app, "5-calendar")
+        expect(meeting, "The meeting on the Calendar should read Work.", in: app)
         scrollTo(meeting, in: app)
         scrollClearOfTabBar(meeting, in: app)
         capture(app, "6-calendar-meeting")
@@ -50,10 +59,11 @@ final class CategoryIconsTests: KadoUITestCase {
         // Goals: a stored category, a guessed one, and Other.
         tapTab(.goals, in: app)
         let cambridge = goalRow("Get into Cambridge", reading: "Study", in: app)
-        XCTAssertTrue(cambridge.waitForExistence(timeout: 10), "The goal row should read Study.")
-        XCTAssertTrue(goalRow("Run a half marathon", reading: "Fitness", in: app).exists)
-        XCTAssertTrue(goalRow("Be more present", reading: "Other", in: app).exists)
+        expect(cambridge, "The stored Study should read.", in: app)
         capture(app, "7-goals")
+        expect(goalRow("Run a half marathon", reading: "Fitness", in: app), "The name should give Fitness.", in: app)
+        expect(goalRow("Be more present", reading: "Other", in: app), "A name with no match should read Other.", in: app)
+        scrollTo(cambridge, in: app)
         cambridge.tap()
         XCTAssertTrue(app.buttons[AccessibilityID.Goals.edit].firstMatch.waitForExistence(timeout: 10))
         capture(app, "8-goal-detail")
@@ -88,21 +98,30 @@ final class CategoryIconsTests: KadoUITestCase {
     }
 
     @MainActor
-    private func expectTaskRow(
-        _ title: String, reads category: String, in app: XCUIApplication,
-        file: StaticString = #filePath, line: UInt = #line
-    ) {
-        XCTAssertTrue(
-            taskRow(title, reading: category, in: app).waitForExistence(timeout: 10),
-            "The \(title) row should read \(category).", file: file, line: line
-        )
-    }
-
-    @MainActor
     private func goalRow(_ name: String, reading category: String, in app: XCUIApplication) -> XCUIElement {
         app.descendants(matching: .any).matching(NSPredicate(
             format: "identifier BEGINSWITH %@ AND label CONTAINS %@ AND label CONTAINS %@",
             "goals.row.", name, category
         )).firstMatch
+    }
+
+    /// Fails unless `element` shows up, scrolling down and then back up
+    /// to find it: the order of timed rows follows the clock, and at
+    /// large text sizes a `List` row off screen does not exist yet.
+    @MainActor
+    private func expect(
+        _ element: XCUIElement, _ message: String, in app: XCUIApplication,
+        file: StaticString = #filePath, line: UInt = #line
+    ) {
+        if element.waitForExistence(timeout: 5) { return }
+        for _ in 0..<6 {
+            app.swipeUp(velocity: .slow)
+            if element.exists { return }
+        }
+        for _ in 0..<12 {
+            app.swipeDown(velocity: .slow)
+            if element.exists { return }
+        }
+        XCTFail(message, file: file, line: line)
     }
 }

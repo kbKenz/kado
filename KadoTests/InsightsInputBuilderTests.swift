@@ -108,8 +108,11 @@ struct InsightsInputBuilderTests {
 
         _ = try build()
 
+        // build() saves first, so any change here was made by the builder.
+        #expect(!context.hasChanges)
         #expect(task.categoryRaw.isEmpty)
         #expect(habit.categoryRaw.isEmpty)
+        #expect(goal.categoryRaw == ItemCategory.study.rawValue)
     }
 
     // MARK: - Tasks

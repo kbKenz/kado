@@ -337,8 +337,14 @@ public extension KadoSchemaV9 {
             try! JSONEncoder().encode(value)
         }
 
+        /// Shared rather than built per read: every `snapshot` reads
+        /// `frequency` and `type`, and Today snapshots each habit on
+        /// every pass. `decode` keeps no state between calls, so one
+        /// instance serves every caller.
+        private static let decoder = JSONDecoder()
+
         private static func decode<T: Decodable>(_ data: Data, fallback: T) -> T {
-            (try? JSONDecoder().decode(T.self, from: data)) ?? fallback
+            (try? decoder.decode(T.self, from: data)) ?? fallback
         }
     }
 

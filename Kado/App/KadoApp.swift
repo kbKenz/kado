@@ -176,16 +176,15 @@ struct KadoApp: App {
                 .task {
                     // Seed the widget's App Group JSON snapshot at
                     // launch so widgets have fresh data even if the
-                    // user hasn't mutated anything since install.
-                    WidgetSnapshotBuilder.rebuildAndWrite(using: container.mainContext)
+                    // user hasn't mutated anything since install, and
+                    // the pending notifications so a user who installed
+                    // yesterday and never opened the app still gets
+                    // today's reminder. One pass for both, built off
+                    // the main actor; the foreground reminder sync that
+                    // lands at the same moment folds into it.
+                    WidgetReloader.reloadAll(using: container.mainContext)
                 }
-                .task {
-                    await notificationManager.configure()
-                    // Seed pending notifications at launch so a user
-                    // who installed yesterday and never opened the
-                    // app still gets today's reminder.
-                    RemindersSync.rescheduleAll(using: container.mainContext)
-                }
+                .task { await notificationManager.configure() }
                 .task(id: RolloverTick(mark: clockMark, hour: boundary.startHour)) {
                     await advanceAtNextDayEdge(boundary)
                 }

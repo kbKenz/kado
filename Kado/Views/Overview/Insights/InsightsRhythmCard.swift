@@ -7,6 +7,9 @@ import KadoCore
 struct InsightsRhythmCard: View {
     let rhythm: InsightsRhythm
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .caption) private var swatch: CGFloat = 8
+
     var body: some View {
         InsightsCard(kind: .rhythm) {
             VStack(alignment: .leading, spacing: 18) {
@@ -58,12 +61,12 @@ struct InsightsRhythmCard: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.kadoForegroundSecondary)
             InsightsPartOfDayBar(parts: rhythm.focusByPartOfDay, total: focusTotal)
-            LazyVGrid(columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)], alignment: .leading, spacing: 6) {
+            LazyVGrid(columns: legendColumns, alignment: .leading, spacing: 6) {
                 ForEach(rhythm.focusByPartOfDay) { part in
                     HStack(spacing: 6) {
                         Circle()
                             .fill(part.part.swatch)
-                            .frame(width: 8, height: 8)
+                            .frame(width: swatch, height: swatch)
                         Text(part.part.localizedName)
                             .foregroundStyle(Color.kadoForeground)
                         Text(InsightsFormat.percent(part.seconds / focusTotal))
@@ -74,6 +77,12 @@ struct InsightsRhythmCard: View {
                 }
             }
         }
+    }
+
+    /// Two columns, or one at accessibility sizes so no name breaks.
+    private var legendColumns: [GridItem] {
+        let count = dynamicTypeSize.isAccessibilitySize ? 1 : 2
+        return Array(repeating: GridItem(.flexible(), alignment: .leading), count: count)
     }
 
     private var summary: String {
@@ -124,7 +133,8 @@ private struct InsightsWeekdayChart: View {
                 }
             }
         }
-        .frame(height: height)
+        // Grows with the text, up to a point.
+        .frame(height: min(height, 160))
     }
 
     /// The one-letter name for an axis label.

@@ -25,23 +25,15 @@ private struct InsightsGoalRowButton: View {
     let goal: InsightsGoalRow
     let action: () -> Void
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 10) {
-                    InsightsMark(category: goal.category)
-                    Text(goal.name)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(Color.kadoForeground)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(2)
-                    Spacer(minLength: 8)
-                    if let pace = goal.pace {
-                        InsightsPaceChip(pace: pace)
-                    }
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.kadoForegroundTertiary)
+                if dynamicTypeSize.isAccessibilitySize {
+                    stackedHeader
+                } else {
+                    inlineHeader
                 }
                 if let progress = goal.progress {
                     HStack(spacing: 10) {
@@ -69,6 +61,49 @@ private struct InsightsGoalRowButton: View {
         .accessibilityLabel(Text(spoken))
         .accessibilityHint(Text("Opens the goal.", comment: "Insights Goals, VoiceOver hint on a goal row."))
         .accessibilityIdentifier(AccessibilityID.Insights.goalRow(goal.goalID))
+    }
+
+    /// Icon, name, pace and chevron on one line.
+    private var inlineHeader: some View {
+        HStack(spacing: 10) {
+            InsightsMark(category: goal.category)
+            name.lineLimit(2)
+            Spacer(minLength: 8)
+            if let pace = goal.pace {
+                InsightsPaceChip(pace: pace)
+            }
+            chevron
+        }
+    }
+
+    /// Accessibility sizes: the name and the pace get lines of their
+    /// own, so neither is cut.
+    private var stackedHeader: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                InsightsMark(category: goal.category)
+                Spacer(minLength: 8)
+                chevron
+            }
+            name
+            if let pace = goal.pace {
+                InsightsPaceChip(pace: pace)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    private var name: some View {
+        Text(goal.name)
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(Color.kadoForeground)
+            .multilineTextAlignment(.leading)
+    }
+
+    private var chevron: some View {
+        Image(systemName: "chevron.right")
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(Color.kadoForegroundTertiary)
     }
 
     /// "6 of 14 tasks · 172 days left".
@@ -142,4 +177,13 @@ private extension InsightsGoalPace {
         .padding()
         .background(Color.kadoBackground)
         .preferredColorScheme(.dark)
+}
+
+#Preview("XXXL") {
+    ScrollView {
+        InsightsGoalsCard(goals: InsightsPreviewData.rich.goals, actions: .none)
+            .padding()
+    }
+    .background(Color.kadoBackground)
+    .dynamicTypeSize(.accessibility3)
 }

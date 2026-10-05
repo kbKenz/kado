@@ -25,10 +25,13 @@ struct InsightsMark: View {
     }
 
     var body: some View {
+        // Capped, so a mark at accessibility sizes leaves the row room
+        // for its text.
+        let side = min(size, 48)
         Image(systemName: systemImage)
-            .font(.footnote.weight(.semibold))
+            .font(.system(size: side * 0.45, weight: .semibold))
             .foregroundStyle(glyph)
-            .frame(width: size, height: size)
+            .frame(width: side, height: side)
             .background(Circle().fill(fill))
             .accessibilityHidden(true)
     }

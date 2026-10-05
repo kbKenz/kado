@@ -20,7 +20,12 @@ struct InsightsHealthLoaderTests {
     var window: DateInterval { DateInterval(start: time(-61, 12), end: time(0, 18)) }
 
     func load(_ provider: StubHealthTimelineProvider, isEnabled: Bool = true) async -> InsightsHealth {
-        await InsightsHealthLoader(provider: provider, calendar: calendar).health(in: window, isEnabled: isEnabled)
+        do {
+            return try await InsightsHealthLoader(provider: provider, calendar: calendar).health(in: window, isEnabled: isEnabled)
+        } catch {
+            Issue.record("The loader threw although the task was not cancelled")
+            return .disconnected
+        }
     }
 
     // MARK: - Opt-in
@@ -179,6 +184,21 @@ struct InsightsHealthLoaderTests {
         #expect(health.isConnected)
         #expect(health.sleep == [night.interval])
         #expect(health.workouts.isEmpty)
+    }
+
+    @Test("Cancelled during the reads: throws, so the caller keeps its previous value")
+    func cancelledThrows() async {
+        let provider = StubHealthTimelineProvider()
+        provider.sleepSamples = [sample(.asleep, time(-1, 23), time(0, 7))]
+        let loader = InsightsHealthLoader(provider: provider, calendar: calendar)
+        let window = window
+        // The task inherits the main actor, so it cannot start before cancel().
+        let task = Task { try await loader.health(in: window, isEnabled: true) }
+        task.cancel()
+
+        let result = await task.result
+
+        #expect(throws: CancellationError.self) { try result.get() }
     }
 
     // MARK: - Query window

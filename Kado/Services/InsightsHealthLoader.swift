@@ -19,12 +19,22 @@ struct InsightsHealthLoader {
     /// time, and each one fails on its own: the failure is logged
     /// (error type only), that part comes back empty, and the result
     /// stays connected, so the cards show what was read.
-    func health(in interval: DateInterval, isEnabled: Bool) async -> InsightsHealth {
+    ///
+    /// Throws only `CancellationError`, when the task was cancelled
+    /// during the reads. The reads then came back empty, so the caller
+    /// keeps the value it had instead of showing "no data".
+    func health(in interval: DateInterval, isEnabled: Bool) async throws(CancellationError) -> InsightsHealth {
         guard isEnabled, provider.isAvailable else { return .disconnected }
         async let samples = read("sleep") { try await provider.sleepSamples(in: interval) }
         async let entries = read("workouts") { try await provider.workoutEntries(in: interval) }
-        let sleep = Self.sleepSessions(from: await samples, calendar: calendar)
-        let workouts = await entries.compactMap(Self.workout)
+        let (sleepSamples, workoutEntries) = await (samples, entries)
+        if Task.isCancelled { throw CancellationError() }
+        let calendar = calendar
+        // Up to two years of samples: group them off the main actor.
+        let sleep = await Task.detached(priority: .userInitiated) {
+            Self.sleepSessions(from: sleepSamples, calendar: calendar)
+        }.value
+        let workouts = workoutEntries.compactMap(Self.workout)
         return InsightsHealth(isConnected: true, sleep: sleep, workouts: workouts)
     }
 
@@ -37,7 +47,7 @@ struct InsightsHealthLoader {
     /// grouped by the noon-to-noon window their start falls in
     /// ([D-1 12:00, D 12:00) in `calendar`), and each night is built on
     /// its own.
-    static func sleepSessions(from samples: [SleepSample], calendar: Calendar) -> [DateInterval] {
+    nonisolated static func sleepSessions(from samples: [SleepSample], calendar: Calendar) -> [DateInterval] {
         Dictionary(grouping: samples) { night(of: $0.interval.start, calendar: calendar) }
             .values
             .flatMap { SleepSessionBuilder.sessions(from: $0) }
@@ -47,7 +57,7 @@ struct InsightsHealthLoader {
 
     /// Midnight of the day the noon-to-noon window around `instant`
     /// ends on: the same day before noon, the next day from noon on.
-    static func night(of instant: Date, calendar: Calendar) -> Date {
+    nonisolated static func night(of instant: Date, calendar: Calendar) -> Date {
         let day = calendar.startOfDay(for: instant)
         guard let noon = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: day),
               instant >= noon
@@ -57,7 +67,7 @@ struct InsightsHealthLoader {
 
     /// What a report on `period` needs: from noon before the previous
     /// period's first day, so that first night is read whole, to `now`.
-    static func queryInterval(for period: InsightsPeriod, today: Date, now: Date, calendar: Calendar) -> DateInterval {
+    nonisolated static func queryInterval(for period: InsightsPeriod, today: Date, now: Date, calendar: Calendar) -> DateInterval {
         let first = InsightsScope.step(today, by: -(2 * period.dayCount - 1), calendar: calendar)
         let dayBefore = InsightsScope.step(first, by: -1, calendar: calendar)
         let start = calendar.date(bySettingHour: 12, minute: 0, second: 0, of: dayBefore) ?? dayBefore

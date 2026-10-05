@@ -13,9 +13,10 @@ struct TaskRowView: View {
 
     @Environment(\.calendar) private var calendar
     @Environment(\.civilToday) private var today
-    /// Wide enough for the widest category symbol, so the date text
-    /// starts at the same place on every row.
-    @ScaledMetric(relativeTo: .caption) private var glyphWidth: CGFloat = 18
+    /// The icon column of the lines under the title: wide enough for
+    /// the widest category symbol, so every line's text starts at the
+    /// same place.
+    @ScaledMetric(relativeTo: .caption) private var iconWidth: CGFloat = 18
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -41,23 +42,21 @@ struct TaskRowView: View {
                         .multilineTextAlignment(.leading)
                     // The category glyph leads the date line, so the
                     // title keeps the row's full width.
-                    HStack(alignment: .firstTextBaseline, spacing: 5) {
+                    detailLine(Text(subtitle)) {
                         ItemGlyphView(glyph: ItemGlyph(category: category))
-                            .frame(width: glyphWidth, alignment: .leading)
-                        Text(subtitle)
-                            .multilineTextAlignment(.leading)
                     }
                     .font(.caption)
-                    .foregroundStyle(Color.kadoForegroundSecondary)
                     if item.isFromGoogle {
-                        Label("Google Calendar", systemImage: "arrow.triangle.2.circlepath")
-                            .font(.caption2)
-                            .foregroundStyle(Color.kadoForegroundSecondary)
+                        detailLine(Text("Google Calendar")) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                        }
+                        .font(.caption2)
                     }
                     if let goalName = item.goalName {
-                        Label(goalName, systemImage: "target")
-                            .font(.caption)
-                            .foregroundStyle(Color.kadoForegroundSecondary)
+                        detailLine(Text(goalName)) {
+                            Image(systemName: "target")
+                        }
+                        .font(.caption)
                     }
                 }
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
@@ -89,6 +88,19 @@ struct TaskRowView: View {
     }
 
     private var category: ItemCategory { item.resolvedCategory }
+
+    /// A line under the title: an icon in a fixed column, then the text.
+    /// The icon is decorative; the row's label carries what it means.
+    private func detailLine<Icon: View>(_ text: Text, @ViewBuilder icon: () -> Icon) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 5) {
+            icon()
+                .frame(width: iconWidth, alignment: .leading)
+                .accessibilityHidden(true)
+            text
+                .multilineTextAlignment(.leading)
+        }
+        .foregroundStyle(Color.kadoForegroundSecondary)
+    }
 
     private var subtitle: String {
         let chosenSchedule = schedule ?? item.schedules.first

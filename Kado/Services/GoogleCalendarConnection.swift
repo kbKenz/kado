@@ -24,6 +24,12 @@ final class GoogleCalendarConnection {
     @ObservationIgnored private let allowsConnection: Bool
     @ObservationIgnored private var sessionGeneration = UUID()
     @ObservationIgnored private var lastForegroundAttempt: Date?
+    /// The import running off the main actor, if any. `isSyncing` is
+    /// cleared by a disconnect or store swap while an import still runs,
+    /// so a new sync can start before it ends; the next import waits for
+    /// it, or both would miss each other's new rows and insert the same
+    /// event twice.
+    @ObservationIgnored private var runningImport: Task<Int, any Error>?
 
     private static let calendarID = "primary"
     private static let eventsScope = "https://www.googleapis.com/auth/calendar.events.readonly"
@@ -233,15 +239,20 @@ final class GoogleCalendarConnection {
         let container = context.container
         let calendarID = Self.calendarID
         let window = DateInterval(start: from, end: to)
-        let count = try await Task.detached(priority: .utility) {
-            try GoogleCalendarImporter().apply(
+        let previous = runningImport
+        let importTask = Task.detached(priority: .utility) {
+            // Its outcome belongs to its own caller; only the order matters here.
+            _ = try? await previous?.value
+            return try GoogleCalendarImporter().apply(
                 events: events,
                 accountID: accountID,
                 calendarID: calendarID,
                 window: window,
                 in: container
             )
-        }.value
+        }
+        runningImport = importTask
+        let count = try await importTask.value
         // The import itself can't be recalled, but a disconnect or store swap
         // made while it ran must not see its status come back.
         guard generation == sessionGeneration else { return }

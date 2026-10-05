@@ -113,8 +113,9 @@ struct NowInputBuilder {
 
     private func isWorkable(_ habit: HabitRecord, on day: Date) -> Bool {
         guard habit.archivedAt == nil else { return false }
-        if case .negative = habit.type { return false }
+        // The snapshot's type, rather than a second decode of the record's.
         let snapshot = habit.snapshot
+        if case .negative = snapshot.type { return false }
         let completions = (habit.completions ?? []).compactMap(\.snapshot)
         // Same listing rule as Today: not before the habit's first day (#104).
         guard snapshot.isListed(on: day, completions: completions, calendar: boundary.calendar) else { return false }

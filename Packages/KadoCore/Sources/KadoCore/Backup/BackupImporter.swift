@@ -141,6 +141,9 @@ public struct DefaultBackupImporter: BackupImporting {
             }
             Self.overwrite(record, with: backup)
             if document.formatVersion >= 4 { record.measurement = backup.measurement ?? GoalMeasurement() }
+            // Files older than format 6 carry no category. Importing one
+            // must not erase a category set since that export was made.
+            if document.formatVersion >= 6 { record.categoryRaw = backup.category }
         }
 
         for habitBackup in document.habits {
@@ -177,6 +180,9 @@ public struct DefaultBackupImporter: BackupImporting {
             // not erase a goal assigned since that export was made.
             if document.formatVersion >= 3 {
                 record.goal = habitBackup.goalID.flatMap { goals[$0] }
+            }
+            if document.formatVersion >= 6 {
+                record.categoryRaw = habitBackup.category
             }
 
             var existingCompletions = Self.completionsByID(record)
@@ -216,6 +222,9 @@ public struct DefaultBackupImporter: BackupImporting {
             Self.overwrite(record, with: backup)
             if document.formatVersion >= 3 {
                 record.goal = backup.goalID.flatMap { goals[$0] }
+            }
+            if document.formatVersion >= 6 {
+                record.categoryRaw = backup.category
             }
         }
 

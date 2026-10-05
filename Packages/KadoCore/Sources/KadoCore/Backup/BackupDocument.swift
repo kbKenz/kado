@@ -10,7 +10,9 @@ public struct BackupDocument: Hashable, Codable, Sendable {
     /// Current format version written by this app. Importers compare
     /// against `BackupDocument.currentFormatVersion` and refuse files
     /// with a higher value than they understand.
-    public static let currentFormatVersion = 5
+    ///
+    /// Version 6 adds `category` to habits, tasks and goals.
+    public static let currentFormatVersion = 6
 
     public var formatVersion: Int
     public var exportedAt: Date

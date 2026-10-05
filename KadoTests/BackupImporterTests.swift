@@ -248,4 +248,86 @@ struct BackupImporterTests {
         let fetched = try container.mainContext.fetch(FetchDescriptor<HabitRecord>())
         #expect(fetched.first?.archivedAt == archivedAt)
     }
+
+    // MARK: - Categories
+
+    @Test("A format 5 JSON file keeps the categories already in the store")
+    func formatFiveKeepsCategories() throws {
+        let context = container.mainContext
+        let goal = GoalRecord(name: "Old goal", category: .study)
+        let task = TaskRecord(title: "Old task", category: .work)
+        let habit = HabitRecord(name: "Old habit", category: .mind)
+        context.insert(goal)
+        context.insert(task)
+        context.insert(habit)
+        try context.save()
+
+        // Written by hand as a format 5 app wrote it: no category keys.
+        let json = """
+        {
+          "formatVersion": 5,
+          "exportedAt": "2023-11-16T02:00:00Z",
+          "appVersion": "0.9.0",
+          "habits": [{
+            "id": "\(habit.id.uuidString)", "name": "New habit",
+            "frequency": { "kind": "daily" }, "type": { "kind": "binary" },
+            "createdAt": "2023-11-14T22:13:20Z", "color": "blue", "icon": "leaf",
+            "remindersEnabled": false, "reminderHour": 9, "reminderMinute": 0,
+            "completions": [], "sortOrder": 0
+          }],
+          "tasks": [{
+            "id": "\(task.id.uuidString)", "title": "New task", "notes": "",
+            "createdAt": "2023-11-14T22:13:20Z", "updatedAt": "2023-11-14T22:13:20Z"
+          }],
+          "goals": [{
+            "id": "\(goal.id.uuidString)", "name": "New goal", "details": "", "status": "active",
+            "createdAt": "2023-11-14T22:13:20Z", "updatedAt": "2023-11-14T22:13:20Z"
+          }]
+        }
+        """
+        let parsed = try importer().parse(data: Data(json.utf8))
+        #expect(parsed.formatVersion == 5)
+        try importer().apply(parsed, to: context)
+
+        // The other fields changed, so the records were updated.
+        #expect(goal.name == "New goal")
+        #expect(task.title == "New task")
+        #expect(habit.name == "New habit")
+        #expect(goal.category == .study)
+        #expect(task.category == .work)
+        #expect(habit.category == .mind)
+    }
+
+    @Test("A format 6 file writes categories on new and existing records")
+    func formatSixWritesCategories() throws {
+        let context = container.mainContext
+        let existingTask = TaskRecord(title: "Existing", category: .work)
+        let existingHabit = HabitRecord(name: "Existing", category: .mind)
+        context.insert(existingTask)
+        context.insert(existingHabit)
+        try context.save()
+        let day = Date(timeIntervalSince1970: 1_700_000_000)
+        var updatedHabit = sampleHabit(id: existingHabit.id, name: "Existing")
+        updatedHabit.category = "health"
+        var newHabit = sampleHabit(name: "New")
+        newHabit.category = "fitness"
+        let goal = GoalBackup(id: UUID(), name: "Goal", createdAt: day, updatedAt: day, category: "study")
+        var incoming = document([updatedHabit, newHabit], version: 6)
+        incoming.goals = [goal]
+        incoming.tasks = [
+            // An empty category in a format 6 file clears the stored one.
+            TaskBackup(id: existingTask.id, title: "Existing", createdAt: day, updatedAt: day, category: ""),
+            TaskBackup(id: UUID(), title: "New", createdAt: day, updatedAt: day, category: "errands")
+        ]
+        try importer().apply(incoming, to: context)
+
+        let habits = try context.fetch(FetchDescriptor<HabitRecord>())
+        let tasks = try context.fetch(FetchDescriptor<TaskRecord>())
+        let goals = try context.fetch(FetchDescriptor<GoalRecord>())
+        #expect(existingHabit.category == .health)
+        #expect(habits.first(where: { $0.name == "New" })?.category == .fitness)
+        #expect(existingTask.category == nil)
+        #expect(tasks.first(where: { $0.title == "New" })?.category == .errands)
+        #expect(goals.map(\.category) == [.study])
+    }
 }

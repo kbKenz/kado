@@ -8,7 +8,8 @@ import Foundation
 /// still emits a single row with the four completion columns empty, so
 /// it survives the round-trip.
 ///
-/// **What "lossless" covers here**: goals, habits, completions, tasks, planned blocks and work sessions. The
+/// **What "lossless" covers here**: goals, habits, completions, tasks, planned blocks, work sessions
+/// and the categories of habits, tasks and goals. The
 /// envelope fields `exportedAt` and `appVersion` are provenance rather
 /// than user data and are not carried — a decoded document stamps
 /// `exportedAt` from the injected clock and leaves `appVersion` empty.
@@ -65,12 +66,16 @@ nonisolated public struct CSVBackupCoder: Sendable {
         "progress_entry_id", "progress_date", "progress_amount", "progress_note"
     ]
 
-    /// Format 5 appends work-session columns. This is the header the
-    /// encoder writes. Session rows reuse `created_at`, `updated_at`,
-    /// `linked_task_id` and `linked_habit_id`.
-    public static let columns = progressColumns + [
+    /// Format 5 appends work-session columns. Session rows reuse
+    /// `created_at`, `updated_at`, `linked_task_id` and `linked_habit_id`.
+    public static let sessionColumns = progressColumns + [
         "work_session_id", "started_at", "ended_at", "paused_at", "paused_seconds", "linked_schedule_block_id"
     ]
+
+    /// Format 6 appends the category of habit, task and goal rows (the
+    /// raw `ItemCategory` value, empty when not set). This is the header
+    /// the encoder writes.
+    public static let columns = sessionColumns + ["category"]
 
     private let now: @Sendable () -> Date
 
@@ -101,7 +106,8 @@ nonisolated public struct CSVBackupCoder: Sendable {
                 "progress_baseline": String((goal.measurement ?? GoalMeasurement()).baseline),
                 "progress_target": String((goal.measurement ?? GoalMeasurement()).target),
                 "progress_unit": (goal.measurement ?? GoalMeasurement()).unit,
-                "progress_habit_id": goal.measurement?.habitID?.uuidString ?? ""
+                "progress_habit_id": goal.measurement?.habitID?.uuidString ?? "",
+                "category": goal.category
             ]))
         }
 
@@ -130,7 +136,7 @@ nonisolated public struct CSVBackupCoder: Sendable {
             ]
 
             if habit.completions.isEmpty {
-                rows.append(Self.habitRow(metadata + ["", "", "", ""], sortOrder: habit.sortOrder, goalID: habit.goalID))
+                rows.append(Self.habitRow(metadata + ["", "", "", ""], of: habit))
             } else {
                 for completion in habit.completions {
                     rows.append(Self.habitRow(metadata + [
@@ -138,7 +144,7 @@ nonisolated public struct CSVBackupCoder: Sendable {
                         Self.encode(date: completion.date),
                         String(completion.value),
                         completion.note ?? ""
-                    ], sortOrder: habit.sortOrder, goalID: habit.goalID))
+                    ], of: habit))
                 }
             }
         }
@@ -155,7 +161,8 @@ nonisolated public struct CSVBackupCoder: Sendable {
                 "external_event_id": task.externalEventID ?? "", "external_url": task.externalURL ?? "",
                 "external_updated_at": task.externalUpdatedAt.map(Self.encode(date:)) ?? "",
                 "external_cancelled_at": task.externalCancelledAt.map(Self.encode(date:)) ?? "",
-                "linked_goal_id": task.goalID?.uuidString ?? ""
+                "linked_goal_id": task.goalID?.uuidString ?? "",
+                "category": task.category
             ]))
         }
         for block in document.scheduleBlocks {
@@ -199,13 +206,18 @@ nonisolated public struct CSVBackupCoder: Sendable {
             throw BackupError.invalidCSV
         }
 
-        guard let header = rows.first,
-              header == Self.columns || header == Self.progressColumns || header == Self.goalColumns || header == Self.planningColumns || header == Self.legacyColumns else {
+        // Each header the app ever wrote, oldest first. Its position is
+        // the format version it represents.
+        let headers = [
+            Self.legacyColumns, Self.planningColumns, Self.goalColumns,
+            Self.progressColumns, Self.sessionColumns, Self.columns
+        ]
+        guard let header = rows.first, let headerIndex = headers.firstIndex(of: header) else {
             throw BackupError.invalidCSV
         }
 
         let isLegacy = header == Self.legacyColumns
-        let headerVersion = isLegacy ? 1 : header == Self.planningColumns ? 2 : header == Self.goalColumns ? 3 : header == Self.progressColumns ? 4 : 5
+        let headerVersion = headerIndex + 1
         var goals: [GoalBackup] = []
         var entries: [GoalProgressEntry] = []
         var seenEntryIDs = Set<UUID>()
@@ -271,7 +283,8 @@ nonisolated public struct CSVBackupCoder: Sendable {
                         startDate: try Self.decodeOptionalDate(field("goal_start_date")),
                         targetDate: try Self.decodeOptionalDate(field("goal_target_date")),
                         createdAt: try Self.decodeDate(field("created_at")), updatedAt: try Self.decodeDate(field("updated_at")),
-                        completedAt: try Self.decodeOptionalDate(field("completed_at")), archivedAt: try Self.decodeOptionalDate(field("archived_at")), measurement: measurement
+                        completedAt: try Self.decodeOptionalDate(field("completed_at")), archivedAt: try Self.decodeOptionalDate(field("archived_at")), measurement: measurement,
+                        category: version >= 6 ? field("category") : ""
                     ))
                     continue
                 case "task":
@@ -288,7 +301,8 @@ nonisolated public struct CSVBackupCoder: Sendable {
                         externalURL: Self.optionalString(field("external_url")),
                         externalUpdatedAt: try Self.decodeOptionalDate(field("external_updated_at")),
                         externalCancelledAt: try Self.decodeOptionalDate(field("external_cancelled_at")),
-                        goalID: version >= 3 ? try Self.decodeOptionalUUID(field("linked_goal_id")) : nil
+                        goalID: version >= 3 ? try Self.decodeOptionalUUID(field("linked_goal_id")) : nil,
+                        category: version >= 6 ? field("category") : ""
                     ))
                     continue
                 case "schedule_block":
@@ -345,7 +359,8 @@ nonisolated public struct CSVBackupCoder: Sendable {
                     reminderMinute: try Self.decodeInt(row[11]),
                     completions: [],
                     sortOrder: isLegacy ? 0 : try Self.decodeInt(field("habit_sort_order")),
-                    goalID: version >= 3 ? try Self.decodeOptionalUUID(field("linked_goal_id")) : nil
+                    goalID: version >= 3 ? try Self.decodeOptionalUUID(field("linked_goal_id")) : nil,
+                    category: version >= 6 ? field("category") : ""
                 )
                 order.append(habitID)
             }
@@ -395,11 +410,14 @@ nonisolated public struct CSVBackupCoder: Sendable {
         columns.map { fields[$0] ?? "" }
     }
 
-    private static func habitRow(_ legacy: [String], sortOrder: Int, goalID: UUID?) -> [String] {
+    /// One habit row. Every row of a habit repeats its metadata, the
+    /// category included, so any row can rebuild the habit.
+    private static func habitRow(_ legacy: [String], of habit: HabitBackup) -> [String] {
         var fields = Dictionary(uniqueKeysWithValues: zip(legacyColumns, legacy))
         fields["entity_type"] = "habit"
-        fields["habit_sort_order"] = String(sortOrder)
-        fields["linked_goal_id"] = goalID?.uuidString ?? ""
+        fields["habit_sort_order"] = String(habit.sortOrder)
+        fields["linked_goal_id"] = habit.goalID?.uuidString ?? ""
+        fields["category"] = habit.category
         return row(fields)
     }
 

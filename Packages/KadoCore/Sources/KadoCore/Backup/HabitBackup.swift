@@ -18,6 +18,9 @@ public struct HabitBackup: Hashable, Codable, Sendable {
     public var sortOrder: Int
     public var completions: [CompletionBackup]
     public var goalID: UUID?
+    /// Raw `ItemCategory` value, `""` when not set. Files older than
+    /// format 6 have no such key and decode as `""`.
+    public var category: String
 
     public init(
         id: UUID,
@@ -33,7 +36,8 @@ public struct HabitBackup: Hashable, Codable, Sendable {
         reminderMinute: Int,
         completions: [CompletionBackup],
         sortOrder: Int = 0,
-        goalID: UUID? = nil
+        goalID: UUID? = nil,
+        category: String = ""
     ) {
         self.id = id
         self.name = name
@@ -49,11 +53,12 @@ public struct HabitBackup: Hashable, Codable, Sendable {
         self.completions = completions
         self.sortOrder = sortOrder
         self.goalID = goalID
+        self.category = category
     }
 
     private enum CodingKeys: String, CodingKey {
         case id, name, frequency, type, createdAt, archivedAt, color, icon
-        case remindersEnabled, reminderHour, reminderMinute, completions, sortOrder, goalID
+        case remindersEnabled, reminderHour, reminderMinute, completions, sortOrder, goalID, category
     }
 
     public init(from decoder: Decoder) throws {
@@ -72,6 +77,7 @@ public struct HabitBackup: Hashable, Codable, Sendable {
         completions = try values.decode([CompletionBackup].self, forKey: .completions)
         sortOrder = try values.decodeIfPresent(Int.self, forKey: .sortOrder) ?? 0
         goalID = try values.decodeIfPresent(UUID.self, forKey: .goalID)
+        category = try values.decodeIfPresent(String.self, forKey: .category) ?? ""
     }
 }
 
@@ -98,7 +104,8 @@ public extension HabitBackup {
                 .sorted { $0.date < $1.date }
                 .map(CompletionBackup.init(completion:)),
             sortOrder: habit.sortOrder,
-            goalID: habit.goalID
+            goalID: habit.goalID,
+            category: habit.category?.rawValue ?? ""
         )
     }
 
@@ -118,7 +125,8 @@ public extension HabitBackup {
             reminderHour: reminderHour,
             reminderMinute: reminderMinute,
             sortOrder: sortOrder,
-            goalID: goalID
+            goalID: goalID,
+            category: ItemCategory(storedRaw: category)
         )
     }
 

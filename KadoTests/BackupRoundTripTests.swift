@@ -31,7 +31,8 @@ struct BackupRoundTripTests {
             icon: "leaf",
             remindersEnabled: true,
             reminderHour: 7,
-            reminderMinute: 30
+            reminderMinute: 30,
+            category: .mind
         )
         let counter = HabitRecord(
             name: "Water",
@@ -40,7 +41,8 @@ struct BackupRoundTripTests {
             createdAt: Date(timeIntervalSince1970: 1_700_100_000),
             color: HabitColor.teal,
             icon: "drop.fill",
-            remindersEnabled: false
+            remindersEnabled: false,
+            category: .health
         )
         let binary = HabitRecord(
             name: "Floss",
@@ -111,6 +113,7 @@ struct BackupRoundTripTests {
         let remindersEnabled: Bool
         let reminderHour: Int
         let reminderMinute: Int
+        let categoryRaw: String
     }
 
     private struct CompletionFingerprint: Hashable {
@@ -130,7 +133,8 @@ struct BackupRoundTripTests {
                 color: r.color, icon: r.icon,
                 remindersEnabled: r.remindersEnabled,
                 reminderHour: r.reminderHour,
-                reminderMinute: r.reminderMinute
+                reminderMinute: r.reminderMinute,
+                categoryRaw: r.categoryRaw
             )
         })
     }
@@ -174,6 +178,9 @@ struct BackupRoundTripTests {
 
         let sourceHabits = try habitFingerprints(source)
         let sourceCompletions = try completionFingerprints(source)
+        // The seed sets two categories and leaves the rest unset, so
+        // both cases are part of the comparison below.
+        #expect(Set(sourceHabits.map(\.categoryRaw)) == ["mind", "health", ""])
 
         let exporter = DefaultBackupExporter(appVersion: "test")
         let data = try exporter.exportData(from: source.mainContext)
@@ -227,5 +234,34 @@ struct BackupRoundTripTests {
         let document = try decoder.decode(BackupDocument.self, from: roundTripped)
         #expect(document.habits.count == 5)
         #expect(document.habits.flatMap(\.completions).count == 42)
+    }
+
+    @Test("Categories of a habit, a task and a goal survive a JSON export and import")
+    func categoriesRoundTrip() throws {
+        let source = try freshContainer()
+        let context = source.mainContext
+        let goal = GoalRecord(name: "Get into Cambridge", category: .study)
+        let task = TaskRecord(title: "Contact professors", goal: goal, category: .work)
+        let plain = TaskRecord(title: "No category")
+        let habit = HabitRecord(name: "Meditate", goal: goal, category: .mind)
+        context.insert(goal)
+        context.insert(task)
+        context.insert(plain)
+        context.insert(habit)
+        try context.save()
+
+        let data = try DefaultBackupExporter(appVersion: "test").exportData(from: context)
+        let destination = try freshContainer()
+        let importer = DefaultBackupImporter()
+        try importer.apply(try importer.parse(data: data), to: destination.mainContext)
+
+        let goals = try destination.mainContext.fetch(FetchDescriptor<GoalRecord>())
+        let tasks = try destination.mainContext.fetch(FetchDescriptor<TaskRecord>())
+        let habits = try destination.mainContext.fetch(FetchDescriptor<HabitRecord>())
+        #expect(goals.map(\.category) == [.study])
+        #expect(tasks.first(where: { $0.id == task.id })?.category == .work)
+        #expect(tasks.first(where: { $0.id == plain.id })?.categoryRaw == "")
+        #expect(habits.map(\.category) == [.mind])
+        #expect(habits.first?.goal?.id == goal.id)
     }
 }

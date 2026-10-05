@@ -21,7 +21,8 @@ struct CSVBackupCoderTests {
         frequency: Frequency = .daily,
         type: HabitType = .binary,
         archivedAt: Date? = nil,
-        completions: [CompletionBackup] = []
+        completions: [CompletionBackup] = [],
+        category: String = ""
     ) -> HabitBackup {
         HabitBackup(
             id: id ?? habitID,
@@ -35,7 +36,8 @@ struct CSVBackupCoderTests {
             remindersEnabled: true,
             reminderHour: 7,
             reminderMinute: 30,
-            completions: completions
+            completions: completions,
+            category: category
         )
     }
 
@@ -165,7 +167,7 @@ struct CSVBackupCoderTests {
     @Test("format_version higher than current throws unsupportedVersion")
     func unsupportedVersion() throws {
         let csv = String(decoding: coder.encode(document([habit()])), as: UTF8.self)
-        let bumped = csv.replacingOccurrences(of: "\n5,", with: "\n99,")
+        let bumped = csv.replacingOccurrences(of: "\n6,", with: "\n99,")
         #expect(throws: BackupError.unsupportedVersion(99)) {
             try coder.decode(Data(bumped.utf8))
         }
@@ -269,6 +271,63 @@ struct CSVBackupCoderTests {
         let csv = String(decoding: coder.encode(document([])), as: UTF8.self)
         #expect(csv == CSVBackupCoder.columns.joined(separator: ",") + "\n")
         #expect(Array(CSVBackupCoder.columns.prefix(16)) == CSVBackupCoder.legacyColumns)
+        #expect(CSVBackupCoder.columns == CSVBackupCoder.sessionColumns + ["category"])
+    }
+
+    // MARK: - Categories
+
+    @Test("The category column round-trips on habit, task and goal rows")
+    func categoryRoundTrip() throws {
+        let completion = CompletionBackup(id: completionID, date: completedAt, value: 1, note: nil)
+        let task = TaskBackup(id: UUID(), title: "Slides", createdAt: createdAt, updatedAt: createdAt, category: "work")
+        // CSV always writes a measurement, so the fixture has one too.
+        let goal = GoalBackup(
+            id: UUID(), name: "Get into Cambridge", createdAt: createdAt, updatedAt: createdAt,
+            measurement: GoalMeasurement(), category: "study"
+        )
+        var original = document([
+            habit(completions: [completion, CompletionBackup(id: UUID(), date: completedAt.addingTimeInterval(86_400), value: 1, note: nil)], category: "mind"),
+            habit(id: otherHabitID, name: "Run")
+        ])
+        original.tasks = [task]
+        original.goals = [goal]
+
+        let decoded = try coder.decode(coder.encode(original))
+        #expect(decoded.formatVersion == 6)
+        #expect(decoded.habits == original.habits)
+        #expect(decoded.habits.map(\.category) == ["mind", ""])
+        #expect(decoded.tasks == [task])
+        #expect(decoded.goals == [goal])
+    }
+
+    @Test("A format 5 header without the category column still decodes")
+    func formatFiveHeader() throws {
+        let header = CSVBackupCoder.sessionColumns
+        var habitRow = Array(repeating: "", count: header.count)
+        let values = [
+            "format_version": "5", "habit_id": habitID.uuidString, "habit_name": "Meditate",
+            "frequency": "daily", "type": "binary", "created_at": "2023-11-14T22:13:20Z",
+            "color": "blue", "icon": "leaf", "reminders_enabled": "false",
+            "reminder_hour": "9", "reminder_minute": "0", "entity_type": "habit", "habit_sort_order": "3"
+        ]
+        for (column, value) in values {
+            habitRow[try #require(header.firstIndex(of: column))] = value
+        }
+        var taskRow = Array(repeating: "", count: header.count)
+        taskRow[0] = "5"
+        taskRow[try #require(header.firstIndex(of: "entity_type"))] = "task"
+        taskRow[try #require(header.firstIndex(of: "task_id"))] = UUID().uuidString
+        taskRow[try #require(header.firstIndex(of: "task_title"))] = "Old task"
+        taskRow[try #require(header.firstIndex(of: "created_at"))] = "2023-11-14T22:13:20Z"
+        taskRow[try #require(header.firstIndex(of: "updated_at"))] = "2023-11-14T22:13:20Z"
+        let text = [header, habitRow, taskRow].map { $0.joined(separator: ",") }.joined(separator: "\n") + "\n"
+
+        let decoded = try coder.decode(Data(text.utf8))
+        #expect(decoded.formatVersion == 5)
+        #expect(decoded.habits.first?.sortOrder == 3)
+        #expect(decoded.habits.first?.category == "")
+        #expect(decoded.tasks.first?.title == "Old task")
+        #expect(decoded.tasks.first?.category == "")
     }
 
     /// Golden file. The expected string below was produced by running
@@ -281,13 +340,14 @@ struct CSVBackupCoderTests {
             habit(
                 frequency: .specificDays([.monday, .wednesday, .friday]),
                 type: .timer(targetSeconds: 600),
-                completions: [completion]
+                completions: [completion],
+                category: "mind"
             )
         ])), as: UTF8.self)
 
         let header = CSVBackupCoder.columns.joined(separator: ",")
-        let legacy = "5,AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,Meditate,specific_days:2|4|6,timer:600.0,2023-11-14T22:13:20Z,,blue,leaf,true,7,30,BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,2023-11-15T22:13:20Z,1.0,felt good"
-        let suffix = ["habit"] + Array(repeating: "", count: 18) + ["0"] + Array(repeating: "", count: 23)
+        let legacy = "6,AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,Meditate,specific_days:2|4|6,timer:600.0,2023-11-14T22:13:20Z,,blue,leaf,true,7,30,BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,2023-11-15T22:13:20Z,1.0,felt good"
+        let suffix = ["habit"] + Array(repeating: "", count: 18) + ["0"] + Array(repeating: "", count: 23) + ["mind"]
         #expect(csv == header + "\n" + legacy + "," + suffix.joined(separator: ",") + "\n")
     }
 }

@@ -11,7 +11,7 @@ struct GoalProgressPersistenceTests {
     }
     @Test func portableRoundTripAndLegacyMerge() throws {
         let source = try container()
-        let goal = GoalRecord(name: "Read")
+        let goal = GoalRecord(name: "Read", category: .study)
         goal.measurement = GoalMeasurement(enabled: true, target: 100, unit: "pages")
         source.mainContext.insert(goal)
         let entry = GoalProgressEntryRecord(date: Date(timeIntervalSince1970: 1_700_000_000), amount: 5, note: "A, \"quote\"\nand line", goal: goal)
@@ -27,13 +27,17 @@ struct GoalProgressPersistenceTests {
             let copied = try #require(destination.mainContext.fetch(FetchDescriptor<GoalRecord>()).first)
             #expect(copied.measurement == goal.measurement)
             #expect(copied.progressEntries?.first?.note == entry.note)
+            #expect(copied.category == .study)
             var legacy = document
             legacy.formatVersion = 3
             legacy.goals[0].measurement = nil
+            legacy.goals[0].category = ""
             legacy.goalProgressEntries = []
             try DefaultBackupImporter().apply(legacy, to: destination.mainContext)
             #expect(copied.measurement == goal.measurement)
             #expect(copied.progressEntries?.count == 1)
+            // A file older than format 6 has no category to give.
+            #expect(copied.category == .study)
         }
     }
     @Test func deleteGoalPreservesTaskButDeletesEntries() throws {
@@ -74,7 +78,7 @@ struct GoalProgressPersistenceTests {
     }
     @Test func legacyCSVPreservesMeasurementAndEntries() throws {
         let store = try container()
-        let goal = GoalRecord(name: "Read")
+        let goal = GoalRecord(name: "Read", category: .study)
         goal.measurement = GoalMeasurement(enabled: true, target: 100, unit: "pages")
         store.mainContext.insert(goal); store.mainContext.insert(GoalProgressEntryRecord(amount: 3, goal: goal))
         try store.mainContext.save()
@@ -88,6 +92,7 @@ struct GoalProgressPersistenceTests {
         #expect(goal.name == "Renamed")
         #expect(goal.measurement.enabled)
         #expect(goal.progressEntries?.count == 1)
+        #expect(goal.category == .study)
     }
     @Test func brokenOwnerAndDuplicateEntriesAreRejectedAtomically() throws {
         let store = try container()

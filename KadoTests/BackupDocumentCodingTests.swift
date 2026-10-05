@@ -72,7 +72,7 @@ struct BackupDocumentCodingTests {
             habits: []
         )
         #expect(document.formatVersion == BackupDocument.currentFormatVersion)
-        #expect(document.formatVersion == 5)
+        #expect(document.formatVersion == 6)
     }
 
     @Test("Canonical JSON encodes known top-level fields under sortedKeys")
@@ -84,7 +84,85 @@ struct BackupDocumentCodingTests {
         )
         let data = try encoder().encode(document)
         let json = String(data: data, encoding: .utf8) ?? ""
-        #expect(json == #"{"appVersion":"0.2.0","exportedAt":"2023-11-16T02:00:00Z","formatVersion":5,"goalProgressEntries":[],"goals":[],"habits":[],"scheduleBlocks":[],"tasks":[],"workSessions":[]}"#)
+        #expect(json == #"{"appVersion":"0.2.0","exportedAt":"2023-11-16T02:00:00Z","formatVersion":6,"goalProgressEntries":[],"goals":[],"habits":[],"scheduleBlocks":[],"tasks":[],"workSessions":[]}"#)
+    }
+
+    @Test("Categories of a habit, a task and a goal round-trip through JSON")
+    func categoriesRoundTrip() throws {
+        var habit = sampleDocument().habits[0]
+        habit.category = "mind"
+        let task = TaskBackup(id: UUID(), title: "Slides", createdAt: createdAt, updatedAt: createdAt, category: "work")
+        let goal = GoalBackup(id: UUID(), name: "Get into Cambridge", createdAt: createdAt, updatedAt: createdAt, category: "study")
+        let document = BackupDocument(
+            exportedAt: exportedAt, appVersion: "0.2.0", habits: [habit], tasks: [task], goals: [goal]
+        )
+        let data = try encoder().encode(document)
+        let json = String(decoding: data, as: UTF8.self)
+        #expect(json.contains(#""category":"mind""#))
+        #expect(json.contains(#""category":"work""#))
+        #expect(json.contains(#""category":"study""#))
+
+        let decoded = try decoder().decode(BackupDocument.self, from: data)
+        #expect(decoded == document)
+        #expect(decoded.habits.first?.category == "mind")
+        #expect(decoded.tasks.first?.category == "work")
+        #expect(decoded.goals.first?.category == "study")
+    }
+
+    @Test("A format 5 file without category keys decodes with empty categories")
+    func formatFiveWithoutCategories() throws {
+        let json = #"""
+        {
+          "formatVersion": 5,
+          "exportedAt": "2023-11-16T02:00:00Z",
+          "appVersion": "0.9.0",
+          "habits": [
+            {
+              "id": "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA",
+              "name": "Meditate",
+              "frequency": { "kind": "daily" },
+              "type": { "kind": "binary" },
+              "createdAt": "2023-11-14T22:13:20Z",
+              "color": "blue",
+              "icon": "leaf",
+              "remindersEnabled": false,
+              "reminderHour": 9,
+              "reminderMinute": 0,
+              "completions": [],
+              "sortOrder": 2
+            }
+          ],
+          "tasks": [
+            {
+              "id": "CCCCCCCC-CCCC-CCCC-CCCC-CCCCCCCCCCCC",
+              "title": "Slides",
+              "notes": "",
+              "createdAt": "2023-11-14T22:13:20Z",
+              "updatedAt": "2023-11-14T22:13:20Z"
+            }
+          ],
+          "goals": [
+            {
+              "id": "DDDDDDDD-DDDD-DDDD-DDDD-DDDDDDDDDDDD",
+              "name": "Get into Cambridge",
+              "details": "",
+              "status": "active",
+              "createdAt": "2023-11-14T22:13:20Z",
+              "updatedAt": "2023-11-14T22:13:20Z"
+            }
+          ]
+        }
+        """#
+        let decoded = try decoder().decode(BackupDocument.self, from: Data(json.utf8))
+        #expect(decoded.formatVersion == 5)
+        #expect(decoded.habits.first?.category == "")
+        #expect(decoded.habits.first?.sortOrder == 2)
+        #expect(decoded.tasks.first?.title == "Slides")
+        #expect(decoded.tasks.first?.category == "")
+        #expect(decoded.tasks.first?.dueDate == nil)
+        #expect(decoded.goals.first?.name == "Get into Cambridge")
+        #expect(decoded.goals.first?.category == "")
+        #expect(decoded.goals.first?.measurement == nil)
     }
 
     @Test("Decodes a hand-written fixture with every field set")
@@ -252,9 +330,11 @@ struct BackupDocumentCodingTests {
             icon: "leaf",
             remindersEnabled: true,
             reminderHour: 8,
-            reminderMinute: 15
+            reminderMinute: 15,
+            category: .mind
         )
         let backup = HabitBackup(habit: habit, completions: [])
+        #expect(backup.category == "mind")
         let roundTripped = backup.habitSnapshot
         #expect(roundTripped.id == habit.id)
         #expect(roundTripped.name == habit.name)
@@ -267,6 +347,7 @@ struct BackupDocumentCodingTests {
         #expect(roundTripped.remindersEnabled == habit.remindersEnabled)
         #expect(roundTripped.reminderHour == habit.reminderHour)
         #expect(roundTripped.reminderMinute == habit.reminderMinute)
+        #expect(roundTripped.category == .mind)
     }
 
     @Test("CompletionBackup.completionSnapshot(habitID:) stamps the parent identity")

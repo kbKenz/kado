@@ -18,13 +18,13 @@ struct PlanningPersistenceTests {
     }
 
     private func seed(_ context: ModelContext) throws {
-        let habit = HabitRecord(name: "Walk", sortOrder: 8)
+        let habit = HabitRecord(name: "Walk", sortOrder: 8, category: .fitness)
         let task = TaskRecord(
             title: "Meeting, with Thomas", notes: "Agenda\nReview plans", dueDate: day,
             createdAt: day, updatedAt: day, completedAt: day,
             externalAccountID: "account", externalCalendarID: "primary",
             externalEventID: "event", externalURL: "https://calendar.google.com/event",
-            externalUpdatedAt: day, externalCancelledAt: day
+            externalUpdatedAt: day, externalCancelledAt: day, category: .work
         )
         context.insert(habit)
         context.insert(task)
@@ -64,7 +64,9 @@ struct PlanningPersistenceTests {
             #expect(restored.tasks == expected.tasks)
             #expect(restored.scheduleBlocks == expected.scheduleBlocks)
             #expect(restored.habits.first?.sortOrder == 8)
+            #expect(restored.habits.first?.category == "fitness")
             let task = try #require(destination.mainContext.fetch(FetchDescriptor<TaskRecord>()).first)
+            #expect(task.category == .work)
             #expect(task.scheduleBlocks?.count == 1)
             #expect(task.scheduleBlocks?.first?.startAt == day)
             #expect(task.scheduleBlocks?.first?.endAt == nil)

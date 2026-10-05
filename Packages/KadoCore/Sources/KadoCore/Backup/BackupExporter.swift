@@ -114,7 +114,10 @@ public struct DefaultBackupExporter: BackupExporting {
             reminderMinute: habit.reminderMinute,
             completions: completions,
             sortOrder: habit.sortOrder,
-            goalID: record.goal?.id
+            goalID: record.goal?.id,
+            // The raw value, so even a category this build does not
+            // know survives the round trip.
+            category: record.categoryRaw
         )
     }
 
@@ -126,7 +129,7 @@ public struct DefaultBackupExporter: BackupExporting {
             externalAccountID: record.externalAccountID, externalCalendarID: record.externalCalendarID,
             externalEventID: record.externalEventID, externalURL: record.externalURL,
             externalUpdatedAt: record.externalUpdatedAt, externalCancelledAt: record.externalCancelledAt,
-            goalID: record.goal?.id
+            goalID: record.goal?.id, category: record.categoryRaw
         )
     }
 
@@ -153,7 +156,8 @@ public struct DefaultBackupExporter: BackupExporting {
             id: record.id, name: record.name, details: record.details, status: record.status,
             startDate: record.startDate, targetDate: record.targetDate,
             createdAt: record.createdAt, updatedAt: record.updatedAt,
-            completedAt: record.completedAt, archivedAt: record.archivedAt, measurement: record.measurement
+            completedAt: record.completedAt, archivedAt: record.archivedAt, measurement: record.measurement,
+            category: record.categoryRaw
         )
     }
 }

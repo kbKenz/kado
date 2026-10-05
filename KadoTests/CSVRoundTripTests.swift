@@ -39,7 +39,8 @@ struct CSVRoundTripTests {
             icon: "leaf",
             remindersEnabled: true,
             reminderHour: 7,
-            reminderMinute: 30
+            reminderMinute: 30,
+            category: .mind
         )
         let counter = HabitRecord(
             name: "Water",
@@ -48,7 +49,8 @@ struct CSVRoundTripTests {
             createdAt: Date(timeIntervalSince1970: 1_700_100_000),
             color: HabitColor.teal,
             icon: "drop.fill",
-            remindersEnabled: false
+            remindersEnabled: false,
+            category: .health
         )
         let binary = HabitRecord(
             name: "Floss",
@@ -118,6 +120,9 @@ struct CSVRoundTripTests {
         let original = try DefaultBackupExporter(appVersion: "test").export(from: source.mainContext)
         let decoded = try coder.decode(coder.encode(original))
 
+        // Two habits have a category and the rest have none, so both
+        // cases are part of the comparison.
+        #expect(Set(original.habits.map(\.category)) == ["mind", "health", ""])
         #expect(decoded.habits == original.habits)
         #expect(decoded.formatVersion == original.formatVersion)
     }
@@ -183,5 +188,34 @@ struct CSVRoundTripTests {
         let viaJSON = try DefaultBackupImporter().parse(data: try exporter.encode(document))
 
         #expect(viaCSV.habits == viaJSON.habits)
+    }
+
+    @Test("Categories of a habit, a task and a goal survive store to CSV to store")
+    func categoriesStoreRoundTrip() throws {
+        let source = try freshContainer()
+        let context = source.mainContext
+        let day = Date(timeIntervalSince1970: 1_700_000_000)
+        let goal = GoalRecord(name: "Get into Cambridge", createdAt: day, updatedAt: day, category: .study)
+        let task = TaskRecord(title: "Contact professors", createdAt: day, updatedAt: day, goal: goal, category: .work)
+        let plain = TaskRecord(title: "No category", createdAt: day, updatedAt: day)
+        let habit = HabitRecord(name: "Meditate", createdAt: day, goal: goal, category: .mind)
+        context.insert(goal)
+        context.insert(task)
+        context.insert(plain)
+        context.insert(habit)
+        try context.save()
+
+        let exporter = DefaultBackupExporter(appVersion: "test")
+        let exported = try exporter.export(from: context)
+        let destination = try freshContainer()
+        try DefaultBackupImporter().apply(try coder.decode(coder.encode(exported)), to: destination.mainContext)
+        let restored = try exporter.export(from: destination.mainContext)
+
+        #expect(restored.goals == exported.goals)
+        #expect(restored.tasks == exported.tasks)
+        #expect(restored.habits == exported.habits)
+        #expect(restored.goals.map(\.category) == ["study"])
+        #expect(Set(restored.tasks.map(\.category)) == ["work", ""])
+        #expect(restored.habits.map(\.category) == ["mind"])
     }
 }

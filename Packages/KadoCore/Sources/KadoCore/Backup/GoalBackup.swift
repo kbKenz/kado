@@ -14,6 +14,9 @@ public struct GoalBackup: Hashable, Codable, Sendable {
     public var completedAt: Date?
     public var archivedAt: Date?
     public var measurement: GoalMeasurement?
+    /// Raw `ItemCategory` value, `""` when not set. Files older than
+    /// format 6 have no such key and decode as `""`.
+    public var category: String
 
     public init(
         id: UUID,
@@ -26,7 +29,8 @@ public struct GoalBackup: Hashable, Codable, Sendable {
         updatedAt: Date,
         completedAt: Date? = nil,
         archivedAt: Date? = nil,
-        measurement: GoalMeasurement? = nil
+        measurement: GoalMeasurement? = nil,
+        category: String = ""
     ) {
         self.id = id
         self.name = name
@@ -39,5 +43,29 @@ public struct GoalBackup: Hashable, Codable, Sendable {
         self.completedAt = completedAt
         self.archivedAt = archivedAt
         self.measurement = measurement
+        self.category = category
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, details, status, startDate, targetDate, createdAt, updatedAt
+        case completedAt, archivedAt, measurement, category
+    }
+
+    /// Decodes every key the synthesized decoder read before format 6,
+    /// and reads a missing `category` as `""`.
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        id = try values.decode(UUID.self, forKey: .id)
+        name = try values.decode(String.self, forKey: .name)
+        details = try values.decode(String.self, forKey: .details)
+        status = try values.decode(GoalStatus.self, forKey: .status)
+        startDate = try values.decodeIfPresent(Date.self, forKey: .startDate)
+        targetDate = try values.decodeIfPresent(Date.self, forKey: .targetDate)
+        createdAt = try values.decode(Date.self, forKey: .createdAt)
+        updatedAt = try values.decode(Date.self, forKey: .updatedAt)
+        completedAt = try values.decodeIfPresent(Date.self, forKey: .completedAt)
+        archivedAt = try values.decodeIfPresent(Date.self, forKey: .archivedAt)
+        measurement = try values.decodeIfPresent(GoalMeasurement.self, forKey: .measurement)
+        category = try values.decodeIfPresent(String.self, forKey: .category) ?? ""
     }
 }

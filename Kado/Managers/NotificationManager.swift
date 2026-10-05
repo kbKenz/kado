@@ -161,6 +161,11 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         // Widgets and reminders both resync via WidgetReloader —
         // the "after habit mutation" postamble is already centralized.
         WidgetReloader.reloadAll(using: context)
+        // The pass is deferred, and the banner action runs with the app
+        // in the background: once `completionHandler` is called the
+        // process can be suspended before the pass runs, leaving the
+        // widget and the pending reminders on the state before the tap.
+        await WidgetReloader.flush()
     }
 
     private func fetchHabit(id: UUID, in context: ModelContext) -> HabitRecord? {

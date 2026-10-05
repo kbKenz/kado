@@ -14,9 +14,9 @@ import KadoCore
 ///
 /// Deferred and coalesced: the caller returns at once, and calls closer
 /// together than `coalescingDelay` share one pass, which reads the
-/// store as it stands when the pass runs. Only that read and today's
-/// tally run on the main actor; the series build and the file write
-/// run detached.
+/// store as it stands when the pass runs. The read, the series build
+/// and the file write run detached; the confetti report and the
+/// timeline reload come back to the main actor.
 @MainActor
 enum WidgetReloader {
     /// Long enough to fold a burst of +1 taps into one pass, short
@@ -31,15 +31,13 @@ enum WidgetReloader {
         // repeat it.
         RemindersSync.cancelPending()
         // Held weakly: a store swapped out (dev mode) or torn down
-        // before the pass runs has nothing left to report, and keeping
-        // its context alive past its container traps in SwiftData.
+        // before the pass runs has nothing left to report. The pass
+        // reads through a context of its own, off the main actor, and
+        // never touches the caller's.
         let container = context.container
-        passes.schedule(after: coalescingDelay) { [weak context, weak container] in
-            // The context is used for the read only, never held across
-            // the await below: the store could be torn down meanwhile.
-            guard container != nil,
-                  let rebuild = context.map(WidgetSnapshotBuilder.beginBackgroundRebuild(using:))
-            else { return }
+        passes.schedule(after: coalescingDelay) { [weak container] in
+            guard let container else { return }
+            let rebuild = await WidgetSnapshotBuilder.beginBackgroundRebuild(in: container)
             // Reminders share the same "after a habit mutation"
             // cadence as widgets, and the store read the widget just
             // made covers every habit the scheduler acts on.

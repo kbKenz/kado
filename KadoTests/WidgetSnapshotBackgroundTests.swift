@@ -112,6 +112,24 @@ struct WidgetSnapshotBackgroundTests {
         }
     }
 
+    @Test("The background read through its own context sees what the main context sees")
+    func backgroundReadMatchesMainContext() async throws {
+        let container = try makeContainer()
+        seed(container.mainContext, calendar: TestCalendar.utc, reference: TestCalendar.day(0), skip: 2)
+        try container.mainContext.save()
+
+        let main = WidgetSnapshotBuilder.Source(context: container.mainContext)
+        let rebuild = await WidgetSnapshotBuilder.beginBackgroundRebuild(in: container)
+        #expect(rebuild.source.habits == main.habits)
+        #expect(Set(rebuild.source.allCompletions.map(\.id)) == Set(main.allCompletions.map(\.id)))
+        for habit in main.habits {
+            #expect(
+                rebuild.source.completions(for: habit).sorted { $0.id.uuidString < $1.id.uuidString }
+                    == main.completions(for: habit).sorted { $0.id.uuidString < $1.id.uuidString }
+            )
+        }
+    }
+
     @Test("A write whose store read is older than the file's is dropped")
     func olderTicketNeverOverwritesNewer() throws {
         let sink = Sink()

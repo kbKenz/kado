@@ -25,11 +25,14 @@ enum RemindersSync {
     static func rescheduleAll(using context: ModelContext) {
         guard let scheduler = ActiveScheduler.shared.get() else { return }
         // Held weakly, as in `WidgetReloader`: a store gone before the
-        // pass runs is skipped rather than kept alive past its container.
+        // pass runs is skipped. Read off the main actor through a
+        // context of its own, never the caller's.
         let container = context.container
-        passes.schedule(after: coalescingDelay) { [weak context, weak container] in
-            // Read, then let go of the context before the await.
-            guard container != nil, let read = context.map(Self.inputs(from:)) else { return }
+        passes.schedule(after: coalescingDelay) { [weak container] in
+            guard let container else { return }
+            let read = await Task.detached(priority: .utility) {
+                inputs(from: ModelContext(container))
+            }.value
             await run(scheduler, habits: read.habits, completions: read.completions)
         }
     }
@@ -55,8 +58,9 @@ enum RemindersSync {
     /// What the scheduler acts on and nothing more: active habits with
     /// reminders on, and their own completions. The scheduler skips
     /// every other habit and matches completions by habit, so the
-    /// pending set is the same as from the whole store.
-    static func inputs(from context: ModelContext) -> (habits: [Habit], completions: [Completion]) {
+    /// pending set is the same as from the whole store. Reads on the
+    /// caller's thread, so `context` must belong to it.
+    nonisolated static func inputs(from context: ModelContext) -> (habits: [Habit], completions: [Completion]) {
         let records = ((try? context.fetch(FetchDescriptor<HabitRecord>())) ?? [])
             .filter { $0.remindersEnabled && $0.archivedAt == nil }
         return (

@@ -251,10 +251,10 @@ struct KadoApp: App {
             // two and a resumed task and this branch can both run a
             // multi-second series build back to back (#82).
             clockMark = .now
-            // Deferred a tick so the resumed frame renders first — the
-            // store read still runs on MainActor and, for a long
-            // history, is not instant. `reloadAll` reschedules reminders
-            // too, so the branch above's call is not repeated here.
+            // `reloadAll` returns at once and builds off the main
+            // actor; the extra hop is harmless. It reschedules
+            // reminders too, so the branch above's call is not
+            // repeated here.
             Task { @MainActor in
                 WidgetReloader.reloadAll(using: container.mainContext)
             }

@@ -182,50 +182,41 @@ public enum WidgetSnapshotBuilder {
         // Today's progress only: the days after it are computed with
         // nothing logged, and a day that hasn't started can't be done.
         if let today = series.days.first {
-            DayCompletionCelebration.shared.observe(today.dayProgress, on: pass.day)
+            report(today.dayProgress, for: pass)
         }
     }
 
-    /// `rebuildAndWrite` with only the store read on the main actor.
-    /// The series, its JSON and the file write — the part that grows
-    /// with history — run detached, so a tap never waits on them.
+    /// `rebuildAndWrite` off the main actor: the store read, the
+    /// series, its JSON and the file write all run detached, so a tap
+    /// never waits on them. Only the preferences, the write ticket and
+    /// the confetti report touch the main actor.
     ///
-    /// Today's progress comes from the read straight away rather than
-    /// from the finished series, so the confetti is not held up by the
-    /// build either. `afterRead` gets the same values, for a caller
-    /// that would otherwise read the store again (reminders).
+    /// The read goes through a context of its own rather than the
+    /// caller's: the main context would have to be read on the main
+    /// actor, and one read later than the turn that made it can outlive
+    /// a container torn down meanwhile (a test, a dev-mode swap) — its
+    /// autosave timer then traps in SwiftData. The callers save before
+    /// they reload, so a fresh context sees the same rows.
     ///
     /// Two passes can overlap here, or overlap a synchronous
-    /// `rebuildAndWrite`; the ticket taken at read time keeps a slower,
-    /// older pass from landing over a newer file.
-    public static func rebuildAndWriteInBackground(
-        using context: ModelContext,
-        afterRead: (Source) -> Void = { _ in }
-    ) async {
-        let rebuild = beginBackgroundRebuild(using: context)
-        afterRead(rebuild.source)
-        await rebuild.finish()
-    }
-
-    /// The main-actor half of `rebuildAndWriteInBackground`: reads the
-    /// store and reports today's progress now, and returns the rest of
-    /// the pass. That rest holds only values, so a caller that awaits
-    /// it need not keep `context` alive meanwhile — a context outliving
-    /// its container traps when its save timer fires.
-    public static func beginBackgroundRebuild(using context: ModelContext) -> BackgroundRebuild {
-        let rebuild = BackgroundRebuild(context: context)
-        DayCompletionCelebration.shared.observe(rebuild.pass.todayProgress(), on: rebuild.pass.day)
-        return rebuild
+    /// `rebuildAndWrite`; the ticket taken before the read keeps a
+    /// slower, older pass from landing over a newer file, and from
+    /// reporting an older tally to the confetti.
+    public static func beginBackgroundRebuild(in container: ModelContainer) async -> BackgroundRebuild {
+        // Resolved here, as in `Pass(context:)`, then handed over.
+        let day = DayStartDefaults.boundary().startOfDay(for: .now)
+        let calendar = WeekStartDefaults.calendar()
+        let ticket = WidgetSnapshotWriteOrder.shared.ticket()
+        let pass = await Task.detached(priority: .userInitiated) {
+            Pass(day: day, calendar: calendar, source: Source(context: ModelContext(container)), ticket: ticket)
+        }.value
+        report(pass.todayProgress(), for: pass)
+        return BackgroundRebuild(pass: pass)
     }
 
     /// A background rebuild whose store read is done.
     nonisolated public struct BackgroundRebuild: Sendable {
         fileprivate let pass: Pass
-
-        @MainActor
-        fileprivate init(context: ModelContext) {
-            pass = Pass(context: context)
-        }
 
         /// The store as the pass read it.
         public var source: Source { pass.source }
@@ -240,6 +231,18 @@ public enum WidgetSnapshotBuilder {
             }.value
             WidgetCenter.shared.reloadAllTimelines()
         }
+    }
+
+    /// The newest read whose tally the confetti has heard.
+    private static var reportedTicket = 0
+
+    /// Reports today's progress unless a newer read already has: a
+    /// background pass can finish its read after a synchronous intent
+    /// write, and its older tally would read as the day coming undone.
+    private static func report(_ progress: DayProgress, for pass: Pass) {
+        guard pass.ticket > reportedTicket else { return }
+        reportedTicket = pass.ticket
+        DayCompletionCelebration.shared.observe(progress, on: pass.day)
     }
 
     /// Today's tally as `build` counts it — the due-or-logged habits
@@ -268,6 +271,13 @@ public enum WidgetSnapshotBuilder {
         let calendar: Calendar
         let source: Source
         let ticket: Int
+
+        init(day: Date, calendar: Calendar, source: Source, ticket: Int) {
+            self.day = day
+            self.calendar = calendar
+            self.source = source
+            self.ticket = ticket
+        }
 
         @MainActor
         init(context: ModelContext) {
@@ -468,7 +478,8 @@ public enum WidgetSnapshotBuilder {
         /// The active habits' completions, in habit order.
         public let allCompletions: [Completion]
 
-        @MainActor
+        /// Reads on the caller's thread, so `context` must belong to it:
+        /// the main context on the main actor, or a context of its own.
         public init(context: ModelContext) {
             let descriptor = FetchDescriptor<HabitRecord>(
                 sortBy: [SortDescriptor(\.sortOrder)]

@@ -75,6 +75,10 @@ nonisolated public struct InsightsScope: Sendable {
     /// for the same pairs, and one outcome costs a pass over the habit's
     /// completions.
     private let outcomes: [UUID: [Date: HabitDayOutcome]]
+    /// Per habit id: its prepared schedule, when the context uses the
+    /// default evaluator. Asking that evaluator per day rescans every
+    /// completion, which made the table days x completions per habit.
+    private let schedules: [UUID: DefaultFrequencyEvaluator.Prepared]
 
     public init(input: InsightsInput, context: InsightsContext) {
         self.input = input
@@ -94,6 +98,17 @@ nonisolated public struct InsightsScope: Sendable {
             grouped[habit.id] = Dictionary(grouping: habit.completions) { calendar.startOfDay(for: $0.date) }
         }
         self.completionsByDay = grouped
+        var schedules: [UUID: DefaultFrequencyEvaluator.Prepared] = [:]
+        if let evaluator = context.frequencyEvaluator as? DefaultFrequencyEvaluator {
+            for habit in input.habits {
+                schedules[habit.id] = evaluator.prepared(
+                    for: habit.habit,
+                    completions: habit.completions,
+                    loggedDayCalendar: calendar
+                )
+            }
+        }
+        self.schedules = schedules
         var table: [UUID: [Date: HabitDayOutcome]] = [:]
         let first = InsightsScope.step(previousDays.first ?? context.today, by: -7, calendar: calendar)
         let window = InsightsScope.days(
@@ -105,7 +120,11 @@ nonisolated public struct InsightsScope: Sendable {
             var row: [Date: HabitDayOutcome] = [:]
             for day in window {
                 row[day] = InsightsScope.computeOutcome(
-                    of: habit, on: day, onDay: grouped[habit.id]?[day] ?? [], context: context
+                    of: habit,
+                    on: day,
+                    onDay: grouped[habit.id]?[day] ?? [],
+                    context: context,
+                    schedule: schedules[habit.id]
                 )
             }
             table[habit.id] = row
@@ -135,21 +154,28 @@ nonisolated public struct InsightsScope: Sendable {
     public func outcome(of habit: InsightsHabit, on day: Date) -> HabitDayOutcome {
         if let known = outcomes[habit.id]?[day] { return known }
         return Self.computeOutcome(
-            of: habit, on: day, onDay: completionsByDay[habit.id]?[day] ?? [], context: context
+            of: habit,
+            on: day,
+            onDay: completionsByDay[habit.id]?[day] ?? [],
+            context: context,
+            schedule: schedules[habit.id]
         )
     }
 
+    /// `schedule`, when given, is `habit`'s prepared schedule and
+    /// answers `isCounted` exactly as the context's evaluator would.
     private static func computeOutcome(
         of habit: InsightsHabit,
         on day: Date,
         onDay: [Completion],
-        context: InsightsContext
+        context: InsightsContext,
+        schedule: DefaultFrequencyEvaluator.Prepared?
     ) -> HabitDayOutcome {
         let today = context.today
         let calendar = context.calendar
         guard day <= today else { return .notCounted }
         let model = habit.habit
-        let counted = context.frequencyEvaluator.isCounted(
+        let counted = schedule?.isCounted(on: day) ?? context.frequencyEvaluator.isCounted(
             habit: model,
             on: day,
             completions: habit.completions,

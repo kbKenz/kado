@@ -110,6 +110,9 @@ final class OverviewGridRows {
         return Output(rows: rows, metrics: next.mapValues(\.metrics))
     }
 
+    /// Every stored field, by hand: a field added to `Habit` must be
+    /// added here too (`OverviewGridRowsTests.comparedFieldsAreComplete`
+    /// fails until it is).
     private static func sameValues(_ lhs: Habit, _ rhs: Habit) -> Bool {
         lhs.id == rhs.id
             && lhs.name == rhs.name

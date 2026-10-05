@@ -169,6 +169,23 @@ struct OverviewGridRowsTests {
         )
     }
 
+    /// The cache reuses a row only when `sameValues` finds every field
+    /// unchanged. A field added to `Habit` or `Completion` but not
+    /// compared there would let an edit to it serve a stale row: this
+    /// fails first, so whoever adds one also adds it to the comparison.
+    @Test("The comparison covers every stored field of Habit and Completion")
+    func comparedFieldsAreComplete() {
+        let habit = Habit(name: "Read", frequency: .daily, type: .binary, createdAt: now)
+        let completion = Completion(habitID: habit.id, date: now)
+        #expect(Mirror(reflecting: habit).children.compactMap(\.label) == [
+            "id", "name", "frequency", "type", "createdAt", "archivedAt", "color", "icon",
+            "remindersEnabled", "reminderHour", "reminderMinute", "sortOrder", "goalID", "category",
+        ])
+        #expect(Mirror(reflecting: completion).children.compactMap(\.label) == [
+            "id", "habitID", "date", "value", "note",
+        ])
+    }
+
     @Test("Only a habit whose values changed is scored again")
     func scoresOnlyWhatChanged() {
         let cache = OverviewGridRows()

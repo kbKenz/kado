@@ -14,6 +14,8 @@ struct NewHabitFormView: View {
     @Environment(\.notificationScheduler) private var notificationScheduler
     @Environment(\.dayBoundary) private var dayBoundary
     @Environment(\.calendar) private var calendar
+    /// For title suggestions only: the goals the name can point to.
+    @Query private var goals: [GoalRecord]
 
     @FocusState private var nameFocused: Bool
     @State private var saveTick: Int = 0
@@ -29,10 +31,19 @@ struct NewHabitFormView: View {
                 frequencySection
                 typeSection
                 reminderSection
-                GoalPickerSection(selectedGoalID: $model.selectedGoalID)
+                CategoryPickerSection(
+                    selection: $model.category,
+                    isSuggested: model.suggestions.categoryOrigin == .suggested,
+                    identifier: AccessibilityID.Suggestion.habitCategory
+                )
+                GoalPickerSection(
+                    selectedGoalID: $model.selectedGoalID,
+                    isSuggested: model.suggestions.goalOrigin == .suggested
+                )
             }
             .scrollContentBackground(.hidden)
             .background(Color.kadoBackground.ignoresSafeArea())
+            .titleSuggestions(model.suggestions, title: model.name, goals: goals.map { SuggestionGoal($0) })
             .navigationTitle(model.isEditing
                 ? String(localized: "Edit Habit")
                 : String(localized: "New Habit"))
@@ -80,6 +91,9 @@ struct NewHabitFormView: View {
                 .submitLabel(.done)
                 .accessibilityIdentifier(AccessibilityID.NewHabit.nameField)
                 .assistedInput($model.name, identifier: AccessibilityID.NewHabit.nameField)
+            if !model.suggestions.chips.isEmpty {
+                SuggestionStrip(draft: model.suggestions)
+            }
         }
         .listRowBackground(Color.kadoBackgroundSecondary)
     }
@@ -91,6 +105,10 @@ struct NewHabitFormView: View {
         } header: {
             Text("Appearance")
                 .foregroundStyle(Color.kadoForegroundSecondary)
+        } footer: {
+            if model.suggestions.iconOrigin == .suggested || model.suggestions.colorOrigin == .suggested {
+                SuggestedCaption(identifier: AccessibilityID.Suggestion.iconBadge)
+            }
         }
         .listRowBackground(Color.kadoBackgroundSecondary)
     }
@@ -202,12 +220,16 @@ struct NewHabitFormView: View {
     private func save() {
         guard model.isValid, !isSaving else { return }
         isSaving = true
+        // No suggestion may change a field while the save waits for the
+        // notification prompt.
+        model.suggestions.freeze()
         Task {
             defer { isSaving = false }
             if model.remindersEnabled {
                 let status = await notificationScheduler.requestAuthorizationIfNeeded()
                 if status == .denied {
                     showingPermissionDeniedAlert = true
+                    model.suggestions.thaw()
                     return
                 }
             }
@@ -218,6 +240,7 @@ struct NewHabitFormView: View {
                 dismiss()
             } catch {
                 saveError = error.localizedDescription
+                model.suggestions.thaw()
             }
         }
     }
@@ -262,6 +285,19 @@ struct NewHabitFormView: View {
     model.reminderTime = Calendar.current.date(bySettingHour: 7, minute: 15, second: 0, of: .now)!
     return NewHabitFormView(model: model)
         .modelContainer(PreviewContainer.emptyContainer())
+}
+
+#Preview("Suggested") {
+    let model = NewHabitFormModel()
+    model.name = "Read 20 pages"
+    model.suggestions.applyWords(title: model.name, goals: [])
+    return NewHabitFormView(model: model)
+        .modelContainer(PreviewContainer.emptyContainer())
+}
+
+#Preview("From a goal") {
+    NewHabitFormView(model: NewHabitFormModel(goalID: GoalPreviewContainer.healthGoalID))
+        .modelContainer(GoalPreviewContainer.shared)
 }
 
 #Preview("Dark") {

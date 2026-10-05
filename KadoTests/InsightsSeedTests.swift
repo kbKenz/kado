@@ -109,12 +109,18 @@ struct InsightsSeedTests {
         #expect(range.contains(rate), "\(name) is at \(Int((rate * 100).rounded()))%")
     }
 
-    @Test("Meditate is on its best streak, today included")
+    @Test("Meditate is on its best streak, today included, and it is the longest one")
     func meditationStreak() throws {
-        let meditate = try #require(try input().habits.first { $0.habit.name == "Meditate" })
+        let habits = try input().habits
+        let meditate = try #require(habits.first { $0.habit.name == "Meditate" })
         let streaks = DefaultStreakCalculator(calendar: calendar)
         #expect(streaks.current(for: meditate.habit, completions: meditate.completions, asOf: today) == InsightsSeed.meditationStreak)
         #expect(streaks.best(for: meditate.habit, completions: meditate.completions, asOf: today) == InsightsSeed.meditationStreak)
+        // Any record keeps a streak going, so no other habit may log every day.
+        for habit in habits where habit.id != meditate.id {
+            let best = streaks.best(for: habit.habit, completions: habit.completions, asOf: today)
+            #expect(best < InsightsSeed.meditationStreak, "\(habit.habit.name) has a best streak of \(best)")
+        }
     }
 
     @Test("The negative habit has a few slips, none in the last week")

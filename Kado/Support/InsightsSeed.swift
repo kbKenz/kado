@@ -76,12 +76,19 @@ extension InsightsSeed {
         return [600, 660, 720][daysAgo % 3]
     }
 
+    /// Glasses of water logged so far today, by midday.
+    nonisolated static let glassesSoFarToday: Double = 4
+
     /// Drink water, 8 glasses: the full count on 3 days in 5, part of
-    /// it on the others. Today is under way.
-    nonisolated static func glasses(_ daysAgo: Int) -> Double {
-        if daysAgo == 0 { return 4 }
-        if [2, 3].contains(daysAgo % 5) { return [5, 6, 7][daysAgo % 3] }
-        return [8, 9, 8, 10][daysAgo % 4]
+    /// it on one, nothing logged on the last. Any record keeps a streak
+    /// going, so the gaps keep this one short.
+    nonisolated static func glasses(_ daysAgo: Int) -> Double? {
+        guard daysAgo > 0 else { return nil }
+        switch daysAgo % 5 {
+        case 2: return [5, 6, 7][daysAgo % 3]
+        case 3: return nil
+        default: return [8, 9, 8, 10][daysAgo % 4]
+        }
     }
 
     /// Tidy up, on Wednesdays and Saturdays: one week in four skipped.
@@ -357,11 +364,8 @@ private struct InsightsSeedWriter {
         writeHistory(of: workout, at: (19, 0), InsightsSeed.workoutSeconds)
         writeHistory(of: read, at: (21, 30), InsightsSeed.reading)
         writeHistory(of: meditate, at: (7, 20), InsightsSeed.meditationSeconds)
-        writeHistory(of: water, at: (20, 0)) { daysAgo in
-            // Today's glasses so far, by midday.
-            daysAgo == 0 ? nil : InsightsSeed.glasses(daysAgo)
-        }
-        context.insert(CompletionRecord(date: clock.at(0, 12), value: InsightsSeed.glasses(0), habit: water))
+        writeHistory(of: water, at: (20, 0), InsightsSeed.glasses)
+        context.insert(CompletionRecord(date: clock.at(0, 12), value: InsightsSeed.glassesSoFarToday, habit: water))
         writeHistory(of: tidy, at: (10, 30)) { daysAgo in
             let weekday = Weekday(rawValue: clock.calendar.component(.weekday, from: clock.day(-daysAgo)))
             return InsightsSeed.tidied(daysAgo, on: weekday)

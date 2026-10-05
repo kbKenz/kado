@@ -62,7 +62,7 @@ private struct InsightsHeatMap: View {
     @ScaledMetric(relativeTo: .caption2) private var monthHeight: CGFloat = 14
 
     var body: some View {
-        let columns = Self.columns(of: days, calendar: calendar)
+        let columns = InsightsWeekColumns.columns(of: days, calendar: calendar)
         HStack(alignment: .top, spacing: gap) {
             weekdayLabels
             if scrolls {
@@ -90,7 +90,7 @@ private struct InsightsHeatMap: View {
         }
     }
 
-    private func grid(_ columns: [Column]) -> some View {
+    private func grid(_ columns: [InsightsWeekColumns.Column]) -> some View {
         HStack(alignment: .top, spacing: gap) {
             ForEach(columns) { column in
                 VStack(spacing: gap) {
@@ -106,7 +106,7 @@ private struct InsightsHeatMap: View {
     }
 
     /// The month's short name over the week its first day falls in.
-    private func monthLabel(_ column: Column) -> some View {
+    private func monthLabel(_ column: InsightsWeekColumns.Column) -> some View {
         let first = column.cells.compactMap { $0 }.first { calendar.component(.day, from: $0.date) == 1 }
         return ZStack(alignment: .leading) {
             Color.clear.frame(width: cell, height: monthHeight)
@@ -145,6 +145,11 @@ private struct InsightsHeatMap: View {
         return Color.kadoAccent.opacity(0.25 + 0.75 * min(1, fraction))
     }
 
+}
+
+/// The heat map's layout: the days in week columns, each from the
+/// calendar's first weekday down.
+enum InsightsWeekColumns {
     /// One week of cells, by row. A slot is `nil` before the first day
     /// or after today.
     struct Column: Identifiable {

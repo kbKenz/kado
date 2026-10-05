@@ -237,10 +237,14 @@ final class GoogleCalendarConnection {
         // hundreds of rows, and this runs every minute while the app is open.
         // The importer saves through its own context; the UI context merges it.
         let container = context.container
+        // Kept alive here until the import is back, and unowned in the
+        // task: the container's last release must be on the main actor,
+        // never the task's (see `WidgetSnapshotBuilder.beginBackgroundRebuild`).
+        defer { withExtendedLifetime(container) {} }
         let calendarID = Self.calendarID
         let window = DateInterval(start: from, end: to)
         let previous = runningImport
-        let importTask = Task.detached(priority: .utility) {
+        let importTask = Task.detached(priority: .utility) { [unowned container] in
             // Its outcome belongs to its own caller; only the order matters here.
             _ = try? await previous?.value
             return try GoogleCalendarImporter().apply(

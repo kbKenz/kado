@@ -46,7 +46,7 @@ struct ScheduleEquivalenceTests {
         // evaluator's; the prepared path has to honour both.
         let otherCalendar = Self.calendar(zone == "UTC" ? "America/Havana" : "UTC")
         let evaluator = DefaultFrequencyEvaluator(calendar: calendar)
-        var rng = SeededGenerator(seed: Self.seed(zone))
+        var rng = ScheduleSeededGenerator(seed: Self.seed(zone))
 
         for frequency in Self.frequencies {
             for type in Self.types {
@@ -99,7 +99,7 @@ struct ScheduleEquivalenceTests {
     func scoreMatchesGenericPath(zone: String) {
         let calendar = Self.calendar(zone)
         let otherCalendar = Self.calendar(zone == "UTC" ? "America/Havana" : "UTC")
-        var rng = SeededGenerator(seed: Self.seed(zone) &+ 1)
+        var rng = ScheduleSeededGenerator(seed: Self.seed(zone) &+ 1)
 
         // Same calendar for both (the production setup), then an
         // evaluator on another calendar than the score's.
@@ -145,7 +145,7 @@ struct ScheduleEquivalenceTests {
     @Test("Insights day outcomes match the generic path", arguments: zones)
     func insightsOutcomesMatchGenericPath(zone: String) {
         let calendar = Self.calendar(zone)
-        var rng = SeededGenerator(seed: Self.seed(zone) &+ 2)
+        var rng = ScheduleSeededGenerator(seed: Self.seed(zone) &+ 2)
         var habits: [InsightsHabit] = []
         for frequency in Self.frequencies {
             for type in Self.types {
@@ -213,7 +213,7 @@ struct ScheduleEquivalenceTests {
         frequency: Frequency,
         type: HabitType,
         calendar: Calendar,
-        rng: inout SeededGenerator
+        rng: inout ScheduleSeededGenerator
     ) -> Sample {
         let span = span(calendar)
         let length = span.end.timeIntervalSince(span.start)
@@ -304,7 +304,7 @@ private struct PassThroughEvaluator: FrequencyEvaluating {
 }
 
 /// SplitMix64: a fixed seed per zone keeps a failure reproducible.
-struct SeededGenerator: RandomNumberGenerator {
+struct ScheduleSeededGenerator: RandomNumberGenerator {
     private var state: UInt64
 
     init(seed: UInt64) {

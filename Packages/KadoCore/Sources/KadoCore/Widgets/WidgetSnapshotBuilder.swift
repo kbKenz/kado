@@ -207,9 +207,16 @@ public enum WidgetSnapshotBuilder {
         let day = DayStartDefaults.boundary().startOfDay(for: .now)
         let calendar = WeekStartDefaults.calendar()
         let ticket = WidgetSnapshotWriteOrder.shared.ticket()
-        let pass = await Task.detached(priority: .userInitiated) {
+        // Unowned in the detached task, kept alive here until the read
+        // is back: the container's last release must never be the
+        // task's, which can drop its closure off the main thread after
+        // this resumes. A container freed there leaves its main
+        // context's autosave timer running, and the timer traps in
+        // SwiftData when it fires.
+        let pass = await Task.detached(priority: .userInitiated) { [unowned container] in
             Pass(day: day, calendar: calendar, source: Source(context: ModelContext(container)), ticket: ticket)
         }.value
+        withExtendedLifetime(container) {}
         report(pass.todayProgress(), for: pass)
         return BackgroundRebuild(pass: pass)
     }

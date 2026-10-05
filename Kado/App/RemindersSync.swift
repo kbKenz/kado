@@ -30,9 +30,13 @@ enum RemindersSync {
         let container = context.container
         passes.schedule(after: coalescingDelay) { [weak container] in
             guard let container else { return }
-            let read = await Task.detached(priority: .utility) {
+            // Unowned in the detached read and kept alive here, so the
+            // last release is on the main actor (see
+            // `WidgetSnapshotBuilder.beginBackgroundRebuild`).
+            let read = await Task.detached(priority: .utility) { [unowned container] in
                 inputs(from: ModelContext(container))
             }.value
+            withExtendedLifetime(container) {}
             await run(scheduler, habits: read.habits, completions: read.completions)
         }
     }

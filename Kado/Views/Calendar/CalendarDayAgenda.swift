@@ -36,9 +36,39 @@ struct CalendarDayAgenda: View {
         let isActive: Bool
     }
 
-    @Query(sort: \ScheduleBlockRecord.plannedDay) private var blocks: [ScheduleBlockRecord]
+    /// Only blocks that can touch `day` (see `init`), not every block
+    /// ever planned or imported.
+    @Query private var blocks: [ScheduleBlockRecord]
     @Query(filter: #Predicate<TaskRecord> { $0.archivedAt == nil && $0.externalCancelledAt == nil }, sort: \TaskRecord.createdAt)
     private var records: [TaskRecord]
+
+    /// `calendar` must be the environment's, so the fetched range is
+    /// the day the agenda draws; a mismatch only widens the fetch.
+    init(day: Date, calendar: Calendar = .current) {
+        self.day = day
+        _blocks = Query(Self.blocksDescriptor(touching: day, calendar: calendar))
+    }
+
+    /// Every block `TaskScheduleItem.belongs(to:)` can keep for `day`,
+    /// and a few more: `visibleBlocks` still decides exactly, so this
+    /// only has to never drop one. A day of slack each side keeps it a
+    /// superset whatever zone the two calendars disagree on.
+    static func blocksDescriptor(touching day: Date, calendar: Calendar) -> FetchDescriptor<ScheduleBlockRecord> {
+        let dayStart = calendar.startOfDay(for: day)
+        let lower = calendar.date(byAdding: .day, value: -1, to: dayStart) ?? .distantPast
+        let upper = calendar.date(byAdding: .day, value: 2, to: dayStart) ?? .distantFuture
+        let distantPast = Date.distantPast
+        let distantFuture = Date.distantFuture
+        // `belongs` reads the planned day unless both times are set, and
+        // then the overlap of the timed range with the day. A missing
+        // time falls outside the range, so that arm only keeps fully
+        // timed blocks.
+        let predicate = #Predicate<ScheduleBlockRecord> { block in
+            (block.plannedDay >= lower && block.plannedDay < upper)
+                || ((block.startAt ?? distantFuture) < upper && (block.endAt ?? distantPast) > lower)
+        }
+        return FetchDescriptor(predicate: predicate, sortBy: [SortDescriptor(\.plannedDay)])
+    }
 
     @State private var sheet: CalendarSheet?
     @State private var deletingTaskID: UUID?
@@ -214,10 +244,15 @@ struct CalendarDayAgenda: View {
     }
 
     private var tasksWithoutBlocks: [TaskListItem] {
-        records.map { TaskListItem($0) }.filter { item in
-            guard let dueDate = item.dueDate, calendar.isDate(dueDate, inSameDayAs: day) else { return false }
-            return !item.schedules.contains { $0.belongs(to: day, calendar: calendar) }
-        }
+        // The due day first, from the record: most tasks are due on
+        // another day, and building an item reads the goal and every block.
+        records
+            .filter { record in
+                guard let dueDate = record.dueDate else { return false }
+                return calendar.isDate(dueDate, inSameDayAs: day)
+            }
+            .map { TaskListItem($0) }
+            .filter { item in !item.schedules.contains { $0.belongs(to: day, calendar: calendar) } }
     }
 
     private func openBlock(_ block: CalendarBlockItem) {

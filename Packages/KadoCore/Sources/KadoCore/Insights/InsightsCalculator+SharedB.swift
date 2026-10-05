@@ -33,4 +33,31 @@ enum InsightsSharedB {
         let keys = Set(days)
         return trackedSessions(scope).filter { keys.contains($0.day) }
     }
+
+    /// Due days done / due days of `habit` on `days`.
+    static func rate(of habit: InsightsHabit, on days: [Date], _ scope: InsightsScope) -> InsightsRate {
+        var rate = InsightsRate.empty
+        for day in days {
+            guard case .due(let done) = scope.outcome(of: habit, on: day) else { continue }
+            rate.total += 1
+            if done { rate.done += 1 }
+        }
+        return rate
+    }
+
+    /// The active (not archived) habits of `category`, in input order,
+    /// each with its consistency over the period.
+    static func activeHabits(in category: ItemCategory, _ scope: InsightsScope) -> [InsightsHabitConsistency] {
+        scope.input.habits
+            .filter { $0.category == category && $0.habit.archivedAt == nil }
+            .map { habit in
+                InsightsHabitConsistency(
+                    habitID: habit.id,
+                    name: habit.habit.name,
+                    icon: habit.habit.icon,
+                    color: habit.habit.color,
+                    rate: rate(of: habit, on: scope.days, scope)
+                )
+            }
+    }
 }

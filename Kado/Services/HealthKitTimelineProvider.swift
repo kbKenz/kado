@@ -2,8 +2,8 @@ import Foundation
 import HealthKit
 import KadoCore
 
-/// Live HealthKit reads for the Calendar overlay. Read-only; nothing
-/// it returns is stored, synced, or exported.
+/// Live HealthKit reads for the Calendar overlay and Insights.
+/// Read-only; nothing it returns is stored, synced, or exported.
 final class HealthKitTimelineProvider: HealthTimelineProviding {
     private let store = HKHealthStore()
     private let sleepType = HKCategoryType(.sleepAnalysis)
@@ -17,12 +17,15 @@ final class HealthKitTimelineProvider: HealthTimelineProviding {
     }
 
     func sleepEntries(in interval: DateInterval) async throws -> [HealthTimelineEntry] {
+        SleepSessionBuilder.sessions(from: try await sleepSamples(in: interval))
+    }
+
+    func sleepSamples(in interval: DateInterval) async throws -> [SleepSample] {
         let descriptor = HKSampleQueryDescriptor(
             predicates: [.categorySample(type: sleepType, predicate: Self.overlapping(interval))],
             sortDescriptors: [SortDescriptor(\.startDate)]
         )
-        let samples = try await descriptor.result(for: store)
-        return SleepSessionBuilder.sessions(from: samples.compactMap(Self.sleepSample))
+        return try await descriptor.result(for: store).compactMap(Self.sleepSample)
     }
 
     func workoutEntries(in interval: DateInterval) async throws -> [HealthTimelineEntry] {

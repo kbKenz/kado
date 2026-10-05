@@ -41,6 +41,10 @@ class KadoUITestCase: XCTestCase {
     ///   - seedForScreenshots: fill the store with `ScreenshotSeed`'s
     ///     authored dataset rather than `DevModeSeed`'s every-state
     ///     one. Only the screenshot run wants this.
+    ///   - seedInsights: fill the store with `InsightsSeed`'s four
+    ///     months of habits, goals, tasks and sessions, so every
+    ///     Insights card has something to show. No need for
+    ///     `seedProduction` as well.
     ///   - suppressNameAutoFocus: leave the New Habit sheet's name
     ///     field unfocused, so the keyboard stays out of a screenshot.
     ///   - supporter: own the Supporter pack for the run — a mock
@@ -67,6 +71,7 @@ class KadoUITestCase: XCTestCase {
         language: String = "en",
         locale: String? = nil,
         seedForScreenshots: Bool = false,
+        seedInsights: Bool = false,
         suppressNameAutoFocus: Bool = false,
         widgetGallery: Bool = false,
         archiveFirstHabit: Bool = false,
@@ -88,6 +93,9 @@ class KadoUITestCase: XCTestCase {
         }
         if seedForScreenshots {
             app.launchArguments.append("-uiTestSeedForScreenshots")
+        }
+        if seedInsights {
+            app.launchArguments.append("-uiTestSeedInsights")
         }
         if suppressNameAutoFocus {
             app.launchArguments.append("-uiTestSuppressNameAutoFocus")

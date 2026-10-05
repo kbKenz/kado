@@ -2,9 +2,10 @@ import KadoCore
 import OSLog
 import SwiftUI
 
-/// Opt-in for the Calendar's Health overlay. HealthKit never reports
-/// a denied read, so the footer tells the user where to check instead
-/// of the app guessing at an error.
+/// Opt-in for the Calendar's Health overlay, which also feeds the
+/// Insights Sleep and Movement cards. HealthKit never reports a denied
+/// read, so the footer tells the user where to check instead of the app
+/// guessing at an error.
 struct HealthCalendarSection: View {
     @Environment(\.healthTimelineProvider) private var provider
     @Environment(\.openURL) private var openURL
@@ -32,10 +33,13 @@ struct HealthCalendarSection: View {
                     }
                 }
             } footer: {
-                if showsHealth {
-                    Text("No data showing? Check Settings → Privacy & Security → Health → Kadō.")
-                } else {
-                    Text("Show your sleep and workouts on the Calendar. Read-only, and the data stays on your device.")
+                VStack(alignment: .leading, spacing: 4) {
+                    if showsHealth {
+                        Text("No data showing? Check Settings → Privacy & Security → Health → Kadō.")
+                    } else {
+                        Text("Show your sleep and workouts on the Calendar. Read-only, and the data stays on your device.")
+                    }
+                    Text("Sleep and workouts also appear in Insights.")
                 }
             }
             .listRowBackground(Color.kadoBackgroundSecondary)

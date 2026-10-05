@@ -10,13 +10,16 @@ import KadoCore
 struct OverviewView: View {
     @AppStorage(OverviewModeDefaults.key) private var mode: OverviewMode = .insights
     @State private var path = NavigationPath()
+    /// What Insights and History last showed, so a switch back opens on
+    /// it rather than on a spinner.
+    @State private var cache = OverviewCache()
 
     var body: some View {
         NavigationStack(path: $path) {
             Group {
                 switch mode {
                 case .insights: InsightsScreen(path: $path)
-                case .history: HistoryScreen(path: $path)
+                case .history: HistoryScreen(path: $path, cache: cache)
                 case .grid: OverviewGridView()
                 }
             }

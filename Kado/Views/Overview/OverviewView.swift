@@ -18,7 +18,7 @@ struct OverviewView: View {
         NavigationStack(path: $path) {
             Group {
                 switch mode {
-                case .insights: InsightsScreen(path: $path)
+                case .insights: InsightsScreen(path: $path, cache: cache)
                 case .history: HistoryScreen(path: $path, cache: cache)
                 case .grid: OverviewGridView()
                 }

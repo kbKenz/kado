@@ -12,8 +12,65 @@ import KadoCore
 /// Apple Health (`InsightsHealthLoader`), then computed off the main
 /// actor. Under the UI suite's `-uiTestInsightsFixture` it shows
 /// `InsightsPreviewData.rich` instead, so a test sees every card filled.
+///
+/// This view watches the store; `InsightsContent` holds the report and
+/// everything else. A new report, a Health read or a sheet then
+/// re-renders the feed alone, and never walks every record again.
 struct InsightsScreen: View {
     @Binding var path: NavigationPath
+    /// The reports last shown, kept across a mode or period switch.
+    let cache: OverviewCache
+
+    // Read only so a change to the store triggers a new report.
+    @Query private var habitRecords: [HabitRecord]
+    @Query private var completionRecords: [CompletionRecord]
+    @Query private var taskRecords: [TaskRecord]
+    @Query private var sessionRecords: [WorkSessionRecord]
+    @Query private var goalRecords: [GoalRecord]
+
+    var body: some View {
+        InsightsContent(path: $path, cache: cache, storeKey: storeKey)
+    }
+
+    /// Changes whenever anything the report reads changes.
+    private var storeKey: Int {
+        var hasher = Hasher()
+        for record in completionRecords {
+            hasher.combine(record.id)
+            hasher.combine(record.value)
+            hasher.combine(record.date)
+        }
+        for record in taskRecords {
+            hasher.combine(record.id)
+            hasher.combine(record.updatedAt)
+            hasher.combine(record.completedAt)
+            hasher.combine(record.categoryRaw)
+        }
+        for record in sessionRecords {
+            hasher.combine(record.id)
+            hasher.combine(record.endedAt)
+            hasher.combine(record.pausedSeconds)
+        }
+        for record in habitRecords {
+            hasher.combine(record.id)
+            hasher.combine(record.name)
+            hasher.combine(record.archivedAt)
+            hasher.combine(record.categoryRaw)
+        }
+        for record in goalRecords {
+            hasher.combine(record.id)
+            hasher.combine(record.updatedAt)
+        }
+        return hasher.finalize()
+    }
+}
+
+/// The Insights feed and what it asks for. See `InsightsScreen`.
+private struct InsightsContent: View {
+    @Binding var path: NavigationPath
+    let cache: OverviewCache
+    /// Moves whenever a record the report reads changes.
+    let storeKey: Int
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.calendar) private var calendar
@@ -28,17 +85,14 @@ struct InsightsScreen: View {
     @AppStorage(OverviewModeDefaults.insightsPeriodKey) private var period: InsightsPeriod = .month
     @AppStorage(HealthCalendarDefaults.key) private var healthEnabled = false
 
-    // Read only so a change to the store triggers a new report.
-    @Query private var habitRecords: [HabitRecord]
-    @Query private var completionRecords: [CompletionRecord]
-    @Query private var taskRecords: [TaskRecord]
-    @Query private var sessionRecords: [WorkSessionRecord]
-    @Query private var goalRecords: [GoalRecord]
-
     /// The last report. Kept while a new one computes, so the feed never
     /// flashes empty.
     @State private var report: InsightsReport?
     @State private var health: InsightsHealth = .disconnected
+    /// What `health` was last read for. With Health on, a report waits
+    /// for it: computing first and again once Health landed did the
+    /// whole report twice, and showed the Health cards empty meanwhile.
+    @State private var healthLoadedFor: HealthKey?
 
     /// The New Habit form opened from a template. Holds the form's
     /// model, so a re-render never resets what the user typed.
@@ -85,40 +139,21 @@ struct InsightsScreen: View {
             return InsightsPreviewData.rich(for: period)
         }
         // A report for another period would show the wrong window.
-        guard let report, report.period == period else { return nil }
-        return report
+        if let report, report.period == period { return report }
+        // Until this period's report lands, the last one Overview kept.
+        return cache.report(for: period, today: today, civilToday: civilToday)
     }
 
     /// Changes whenever anything the report reads changes.
     private var refreshKey: RefreshKey {
-        var hasher = Hasher()
-        for record in completionRecords {
-            hasher.combine(record.id)
-            hasher.combine(record.value)
-            hasher.combine(record.date)
-        }
-        for record in taskRecords {
-            hasher.combine(record.id)
-            hasher.combine(record.updatedAt)
-            hasher.combine(record.completedAt)
-            hasher.combine(record.categoryRaw)
-        }
-        for record in sessionRecords {
-            hasher.combine(record.id)
-            hasher.combine(record.endedAt)
-            hasher.combine(record.pausedSeconds)
-        }
-        for record in habitRecords {
-            hasher.combine(record.id)
-            hasher.combine(record.name)
-            hasher.combine(record.archivedAt)
-            hasher.combine(record.categoryRaw)
-        }
-        for record in goalRecords {
-            hasher.combine(record.id)
-            hasher.combine(record.updatedAt)
-        }
-        return RefreshKey(period: period, today: today, civilToday: civilToday, data: hasher.finalize(), health: health)
+        RefreshKey(
+            period: period,
+            today: today,
+            civilToday: civilToday,
+            data: storeKey,
+            health: health,
+            isHealthReady: isHealthReady
+        )
     }
 
     private struct RefreshKey: Equatable {
@@ -127,6 +162,13 @@ struct InsightsScreen: View {
         var civilToday: Date
         var data: Int
         var health: InsightsHealth
+        var isHealthReady: Bool
+    }
+
+    /// Off, Health has nothing to wait for. On, it is ready once read
+    /// for this period and day.
+    private var isHealthReady: Bool {
+        !healthEnabled || healthLoadedFor == healthKey
     }
 
     private struct HealthKey: Equatable {
@@ -143,6 +185,8 @@ struct InsightsScreen: View {
     /// report off it.
     private func recompute() async {
         guard !UITestSupport.showsInsightsFixture else { return }
+        // Health landing changes the key and runs this again.
+        guard isHealthReady else { return }
         var input: InsightsInput
         do {
             input = try InsightsInputBuilder(civilToday: civilToday, calendar: calendar).build(in: modelContext)
@@ -163,18 +207,28 @@ struct InsightsScreen: View {
             scoreCalculator: scoreCalculator
         )
         let finished = input
-        let result = await Task.detached(priority: .userInitiated) {
+        let day = (today: today, civilToday: civilToday)
+        let work = Task.detached(priority: .userInitiated) {
             InsightsCalculator().report(input: finished, context: context)
-        }.value
+        }
+        let result = await withTaskCancellationHandler {
+            await work.value
+        } onCancel: {
+            work.cancel()
+        }
+        // A newer key has started its own report: that one wins.
         guard !Task.isCancelled else { return }
         report = result
+        cache.store(result, today: day.today, civilToday: day.civilToday)
     }
 
     private func loadHealth() async {
+        let key = healthKey
         let interval = InsightsHealthLoader.queryInterval(for: period, today: civilToday, now: .now, calendar: calendar)
         do {
             health = try await InsightsHealthLoader(provider: healthProvider, calendar: calendar)
                 .health(in: interval, isEnabled: healthEnabled)
+            healthLoadedFor = key
         } catch {
             // Cancelled: keep what was read before.
         }
@@ -218,7 +272,7 @@ struct InsightsScreen: View {
 
 #Preview("Empty") {
     NavigationStack {
-        InsightsScreen(path: .constant(NavigationPath()))
+        InsightsScreen(path: .constant(NavigationPath()), cache: OverviewCache())
             .navigationTitle("Overview")
     }
     .modelContainer(PreviewContainer.emptyContainer())
@@ -227,7 +281,7 @@ struct InsightsScreen: View {
 
 #Preview("Dark") {
     NavigationStack {
-        InsightsScreen(path: .constant(NavigationPath()))
+        InsightsScreen(path: .constant(NavigationPath()), cache: OverviewCache())
             .navigationTitle("Overview")
     }
     .modelContainer(PreviewContainer.shared)

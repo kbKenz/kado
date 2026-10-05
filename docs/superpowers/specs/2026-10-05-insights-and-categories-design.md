@@ -229,4 +229,22 @@ public var category: ItemCategory? {   // typed accessor, same 3 models
 
 ## Changes during build
 
-- (filled in during the build)
+- The third period is the last 90 days (weekly focus bars), not a year:
+  a year report took 13–15 s on a large store and its heat map did not
+  fit the screen. All time keeps the long view.
+- `InsightsScope` caches each habit-day outcome once per report.
+- Goal matching tolerates typos ("cambrrdgige" → "Cambridge"); the
+  classifier's typo rule needs the same first two letters and at most
+  2 edits, so "Something" stays uncategorized.
+- Suggestions show in a strip under the title (wand.and.stars, chips,
+  Undo). A strong word match fills the goal by itself in new forms; a
+  weak match or a model-only goal is a one-tap chip. Edit forms only
+  offer chips.
+- Goal detail has "Add task" and "Add habit" with the goal preselected.
+- Known: a very large store (20 habits × 400 days) still takes up to
+  ~1.7 s per report, mostly the per-habit score history. It runs off
+  the main actor.
+- Not done: the UI suite was not run end to end after the final merge
+  (the owner tests by hand); `NSHealthShareUsageDescription` still
+  names only the Calendar (InfoPlist.xcstrings has local edits on the
+  owner's machine).

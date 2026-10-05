@@ -62,6 +62,8 @@ struct GoalDetailView: View {
     }
 
     var body: some View {
+        // Resolved once per render; it used to be looked up four times.
+        let snapshot = self.snapshot
         Group {
             if let goal = snapshot {
                 goalContent(goal)
@@ -73,7 +75,7 @@ struct GoalDetailView: View {
         .navigationTitle(snapshot?.name ?? String(localized: "Goal"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: HabitRoute.self) { route in HabitDetailLoader(habitID: route.id) }
-        .toolbar { goalToolbar }
+        .toolbar { goalToolbar(snapshot) }
         .sheet(item: $sheet) { selection in
             switch selection {
             case .progress(let id): GoalProgressEntryForm(goalID: goalID, entryID: id)
@@ -103,8 +105,8 @@ struct GoalDetailView: View {
             if goal.measurement.enabled {
                 GoalProgressSection(goal: goal, result: progressResult(goal), manualEntries: progressEntries.filter { $0.goal?.id == goalID }.compactMap(\.snapshot), onAdd: { sheet = .progress(nil) }, onEdit: { sheet = .progress($0) }, onTask: { sheet = .task($0) })
             }
-            linkedTasksSection
-            linkedHabitsSection
+            linkedTasksSection(linkedTasks)
+            linkedHabitsSection(linkedHabits)
             Section {
                 Button { sheet = .newTask } label: { Label("Add task", systemImage: "plus.circle") }
                     .accessibilityIdentifier(AccessibilityID.Goals.addTask)
@@ -165,7 +167,7 @@ struct GoalDetailView: View {
         .listRowBackground(Color.kadoBackgroundSecondary)
     }
 
-    private var linkedTasksSection: some View {
+    private func linkedTasksSection(_ linkedTasks: [LinkedTask]) -> some View {
         Section {
             if linkedTasks.isEmpty {
                 Text("No linked tasks yet").foregroundStyle(Color.kadoForegroundSecondary)
@@ -176,7 +178,7 @@ struct GoalDetailView: View {
         .listRowBackground(Color.kadoBackgroundSecondary)
     }
 
-    private var linkedHabitsSection: some View {
+    private func linkedHabitsSection(_ linkedHabits: [LinkedHabit]) -> some View {
         Section {
             if linkedHabits.isEmpty {
                 Text("No linked habits yet").foregroundStyle(Color.kadoForegroundSecondary)
@@ -255,7 +257,7 @@ struct GoalDetailView: View {
     }
 
     @ToolbarContentBuilder
-    private var goalToolbar: some ToolbarContent {
+    private func goalToolbar(_ snapshot: GoalListItem?) -> some ToolbarContent {
         if let goal = snapshot {
             ToolbarItem(placement: .primaryAction) {
                 Button("Edit") { sheet = .editGoal }
@@ -282,11 +284,14 @@ struct GoalDetailView: View {
         }
     }
 
+    /// Snapshots only what this goal's mode reads, rather than every
+    /// entry, task, habit and completion in the store.
     private func progressResult(_ goal: GoalListItem) -> GoalProgressResult {
-        GoalProgressCalculator.calculate(goalID: goalID, measurement: goal.measurement, startDate: goal.startDate, today: civilToday, calendar: calendar,
-            entries: progressEntries.compactMap(\.snapshot),
-            tasks: tasks.map { TaskBackup(id: $0.id, title: $0.title, createdAt: $0.createdAt, updatedAt: $0.updatedAt, completedAt: $0.completedAt, goalID: $0.goal?.id) },
-            habits: habits.map(\.snapshot), completions: completionRecords.compactMap(\.snapshot))
+        GoalProgressInputs(
+            measurements: [goal.measurement],
+            entries: progressEntries, tasks: tasks, habits: habits, completions: completionRecords
+        )
+        .progress(goalID: goalID, measurement: goal.measurement, startDate: goal.startDate, today: civilToday, calendar: calendar)
     }
 
     private var snapshot: GoalListItem? {

@@ -19,6 +19,9 @@ struct TaskFormView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.calendar) private var calendar
     @Environment(\.civilToday) private var civilToday
+    /// Only the edited task: every use is a lookup by `taskID`, and the
+    /// body reads it several times per keystroke. Unfiltered, each read
+    /// scanned every task in the store (imported calendars keep growing).
     @Query private var records: [TaskRecord]
     @Query private var goals: [GoalRecord]
 
@@ -43,6 +46,10 @@ struct TaskFormView: View {
         self.defaultStartTime = defaultStartTime
         self.defaultGoalID = defaultGoalID
         self.onSaved = onSaved
+        // A new task never reads `records`. A fixed id rather than a
+        // fresh `UUID()`, so the query is the same on every re-init.
+        let id = taskID ?? UUID(uuidString: "00000000-0000-0000-0000-000000000000")!
+        _records = Query(filter: #Predicate<TaskRecord> { $0.id == id })
         let draft = SuggestionDraft(kind: .task, isEditing: taskID != nil)
         if taskID == nil, let defaultGoalID { draft.presetGoal(defaultGoalID) }
         _suggestions = State(initialValue: draft)

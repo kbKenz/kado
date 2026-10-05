@@ -27,6 +27,9 @@ struct MonthlyCalendarView<PopoverContent: View>: View {
     }
 
     var body: some View {
+        // Built once per render, not once per cell: each cell used to
+        // rescan every completion several times.
+        let dayIndex = MonthlyCalendarDayIndex(habit: habit, completions: completions, calendar: calendar)
         VStack(alignment: .leading, spacing: 8) {
             monthHeader
             weekdayHeader
@@ -35,7 +38,7 @@ struct MonthlyCalendarView<PopoverContent: View>: View {
                     Color.clear.frame(height: 32)
                 }
                 ForEach(daysInMonth, id: \.self) { day in
-                    cell(for: day)
+                    cell(for: day, dayIndex: dayIndex)
                         .frame(height: 32)
                 }
             }
@@ -131,11 +134,7 @@ struct MonthlyCalendarView<PopoverContent: View>: View {
     }
 
     private var monthTitle: String {
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = calendar.locale ?? .current
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter.string(from: monthStart)
+        CachedDateFormatters.string(from: monthStart, .dateFormat("MMMM yyyy"), calendar: calendar)
     }
 
     private var monthStart: Date {
@@ -163,8 +162,9 @@ struct MonthlyCalendarView<PopoverContent: View>: View {
     }
 
     @ViewBuilder
-    private func cell(for day: Date) -> some View {
-        let state = state(for: day)
+    private func cell(for day: Date, dayIndex: MonthlyCalendarDayIndex) -> some View {
+        let state = state(for: day, dayIndex: dayIndex)
+        let hasNote = dayIndex.hasNote(on: day)
         // Compared against the logical day, not `isDateInToday` —
         // between midnight and the rollover hour the ring belongs on
         // the day Today is still showing.
@@ -189,13 +189,13 @@ struct MonthlyCalendarView<PopoverContent: View>: View {
                 Circle()
                     .fill(Color.kadoForegroundSecondary)
                     .frame(width: 4, height: 4)
-                    .opacity(hasNote(on: day) ? 1 : 0)
+                    .opacity(hasNote ? 1 : 0)
             }
         }
         .contentShape(Rectangle())
         .accessibilityElement()
         .accessibilityIdentifier(AccessibilityID.HabitDetail.calendarDay(dayNumber))
-        .accessibilityLabel(accessibilityLabel(for: day, state: state, isToday: isToday))
+        .accessibilityLabel(accessibilityLabel(for: day, state: state, isToday: isToday, hasNote: hasNote))
 
         if isInteractive {
             visual
@@ -233,7 +233,7 @@ struct MonthlyCalendarView<PopoverContent: View>: View {
         case beforeStart  // before the habit's effective start
     }
 
-    private func state(for day: Date) -> CellState {
+    private func state(for day: Date, dayIndex: MonthlyCalendarDayIndex) -> CellState {
         // `today` is already the logical day's midnight.
         if day > today {
             return .future
@@ -241,12 +241,10 @@ struct MonthlyCalendarView<PopoverContent: View>: View {
         // Still tappable, unlike on the Overview: this calendar is where
         // back-dating lives, and its popover says the start will move
         // (issue #104).
-        if habit.isBeforeStart(day, completions: completions, calendar: calendar) {
+        if dayIndex.isBeforeStart(day) {
             return .beforeStart
         }
-        let completedOnDay = completions.contains { c in
-            c.habitID == habit.id && c.value > 0 && calendar.isDate(c.date, inSameDayAs: day)
-        }
+        let completedOnDay = dayIndex.hasValue(on: day)
         switch habit.type {
         case .negative:
             return completedOnDay ? .missed : .completed
@@ -284,20 +282,8 @@ struct MonthlyCalendarView<PopoverContent: View>: View {
         }
     }
 
-    private func hasNote(on day: Date) -> Bool {
-        completions.contains { c in
-            c.habitID == habit.id
-                && calendar.isDate(c.date, inSameDayAs: day)
-                && c.note.map { !$0.isEmpty } ?? false
-        }
-    }
-
-    private func accessibilityLabel(for day: Date, state: CellState, isToday: Bool) -> String {
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = calendar.locale ?? .current
-        formatter.dateStyle = .full
-        let dateString = formatter.string(from: day)
+    private func accessibilityLabel(for day: Date, state: CellState, isToday: Bool, hasNote: Bool) -> String {
+        let dateString = CachedDateFormatters.string(from: day, .dateStyle(.full), calendar: calendar)
         let stateString: String
         switch state {
         case .completed: stateString = String(localized: "completed")
@@ -306,7 +292,7 @@ struct MonthlyCalendarView<PopoverContent: View>: View {
         case .beforeStart: stateString = String(localized: "before tracking started")
         case .future: stateString = String(localized: "upcoming")
         }
-        let noteString = hasNote(on: day) ? String(localized: ", has note") : ""
+        let noteString = hasNote ? String(localized: ", has note") : ""
         if isToday {
             return "\(dateString), today, \(stateString)\(noteString)"
         }

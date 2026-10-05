@@ -67,6 +67,9 @@ struct HabitDetailView: View {
     /// default would leak in ahead of `\.today` and open the grid on the
     /// wrong month before the rollover on the 1st.
     @State private var displayedMonth: Date?
+    /// Not observed: filling it during `body` must not schedule
+    /// another render.
+    @State private var metricsCache = HabitMetricsCache()
 
     private var isArchived: Bool { habit.archivedAt != nil }
 
@@ -89,11 +92,8 @@ struct HabitDetailView: View {
         let createdDay = calendar.startOfDay(for: habit.createdAt)
         let effectiveDay = calendar.startOfDay(for: effective)
         guard effectiveDay != createdDay else { return nil }
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = calendar.locale ?? .current
-        formatter.dateStyle = .medium
-        return String(localized: "Tracking since \(formatter.string(from: effective))")
+        let formatted = CachedDateFormatters.string(from: effective, .dateStyle(.medium), calendar: calendar)
+        return String(localized: "Tracking since \(formatted)")
     }
 
     var body: some View {
@@ -422,17 +422,18 @@ struct HabitDetailView: View {
     }
 
     private var metricsRow: some View {
-        HStack(spacing: 12) {
-            scoreCard
+        let metrics = self.metrics
+        return HStack(spacing: 12) {
+            scoreCard(scorePercent: scorePercent(metrics.score))
             metricCard(
                 title: String(localized: "Streak"),
-                value: String(localized: "\(currentStreak) / best \(bestStreak)"),
+                value: String(localized: "\(metrics.currentStreak) / best \(metrics.bestStreak)"),
                 systemImage: "flame.fill"
             )
         }
     }
 
-    private var scoreCard: some View {
+    private func scoreCard(scorePercent: String) -> some View {
         Button {
             showingScoreInfo = true
         } label: {
@@ -486,21 +487,27 @@ struct HabitDetailView: View {
 
     // MARK: - Computed metrics
 
-    private var scorePercent: String {
-        let score = scoreCalculator.currentScore(
-            for: habit,
+    /// Score and streaks, reused until one of their inputs changes.
+    private var metrics: HabitMetricsCache.Metrics {
+        let key = HabitMetricsCache.Key(
+            habit: habit,
             completions: completions,
-            asOf: today
+            today: today,
+            calendar: calendar,
+            scoreCalculator: scoreCalculator,
+            streakCalculator: streakCalculator
         )
-        return "\(Int((score * 100).rounded()))%"
+        return metricsCache.metrics(for: key) {
+            HabitMetricsCache.Metrics(
+                score: scoreCalculator.currentScore(for: habit, completions: completions, asOf: today),
+                currentStreak: streakCalculator.current(for: habit, completions: completions, asOf: today),
+                bestStreak: streakCalculator.best(for: habit, completions: completions, asOf: today)
+            )
+        }
     }
 
-    private var currentStreak: Int {
-        streakCalculator.current(for: habit, completions: completions, asOf: today)
-    }
-
-    private var bestStreak: Int {
-        streakCalculator.best(for: habit, completions: completions, asOf: today)
+    private func scorePercent(_ score: Double) -> String {
+        "\(Int((score * 100).rounded()))%"
     }
 
     private var frequencyLabel: String {

@@ -9,6 +9,9 @@ struct TaskFormView: View {
     let defaultDay: Date?
     /// Filled in as the start time of a new task that has a day.
     let defaultStartTime: Date?
+    /// The goal a new task starts with, as the person's choice (from Goal
+    /// detail): suggestions never change it.
+    let defaultGoalID: UUID?
     /// Called with the task's ID after a successful save, before the form closes.
     let onSaved: ((UUID) -> Void)?
 
@@ -27,14 +30,22 @@ struct TaskFormView: View {
     @State private var endTime: Date?
     @State private var populated = false
     @State private var errorMessage: String?
-    @State private var selectedGoalID: UUID?
+    /// The category and goal, with who set each (title suggestions).
+    @State private var suggestions: SuggestionDraft
     @FocusState private var titleFocused: Bool
 
-    init(taskID: UUID? = nil, defaultDay: Date? = nil, defaultStartTime: Date? = nil, onSaved: ((UUID) -> Void)? = nil) {
+    init(
+        taskID: UUID? = nil, defaultDay: Date? = nil, defaultStartTime: Date? = nil,
+        defaultGoalID: UUID? = nil, onSaved: ((UUID) -> Void)? = nil
+    ) {
         self.taskID = taskID
         self.defaultDay = defaultDay
         self.defaultStartTime = defaultStartTime
+        self.defaultGoalID = defaultGoalID
         self.onSaved = onSaved
+        let draft = SuggestionDraft(kind: .task, isEditing: taskID != nil)
+        if taskID == nil, let defaultGoalID { draft.presetGoal(defaultGoalID) }
+        _suggestions = State(initialValue: draft)
     }
 
     var body: some View {
@@ -51,10 +62,10 @@ struct TaskFormView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(isImported && selectedGoalID == item?.goalID ? String(localized: "Close") : String(localized: "Cancel")) { dismiss() }
+                    Button(isImported && !hasImportedChanges ? String(localized: "Close") : String(localized: "Cancel")) { dismiss() }
                         .accessibilityIdentifier(AccessibilityID.Tasks.cancel)
                 }
-                if !isImported || selectedGoalID != item?.goalID {
+                if !isImported || hasImportedChanges {
                     ToolbarItem(placement: .confirmationAction) {
                         Button("Save", action: save)
                             .disabled(!isValid)
@@ -75,7 +86,12 @@ struct TaskFormView: View {
         Form {
             detailsSection
             schedulingSection
-            GoalPickerSection(selectedGoalID: $selectedGoalID)
+            CategoryPickerSection(
+                selection: categoryBinding,
+                isSuggested: suggestions.categoryOrigin == .suggested,
+                identifier: AccessibilityID.Suggestion.taskCategory
+            )
+            GoalPickerSection(selectedGoalID: goalBinding, isSuggested: suggestions.goalOrigin == .suggested)
             if isImported {
                 Section {
                     Label("Google Calendar", systemImage: "arrow.triangle.2.circlepath")
@@ -91,8 +107,12 @@ struct TaskFormView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.kadoBackground.ignoresSafeArea())
+        .titleSuggestions(suggestions, title: title, goals: goals.map { SuggestionGoal($0) })
     }
 
+    /// Google owns an imported event's title and notes, so those fields
+    /// are disabled; the suggestion strip stays usable, since the
+    /// category and goal are local.
     private var detailsSection: some View {
         Section {
             TextField("Task title", text: $title)
@@ -100,14 +120,18 @@ struct TaskFormView: View {
                 .submitLabel(.done)
                 .accessibilityIdentifier(AccessibilityID.Tasks.title)
                 .assistedInput($title, identifier: AccessibilityID.Tasks.title)
+                .disabled(isImported)
+            if !suggestions.chips.isEmpty {
+                SuggestionStrip(draft: suggestions)
+            }
             TextField("Notes (optional)", text: $notes, axis: .vertical)
                 .lineLimit(3...6)
                 .accessibilityIdentifier(AccessibilityID.Tasks.notes)
                 .assistedInput($notes, identifier: AccessibilityID.Tasks.notes)
+                .disabled(isImported)
         } header: {
             Text("Details")
         }
-        .disabled(isImported)
         .listRowBackground(Color.kadoBackgroundSecondary)
     }
 
@@ -167,6 +191,20 @@ struct TaskFormView: View {
     }
 
     private var isImported: Bool { item?.isFromGoogle == true }
+
+    /// Whether the local fields of an imported task (its goal and
+    /// category) differ from what is saved.
+    private var hasImportedChanges: Bool {
+        suggestions.goalID != item?.goalID || suggestions.category != item?.category
+    }
+
+    private var goalBinding: Binding<UUID?> {
+        Binding(get: { suggestions.goalID }, set: { suggestions.userSetGoal($0) })
+    }
+
+    private var categoryBinding: Binding<ItemCategory?> {
+        Binding(get: { suggestions.category }, set: { suggestions.userSetCategory($0) })
+    }
 
     private var sourceURL: URL? {
         guard let taskID,
@@ -235,7 +273,9 @@ struct TaskFormView: View {
         let snapshot = item
         title = snapshot?.title ?? ""
         notes = snapshot?.notes ?? ""
-        selectedGoalID = snapshot?.goalID
+        if let snapshot {
+            suggestions.load(category: snapshot.category, goalID: snapshot.goalID)
+        }
         let firstBlock = snapshot?.schedules.first
         let scheduledDay = firstBlock?.plannedDay ?? snapshot?.dueDate ?? defaultDay
         day = scheduledDay.map { calendar.startOfDay(for: $0) }
@@ -247,6 +287,8 @@ struct TaskFormView: View {
 
     private func save() {
         guard isValid else { return }
+        let selectedGoalID = suggestions.goalID
+        let category = suggestions.category
         let selectedGoal: GoalRecord?
         if let selectedGoalID {
             guard let currentGoal = goals.first(where: { $0.id == selectedGoalID }) else {
@@ -257,12 +299,17 @@ struct TaskFormView: View {
         } else {
             selectedGoal = nil
         }
-        // Google owns event details. A goal is local organization and
-        // can be changed without rewriting its title, plan or completion.
+        // Google owns event details. A goal and a category are local
+        // organization and can be changed without rewriting its title,
+        // plan or completion.
         if isImported {
             guard let taskID, let record = records.first(where: { $0.id == taskID }) else { return }
             if record.goal?.id != selectedGoalID {
                 record.goal = selectedGoal
+                record.updatedAt = .now
+            }
+            if record.category != category {
+                record.category = category
                 record.updatedAt = .now
             }
             persistAndDismiss(savedID: record.id)
@@ -282,6 +329,7 @@ struct TaskFormView: View {
         record.updatedAt = .now
         record.dueDate = schedule.plannedDay
         record.goal = selectedGoal
+        record.category = category
 
         if let plannedDay = record.dueDate {
             let block: ScheduleBlockRecord
@@ -304,6 +352,9 @@ struct TaskFormView: View {
     private func persistAndDismiss(savedID: UUID) {
         do {
             try modelContext.save()
+            // Saved: a late model answer must not move a field while
+            // the sheet closes.
+            suggestions.freeze()
             onSaved?(savedID)
             dismiss()
         } catch {
@@ -316,6 +367,12 @@ struct TaskFormView: View {
 #Preview("Calendar task") {
     TaskFormView(defaultDay: .now)
         .modelContainer(PreviewContainer.shared)
+        .kadoTheme()
+}
+
+#Preview("From a goal") {
+    TaskFormView(defaultGoalID: GoalPreviewContainer.healthGoalID)
+        .modelContainer(GoalPreviewContainer.shared)
         .kadoTheme()
 }
 

@@ -252,8 +252,8 @@ struct KadoApp: App {
             // multi-second series build back to back (#82).
             clockMark = .now
             // Deferred a tick so the resumed frame renders first — the
-            // series build is synchronous on MainActor and, for a long
-            // history, not instant. `reloadAll` reschedules reminders
+            // store read still runs on MainActor and, for a long
+            // history, is not instant. `reloadAll` reschedules reminders
             // too, so the branch above's call is not repeated here.
             Task { @MainActor in
                 WidgetReloader.reloadAll(using: container.mainContext)

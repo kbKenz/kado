@@ -29,6 +29,10 @@ struct GoalDetailView: View {
         case task(UUID)
         case linkTasks
         case linkHabits
+        case newTask
+        /// Holds the form's model, so the sheet keeps what was typed
+        /// when this screen redraws.
+        case newHabit(NewHabitFormModel)
 
         var id: String {
             switch self {
@@ -37,6 +41,8 @@ struct GoalDetailView: View {
             case .task(let id): "task-\(id)"
             case .linkTasks: "link-tasks"
             case .linkHabits: "link-habits"
+            case .newTask: "new-task"
+            case .newHabit: "new-habit"
             }
         }
     }
@@ -75,6 +81,8 @@ struct GoalDetailView: View {
             case .task(let id): TaskFormView(taskID: id)
             case .linkTasks: GoalLinkItemsView(goalID: goalID, kind: .tasks)
             case .linkHabits: GoalLinkItemsView(goalID: goalID, kind: .habits)
+            case .newTask: TaskFormView(defaultGoalID: goalID)
+            case .newHabit(let model): NewHabitFormView(model: model)
             }
         }
         .confirmationDialog("Delete this goal?", isPresented: $confirmingDelete, titleVisibility: .visible, presenting: snapshot) { _ in
@@ -97,6 +105,16 @@ struct GoalDetailView: View {
             }
             linkedTasksSection
             linkedHabitsSection
+            Section {
+                Button { sheet = .newTask } label: { Label("Add task", systemImage: "plus.circle") }
+                    .accessibilityIdentifier(AccessibilityID.Goals.addTask)
+                Button { sheet = .newHabit(NewHabitFormModel(goalID: goalID)) } label: {
+                    Label("Add habit", systemImage: "plus.circle")
+                }
+                .accessibilityIdentifier(AccessibilityID.Goals.addHabit)
+            }
+            .disabled(goal.archivedAt != nil)
+            .listRowBackground(Color.kadoBackgroundSecondary)
             Section {
                 Button { sheet = .linkTasks } label: { Label("Link tasks", systemImage: "checklist") }
                     .accessibilityIdentifier(AccessibilityID.Goals.linkTasks)

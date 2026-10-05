@@ -6,6 +6,9 @@ import SwiftUI
 /// visible so editing another field cannot silently discard its link.
 struct GoalPickerSection: View {
     @Binding var selectedGoalID: UUID?
+    /// Shows the "Suggested" caption: the app chose the goal from the
+    /// title, and the person has not touched the picker since.
+    var isSuggested: Bool = false
     @Query(sort: \GoalRecord.name) private var records: [GoalRecord]
     @State private var showingNewGoal = false
 
@@ -28,10 +31,15 @@ struct GoalPickerSection: View {
             .accessibilityIdentifier(AccessibilityID.Goals.pickerCreate)
         } header: { Text("Goal (optional)") }
         footer: {
-            if choices.first(where: { $0.id == selectedGoalID })?.archivedAt != nil {
-                Text("This goal is archived. Its existing links are preserved.")
-            } else {
-                Text("Connect this item to something you want to achieve.")
+            VStack(alignment: .leading, spacing: 6) {
+                if isSuggested {
+                    SuggestedCaption(identifier: AccessibilityID.Suggestion.goalBadge)
+                }
+                if choices.first(where: { $0.id == selectedGoalID })?.archivedAt != nil {
+                    Text("This goal is archived. Its existing links are preserved.")
+                } else {
+                    Text("Connect this item to something you want to achieve.")
+                }
             }
         }
         .listRowBackground(Color.kadoBackgroundSecondary)
@@ -46,7 +54,7 @@ struct GoalPickerSection: View {
 }
 
 #Preview("Goal picker") {
-    Form { GoalPickerSection(selectedGoalID: .constant(GoalPreviewContainer.healthGoalID)) }
+    Form { GoalPickerSection(selectedGoalID: .constant(GoalPreviewContainer.healthGoalID), isSuggested: true) }
         .modelContainer(GoalPreviewContainer.shared)
         .kadoTheme()
 }

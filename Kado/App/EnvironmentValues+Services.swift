@@ -143,4 +143,11 @@ extension EnvironmentValues {
     /// the language model; the main app injects the real cleaner at
     /// scene build.
     @Entry var textCleaner: any TextCleaning = UnavailableTextCleaner()
+
+    /// On-device title suggestions from a language model, behind the
+    /// word suggestions in the task, habit and goal forms. Default
+    /// reports itself unavailable so previews and unit tests never call
+    /// the model; the main app injects the real suggester at scene
+    /// build, except under UI tests.
+    @Entry var itemSuggester: any ItemSuggesting = UnavailableItemSuggester()
 }

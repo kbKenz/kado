@@ -26,6 +26,85 @@ struct CategoryClassifierTests {
         #expect(CategoryClassifier.classify(title) == expected)
     }
 
+    /// Real-looking titles in English and French, typos included. The
+    /// set guards the keyword lists and the typo rule together.
+    static let goldenSet: [(String, ItemCategory)] = [
+        // English
+        ("contact proffesors at cambrrdgige", .study),
+        ("Finish the assignmnet", .study),
+        ("Prepare the presentaton", .work),
+        ("Book a physiotherapy session", .health),
+        ("Renew my passport", .errands),
+        ("Vacuum the living room", .home),
+        ("Weekly team meeting", .work),
+        ("Pay the electricity bill", .money),
+        ("Morning jog in the park", .fitness),
+        ("Go to bed before midnight", .sleep),
+        ("Dentist appointment", .health),
+        ("Call grandma", .social),
+        ("Practice piano", .creative),
+        ("Gratitude journal", .mind),
+        ("Grocery shopping", .errands),
+        // French
+        ("Payer le loyer", .money),
+        ("Faire la vaisselle", .home),
+        ("Appeler maman", .social),
+        ("Séance de musculation", .fitness),
+        ("Aller à la boulangerie", .errands),
+        ("Méditation du matin", .mind),
+        ("Se coucher avant 23 h", .sleep),
+        ("Préparer la réunion", .work),
+        ("Rendez-vous chez le kinésithérapeuthe", .health),
+        ("Réviser le partiel de chimie", .study),
+        ("Prendre mes vitamines", .health),
+        ("Écrire un poème", .creative),
+        ("Déclarer mes impôts", .money),
+        ("Récupérer le colis à la poste", .errands),
+        ("Lessive et repassage", .home)
+    ]
+
+    @Test("A golden set of 30 English and French titles", arguments: goldenSet)
+    func golden(title: String, expected: ItemCategory) {
+        #expect(CategoryClassifier.classify(title) == expected)
+    }
+
+    @Test("The golden set has 30 titles")
+    func goldenSetSize() {
+        #expect(Self.goldenSet.count == 30)
+    }
+
+    @Test("A long keyword still matches with a typo")
+    func typos() {
+        #expect(CategoryClassifier.classify("contact proffesors at cambrrdgige") == .study)
+        #expect(CategoryClassifier.classify("Finish the assignmnet") == .study)
+        #expect(CategoryClassifier.classify("excercise") == .fitness)
+        #expect(CategoryClassifier.classify("Do my homwork") == .study)
+        #expect(CategoryClassifier.isTypo("proffesor", of: "professor"))
+    }
+
+    @Test("Keywords under 8 letters and a different first letter need the exact word")
+    func typoLimits() {
+        // "rent" and "lesson" are too short to match with a typo.
+        #expect(CategoryClassifier.classify("rnet") == nil)
+        #expect(CategoryClassifier.classify("lessno") == nil)
+        // "professor" without its first letter.
+        #expect(CategoryClassifier.classify("rofessor") == nil)
+        // 3 edits from "apartment"; 8 letters allow 2.
+        #expect(CategoryClassifier.classify("Apparent") == nil)
+    }
+
+    @Test("A keyword as written is never read as a typo, and the closest keyword wins")
+    func typoPriority() {
+        // "college" is 2 edits from "colleague" (work) but is a study
+        // keyword itself.
+        #expect(CategoryClassifier.classify("College") == .study)
+        #expect(CategoryClassifier.classify("Medication") == .health)
+        // "meditaton" is 1 edit from "meditation" (mind) and 2 from
+        // "medication" (health).
+        #expect(CategoryClassifier.classify("Meditaton") == .mind)
+        #expect(CategoryClassifier.classify("Meditaton before work") == .mind)
+    }
+
     @Test("No keyword, no category", arguments: ["zzz qwerty", "", "   ", "42", "Get into Cambridge"])
     func noMatch(title: String) {
         #expect(CategoryClassifier.classify(title) == nil)

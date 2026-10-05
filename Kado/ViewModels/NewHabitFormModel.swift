@@ -7,11 +7,28 @@ import KadoCore
 /// per kind's associated value so toggling between `frequencyKind`
 /// or `typeKind` options doesn't wipe partially-entered data.
 /// Reused for edit mode via `init(editing:)`.
+///
+/// The goal, category, colour and icon live in `suggestions`, which
+/// knows who set each one: setting them here is the person's choice,
+/// and title suggestions never change them again.
 @MainActor
 @Observable
 final class NewHabitFormModel {
     var name: String = ""
-    var selectedGoalID: UUID?
+
+    /// The goal, category, colour and icon, with who set each.
+    let suggestions: SuggestionDraft
+
+    var selectedGoalID: UUID? {
+        get { suggestions.goalID }
+        set { suggestions.userSetGoal(newValue) }
+    }
+
+    /// `nil` means not set.
+    var category: ItemCategory? {
+        get { suggestions.category }
+        set { suggestions.userSetCategory(newValue) }
+    }
 
     var frequencyKind: FrequencyKind = .daily
     var daysPerWeek: Int = 3
@@ -22,8 +39,15 @@ final class NewHabitFormModel {
     var counterTarget: Double = 1
     var timerTargetMinutes: Int = 10
 
-    var color: HabitColor = .blue
-    var icon: String = HabitIcon.default
+    var color: HabitColor {
+        get { suggestions.color }
+        set { suggestions.userSetColor(newValue) }
+    }
+
+    var icon: String {
+        get { suggestions.icon }
+        set { suggestions.userSetIcon(newValue) }
+    }
 
     /// Per-habit reminder toggle. When true, `save(in:)` writes the
     /// time components onto the `HabitRecord`; the scheduler derives
@@ -48,7 +72,12 @@ final class NewHabitFormModel {
         case binary, counter, timer, negative
     }
 
-    init() {}
+    /// A new habit. `goalID` starts it on a goal as the person's choice
+    /// (from Goal detail), so suggestions never change it.
+    init(goalID: UUID? = nil) {
+        suggestions = SuggestionDraft(kind: .habit)
+        if let goalID { suggestions.presetGoal(goalID) }
+    }
 
     /// Default is 9:00 today in the current calendar. Stored on the
     /// type so both fresh and edit inits converge on the same seed
@@ -62,10 +91,9 @@ final class NewHabitFormModel {
     }
 
     /// Pre-fill with values and retain only the current habit identity.
-    convenience init(editing record: HabitRecord) {
-        self.init()
+    init(editing record: HabitRecord) {
+        suggestions = SuggestionDraft(kind: .habit, isEditing: true)
         self.editingHabitID = record.id
-        self.selectedGoalID = record.goal?.id
         self.name = record.name
         switch record.frequency {
         case .daily:
@@ -95,8 +123,9 @@ final class NewHabitFormModel {
         case .negative:
             self.typeKind = .negative
         }
-        self.color = record.color
-        self.icon = record.icon
+        // Saved values are the person's; an empty category or the
+        // circle icon can still get a suggestion chip.
+        suggestions.load(category: record.category, goalID: record.goal?.id, icon: record.icon, color: record.color)
         self.remindersEnabled = record.remindersEnabled
         self.reminderTime = Self.time(
             fromHour: record.reminderHour,
@@ -203,6 +232,7 @@ final class NewHabitFormModel {
             record.type = type
             record.color = color
             record.icon = icon
+            record.category = category
             record.remindersEnabled = remindersEnabled
             record.reminderHour = components.hour ?? 9
             record.reminderMinute = components.minute ?? 0

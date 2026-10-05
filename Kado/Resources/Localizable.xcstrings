@@ -2002,6 +2002,23 @@
         }
       }
     },
+    "Add habit" : {
+      "comment" : "Goal detail: create a new habit already linked to this goal.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add habit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter une habitude"
+          }
+        }
+      }
+    },
     "Add progress" : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",
@@ -2563,6 +2580,23 @@
         }
       }
     },
+    "Category" : {
+      "comment" : "Picker label in the task, habit and goal forms: the item's area of life.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Catégorie"
+          }
+        }
+      }
+    },
     "Changing measurement source recalculates the total. Existing manual entries and linked item history remain stored." : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",
@@ -2730,6 +2764,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fermer"
+          }
+        }
+      }
+    },
+    "Colour" : {
+      "comment" : "Suggestion chip: the habit colour the app picked from the category.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colour"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Couleur"
           }
         }
       }
@@ -5165,6 +5216,23 @@
         }
       }
     },
+    "Icon" : {
+      "comment" : "Suggestion chip: the habit icon the app picked from the name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icon"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Icône"
+          }
+        }
+      }
+    },
     "Icons with a lock come with the Supporter pack." : {
       "comment" : "App icon footer, shown until the pack is owned: explains the lock on paid icons.",
       "extractionState" : "manual",
@@ -5725,6 +5793,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Lier des tâches"
+          }
+        }
+      }
+    },
+    "Link to %@" : {
+      "comment" : "Suggestion chip button: links the task or habit to the named goal.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Link to %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lier à %@"
           }
         }
       }
@@ -8580,6 +8665,23 @@
         }
       }
     },
+    "Set category to %@" : {
+      "comment" : "Suggestion chip button: sets the form's category to the named one.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set category to %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Choisir la catégorie %@"
+          }
+        }
+      }
+    },
     "Sets where a week begins: the calendar on a habit's screen, the order of the day pickers, and which days count together for a habit measured in days per week. Automatic follows your region." : {
       "comment" : "Footer under the week-start picker, saying what it changes.",
       "localizations" : {
@@ -8980,6 +9082,91 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Études"
+          }
+        }
+      }
+    },
+    "Suggested" : {
+      "comment" : "Caption and strip label: the app filled this in from the title.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suggéré"
+          }
+        }
+      }
+    },
+    "Suggested category: %@" : {
+      "comment" : "VoiceOver: the app filled in this category from the title.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested category: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Catégorie suggérée : %@"
+          }
+        }
+      }
+    },
+    "Suggested colour" : {
+      "comment" : "VoiceOver: the app picked the habit colour from the category.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested colour"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Couleur suggérée"
+          }
+        }
+      }
+    },
+    "Suggested goal: %@" : {
+      "comment" : "VoiceOver: the app linked this goal from the title.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested goal: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Objectif suggéré : %@"
+          }
+        }
+      }
+    },
+    "Suggested icon" : {
+      "comment" : "VoiceOver: the app picked the habit icon from the name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested icon"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Icône suggérée"
           }
         }
       }
@@ -10468,6 +10655,40 @@
         }
       }
     },
+    "Undo is available." : {
+      "comment" : "VoiceOver, after the app filled in form fields from the title.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo is available."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tu peux annuler."
+          }
+        }
+      }
+    },
+    "Undo suggestions" : {
+      "comment" : "VoiceOver label of Undo in the suggestion strip: puts suggested fields back.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo suggestions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Annuler les suggestions"
+          }
+        }
+      }
+    },
     "Unit" : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",
@@ -10684,6 +10905,40 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Utilisez une valeur initiale finie et positive ou nulle, avec une cible supérieure. Choisissez une unité et une habitude source si nécessaire."
+          }
+        }
+      }
+    },
+    "Use the suggested colour" : {
+      "comment" : "Suggestion chip button: sets the habit colour the app picked.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the suggested colour"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utiliser la couleur suggérée"
+          }
+        }
+      }
+    },
+    "Use the suggested icon" : {
+      "comment" : "Suggestion chip button: sets the habit icon the app picked.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use the suggested icon"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Utiliser l'icône suggérée"
           }
         }
       }

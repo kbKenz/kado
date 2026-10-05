@@ -23,11 +23,14 @@ struct GoalFormView: View {
     @State private var targetDate: Date?
     @State private var populated = false
     @State private var errorMessage: String?
+    /// The category, with who set it (suggested from the name).
+    @State private var suggestions: SuggestionDraft
     @FocusState private var nameFocused: Bool
 
     init(goalID: UUID? = nil, onSaved: ((UUID) -> Void)? = nil) {
         self.goalID = goalID
         self.onSaved = onSaved
+        _suggestions = State(initialValue: SuggestionDraft(kind: .goal, isEditing: goalID != nil))
     }
 
     var body: some View {
@@ -74,12 +77,20 @@ struct GoalFormView: View {
                     .submitLabel(.done)
                     .accessibilityIdentifier(AccessibilityID.Goals.name)
                     .assistedInput($name, identifier: AccessibilityID.Goals.name)
+                if !suggestions.chips.isEmpty {
+                    SuggestionStrip(draft: suggestions)
+                }
                 TextField("Why this matters (optional)", text: $details, axis: .vertical)
                     .lineLimit(3...8)
                     .accessibilityIdentifier(AccessibilityID.Goals.details)
                     .assistedInput($details, identifier: AccessibilityID.Goals.details)
             } header: { Text("Details") }
             .listRowBackground(Color.kadoBackgroundSecondary)
+            CategoryPickerSection(
+                selection: Binding(get: { suggestions.category }, set: { suggestions.userSetCategory($0) }),
+                isSuggested: suggestions.categoryOrigin == .suggested,
+                identifier: AccessibilityID.Suggestion.goalCategory
+            )
             Section {
                 Picker("Status", selection: $status) {
                     ForEach(GoalStatus.allCases, id: \.self) { value in
@@ -97,6 +108,8 @@ struct GoalFormView: View {
         }
         .scrollContentBackground(.hidden)
         .background(Color.kadoBackground.ignoresSafeArea())
+        // The name feeds the category; a goal links no goal.
+        .titleSuggestions(suggestions, title: name, goals: [])
     }
 
     private var datesSection: some View {
@@ -157,6 +170,9 @@ struct GoalFormView: View {
         status = item?.status ?? .active
         startDate = item?.startDate
         targetDate = item?.targetDate
+        if let item {
+            suggestions.load(category: item.category, goalID: nil)
+        }
         populated = true
         nameFocused = goalID == nil && !UITestSupport.suppressesNameAutoFocus
     }
@@ -181,6 +197,7 @@ struct GoalFormView: View {
         record.name = name.trimmingCharacters(in: .whitespacesAndNewlines)
         record.details = details.trimmingCharacters(in: .whitespacesAndNewlines)
         record.status = status
+        record.category = suggestions.category
         record.completedAt = status == .completed ? (record.completedAt ?? .now) : nil
         if record.archivedAt == nil {
             record.startDate = startDate.map { calendar.startOfDay(for: $0) }
@@ -189,6 +206,9 @@ struct GoalFormView: View {
         record.updatedAt = .now
         do {
             try modelContext.save()
+            // Saved: a late model answer must not move the category
+            // while the sheet closes.
+            suggestions.freeze()
             onSaved?(record.id)
             dismiss()
         } catch {

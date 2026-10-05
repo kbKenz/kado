@@ -28,6 +28,7 @@ struct KadoApp: App {
     @State private var supporterPack: any SupporterPackStoring = Self.makeSupporterPack()
     @State private var appIconApplier = AppIconApplier(switcher: LiveAppIconSwitcher())
     @State private var textCleaner: any TextCleaning = TextCleanerFactory.make()
+    @State private var itemSuggester: any ItemSuggesting = Self.makeItemSuggester()
     @State private var speechTranscriber: any SpeechTranscribing = SpeechTranscriptionManager()
 
     /// Raw wall-clock marker, bumped whenever the logical day may have
@@ -108,6 +109,17 @@ struct KadoApp: App {
         }
         #endif
         return DefaultSupporterPackStore()
+    }
+
+    /// The on-device model, or — on a UI test run — none, so the suite
+    /// sees only the word suggestions and stays deterministic.
+    private static func makeItemSuggester() -> any ItemSuggesting {
+        #if DEBUG
+        if UITestSupport.isRunningUITests {
+            return UnavailableItemSuggester()
+        }
+        #endif
+        return ItemSuggesterFactory.make()
     }
 
     init() {
@@ -199,6 +211,7 @@ struct KadoApp: App {
         .environment(\.supporterPack, supporterPack)
         .environment(\.appIconApplier, appIconApplier)
         .environment(\.textCleaner, textCleaner)
+        .environment(\.itemSuggester, itemSuggester)
         .environment(\.speechTranscriber, speechTranscriber)
         .environment(\.calendar, weekCalendar)
         // The one calculator that reads `firstWeekday`: a

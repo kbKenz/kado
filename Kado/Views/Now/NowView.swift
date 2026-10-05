@@ -130,8 +130,8 @@ struct NowView: View {
 /// minute only moves `NowResolver`, which runs in the inner clock.
 struct NowContent: View, Equatable {
     let day: Date
-    /// When the parent built this value; within `day`, so the store
-    /// reads the same through it as through any later instant that day.
+    /// When the parent built this value. Only a lower bound for the
+    /// load: a pass the parent did not cause keeps an older one.
     let loadedAt: Date
     let scenePhase: ScenePhase
     let actions: Actions
@@ -163,7 +163,12 @@ struct NowContent: View, Equatable {
     private static let maxContentWidth: CGFloat = 560
 
     var body: some View {
-        let input = loadInput(now: loadedAt)
+        // Not `loadedAt` alone: a data change or a new day boundary
+        // re-runs this body with the props of the last pass that was
+        // not skipped, and that instant can be hours old. Under a moved
+        // "Day starts at" it can even fall on the previous logical day.
+        // `max` keeps the parent's clock when it runs ahead of `.now`.
+        let input = loadInput(now: max(loadedAt, .now))
         // Re-resolve every minute so suggestions move with the clock.
         TimelineView(.everyMinute) { context in
             content(input, now: max(context.date, .now))

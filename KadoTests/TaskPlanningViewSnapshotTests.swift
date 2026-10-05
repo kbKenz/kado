@@ -63,6 +63,33 @@ struct TaskPlanningViewSnapshotTests {
         #expect(GoalListItem(name: "Direct").category == nil)
     }
 
+    @Test("A task row resolves its category as Insights does: stored, then the goal's, then the title")
+    func taskResolvesCategory() throws {
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let container = try ModelContainer(
+            for: schema,
+            configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+        let goal = GoalRecord(name: "Get into Cambridge", category: .study)
+        let uncategorizedGoal = GoalRecord(name: "Run a marathon")
+        let stored = TaskRecord(title: "Contact professors", goal: goal, category: .work)
+        let fromGoal = TaskRecord(title: "Pay the deposit", goal: goal)
+        let fromTitle = TaskRecord(title: "Pay the deposit", goal: uncategorizedGoal)
+        let unknown = TaskRecord(title: "Something else")
+        [goal, uncategorizedGoal].forEach(context.insert)
+        [stored, fromGoal, fromTitle, unknown].forEach(context.insert)
+        try context.save()
+
+        #expect(TaskListItem(stored).resolvedCategory == .work)
+        #expect(TaskListItem(fromGoal).goalCategory == .study)
+        #expect(TaskListItem(fromGoal).resolvedCategory == .study)
+        // Only a goal's stored category passes down; its name is not guessed for the task.
+        #expect(TaskListItem(fromTitle).goalCategory == nil)
+        #expect(TaskListItem(fromTitle).resolvedCategory == .money)
+        #expect(TaskListItem(unknown).resolvedCategory == .other)
+    }
+
     @Test("A timed overnight block overlaps both civil days")
     func overnightMembership() {
         let start = TestCalendar.instant(calendar, 2026, 4, 13, 22)

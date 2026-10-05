@@ -13,6 +13,9 @@ struct TaskRowView: View {
 
     @Environment(\.calendar) private var calendar
     @Environment(\.civilToday) private var today
+    /// Wide enough for the widest category symbol, so the date text
+    /// starts at the same place on every row.
+    @ScaledMetric(relativeTo: .caption) private var glyphWidth: CGFloat = 18
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -36,10 +39,16 @@ struct TaskRowView: View {
                         .foregroundStyle(item.isComplete ? Color.kadoForegroundSecondary : Color.kadoForeground)
                         .strikethrough(item.isComplete)
                         .multilineTextAlignment(.leading)
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(Color.kadoForegroundSecondary)
-                        .multilineTextAlignment(.leading)
+                    // The category glyph leads the date line, so the
+                    // title keeps the row's full width.
+                    HStack(alignment: .firstTextBaseline, spacing: 5) {
+                        ItemGlyphView(glyph: ItemGlyph(category: category))
+                            .frame(width: glyphWidth, alignment: .leading)
+                        Text(subtitle)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .font(.caption)
+                    .foregroundStyle(Color.kadoForegroundSecondary)
                     if item.isFromGoogle {
                         Label("Google Calendar", systemImage: "arrow.triangle.2.circlepath")
                             .font(.caption2)
@@ -56,6 +65,10 @@ struct TaskRowView: View {
             }
             .buttonStyle(.borderless)
             .accessibilityElement(children: .combine)
+            .accessibilityLabel { label in
+                label
+                Text(category.localizedName)
+            }
             .accessibilityValue(item.isComplete ? String(localized: "Complete") : String(localized: "Incomplete"))
             .accessibilityHint(item.isFromGoogle ? Text("View event") : Text("Edit task"))
             .accessibilityIdentifier(AccessibilityID.Tasks.row(item.id))
@@ -74,6 +87,8 @@ struct TaskRowView: View {
         .accessibilityAction(named: Text("Edit task"), onEdit)
         .accessibilityAction(named: item.isFromGoogle ? Text("Remove from planner") : Text("Delete task"), onDelete)
     }
+
+    private var category: ItemCategory { item.resolvedCategory }
 
     private var subtitle: String {
         let chosenSchedule = schedule ?? item.schedules.first
@@ -98,6 +113,9 @@ struct TaskRowView: View {
     List {
         TaskRowView(item: TaskListItem(title: "Prepare for tomorrow"), onToggle: {}, onEdit: {}, onDelete: {})
         TaskRowView(item: TaskListItem(title: "Meeting with Thomas", dueDate: .now, isFromGoogle: true), onToggle: {}, onEdit: {}, onDelete: {})
+        TaskRowView(item: TaskListItem(title: "Contact professors at Cambridge", dueDate: .now,
+                                       goalName: "Get into Cambridge", goalCategory: .study),
+                    onToggle: {}, onEdit: {}, onDelete: {})
     }
     .kadoTheme()
 }
@@ -106,7 +124,18 @@ struct TaskRowView: View {
     List {
         TaskRowView(item: TaskListItem(title: "Read a chapter", dueDate: .now, completedAt: .now), onToggle: {}, onEdit: {}, onDelete: {})
         TaskRowView(item: TaskListItem(title: "Meeting with Thomas", isFromGoogle: true), onToggle: {}, onEdit: {}, onDelete: {})
+        TaskRowView(item: TaskListItem(title: "Pay the electricity bill", dueDate: .now), onToggle: {}, onEdit: {}, onDelete: {})
     }
     .kadoTheme()
     .preferredColorScheme(.dark)
+}
+
+#Preview("XXXL") {
+    List {
+        TaskRowView(item: TaskListItem(title: "Prepare the slides for the quarterly planning meeting", dueDate: .now,
+                                       goalName: "Get promoted"),
+                    onToggle: {}, onEdit: {}, onDelete: {})
+    }
+    .kadoTheme()
+    .dynamicTypeSize(.accessibility3)
 }

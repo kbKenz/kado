@@ -226,8 +226,15 @@ private struct InsightsContent: View {
         let key = healthKey
         let interval = InsightsHealthLoader.queryInterval(for: period, today: civilToday, now: .now, calendar: calendar)
         do {
-            health = try await InsightsHealthLoader(provider: healthProvider, calendar: calendar)
+            let read = try await InsightsHealthLoader(provider: healthProvider, calendar: calendar)
                 .health(in: interval, isEnabled: healthEnabled)
+            // The loader can still return after a cancel (its sleep
+            // grouping runs detached). A newer key started its own read,
+            // and that one wins: an older one landing last would mark
+            // Health as read for the old key, and no report would run
+            // again until the key moved.
+            guard !Task.isCancelled else { return }
+            health = read
             healthLoadedFor = key
         } catch {
             // Cancelled: keep what was read before.

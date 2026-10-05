@@ -343,6 +343,14 @@ enum AccessibilityID {
         static let categoryBadge = "suggestion.category"
         static let goalBadge = "suggestion.goal"
         static let iconBadge = "suggestion.icon"
+        /// The strip's "Suggested" label, on the leaf so the chips keep
+        /// their own identifiers. Present while the strip shows.
+        static let strip = "suggestion.strip"
+        /// The strip's Undo button.
+        static let undo = "suggestion.undo"
+        /// One chip, by field: "category", "goal", "icon" or "color". A
+        /// field has one chip at most, applied or offered.
+        static func chip(_ field: String) -> String { "suggestion.chip.\(field)" }
     }
 
     enum NewHabit {

@@ -2563,6 +2563,23 @@
         }
       }
     },
+    "Category" : {
+      "comment" : "Picker label in the task, habit and goal forms: the item's area of life.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Category"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Catégorie"
+          }
+        }
+      }
+    },
     "Changing measurement source recalculates the total. Existing manual entries and linked item history remain stored." : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",
@@ -9052,6 +9069,23 @@
         }
       }
     },
+    "Suggested" : {
+      "comment" : "Caption and strip label: the app filled this in from the title.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suggested"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suggéré"
+          }
+        }
+      }
+    },
     "Suggested category: %@" : {
       "comment" : "VoiceOver: the app filled in this category from the title.",
       "localizations" : {
@@ -10617,6 +10651,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tu peux annuler."
+          }
+        }
+      }
+    },
+    "Undo suggestions" : {
+      "comment" : "VoiceOver label of Undo in the suggestion strip: puts suggested fields back.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Undo suggestions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Annuler les suggestions"
           }
         }
       }

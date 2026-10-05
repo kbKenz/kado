@@ -267,7 +267,7 @@ nonisolated enum UITestSupport {
     /// with it is unchanged.
     static func productionContainerOverride() -> ModelContainer? {
         guard isRunningUITests else { return nil }
-        let schema = Schema(versionedSchema: KadoSchemaV8.self)
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
         let configuration = ModelConfiguration(
             schema: schema,
             url: productionStoreURL(),

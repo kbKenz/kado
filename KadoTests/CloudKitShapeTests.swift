@@ -28,6 +28,7 @@ struct CloudKitShapeTests {
             ("V6", Schema(versionedSchema: KadoSchemaV6.self)),
             ("V7", Schema(versionedSchema: KadoSchemaV7.self)),
             ("V8", Schema(versionedSchema: KadoSchemaV8.self)),
+            ("V9", Schema(versionedSchema: KadoSchemaV9.self)),
         ]
     }
 
@@ -99,5 +100,18 @@ struct CloudKitShapeTests {
         #expect(block.endAt == nil)
         #expect(block.task == nil)
         #expect(block.habit == nil)
+    }
+
+    @Test("Tasks, habits and goals start with no category")
+    func categoriesDefaultToEmpty() {
+        let task = TaskRecord()
+        let habit = HabitRecord()
+        let goal = GoalRecord()
+        #expect(task.categoryRaw == "")
+        #expect(habit.categoryRaw == "")
+        #expect(goal.categoryRaw == "")
+        #expect(task.category == nil)
+        #expect(habit.category == nil)
+        #expect(goal.category == nil)
     }
 }

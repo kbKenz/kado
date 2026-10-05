@@ -99,7 +99,7 @@ nonisolated public enum SharedStore {
     /// builds), the store opens with `cloudKitDatabase: .none` and stays
     /// on this device.
     public static func productionContainer() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV8.self)
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
         let database: ModelConfiguration.CloudKitDatabase =
             CloudSync.isEnabled ? .private(CloudContainerID.kado) : .none
         let configuration: ModelConfiguration

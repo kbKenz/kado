@@ -21,6 +21,9 @@ public struct Habit: Identifiable, Hashable, Sendable {
     public var reminderMinute: Int
     public var sortOrder: Int
     public var goalID: UUID?
+    /// The stored category, or `nil` when none is set. Readers that
+    /// need a value use `CategoryResolver`.
+    public var category: ItemCategory?
 
     public init(
         id: UUID = UUID(),
@@ -35,7 +38,8 @@ public struct Habit: Identifiable, Hashable, Sendable {
         reminderHour: Int = 9,
         reminderMinute: Int = 0,
         sortOrder: Int = 0,
-        goalID: UUID? = nil
+        goalID: UUID? = nil,
+        category: ItemCategory? = nil
     ) {
         self.id = id
         self.name = name
@@ -50,6 +54,7 @@ public struct Habit: Identifiable, Hashable, Sendable {
         self.reminderMinute = reminderMinute
         self.sortOrder = sortOrder
         self.goalID = goalID
+        self.category = category
     }
 
     public func effectiveStart(completions: [Completion], calendar: Calendar) -> Date {

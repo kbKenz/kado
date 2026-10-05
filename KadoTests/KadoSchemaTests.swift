@@ -38,6 +38,13 @@ struct KadoSchemaTests {
         #expect(KadoSchemaV8.models.contains { $0 == KadoSchemaV8.WorkSessionRecord.self })
     }
 
+    @Test("V9 version identifier is 9.0.0 and keeps the same seven models")
+    func v9Version() {
+        #expect(KadoSchemaV9.versionIdentifier == Schema.Version(9, 0, 0))
+        #expect(KadoSchemaV9.models.count == KadoSchemaV8.models.count)
+        #expect(KadoSchemaV9.models.contains { $0 == KadoSchemaV9.WorkSessionRecord.self })
+    }
+
     @Test("Deleting a block keeps its sessions; deleting a task removes them")
     func sessionDeleteRules() throws {
         let schema = Schema(versionedSchema: KadoSchemaV8.self)
@@ -109,15 +116,86 @@ struct KadoSchemaTests {
         #expect(block.workSessions?.count == 1)
     }
 
-    @Test("Migration plan declares a lightweight stage for each version through V8")
-    func migrationPlanShape() {
-        #expect(KadoMigrationPlan.schemas.count == 8)
-        #expect(KadoMigrationPlan.stages.count == 7)
+    @Test("V8 to V9 keeps goals, tasks, habits and links, with no category set")
+    func v8ToV9Migration() throws {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("categories-migration-\(UUID().uuidString).store")
+        defer {
+            for suffix in ["", "-wal", "-shm"] {
+                try? FileManager.default.removeItem(atPath: url.path + suffix)
+            }
+        }
+        let goalID = UUID()
+        let taskID = UUID()
+        let habitID = UUID()
+        let completionID = UUID()
+        do {
+            let schema = Schema(versionedSchema: KadoSchemaV8.self)
+            let store = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url))
+            let goal = KadoSchemaV8.GoalRecord(id: goalID, name: "Get into Cambridge")
+            store.mainContext.insert(goal)
+            let task = KadoSchemaV8.TaskRecord(id: taskID, title: "Contact professors", goal: goal)
+            store.mainContext.insert(task)
+            let habit = KadoSchemaV8.HabitRecord(id: habitID, name: "Read", goal: goal)
+            store.mainContext.insert(habit)
+            store.mainContext.insert(KadoSchemaV8.CompletionRecord(id: completionID, value: 3, note: "Chapter", habit: habit))
+            try store.mainContext.save()
+        }
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let store = try ModelContainer(
+            for: schema,
+            migrationPlan: KadoMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url)
+        )
+        let context = store.mainContext
+        let goal = try #require(context.fetch(FetchDescriptor<KadoSchemaV9.GoalRecord>()).first)
+        let task = try #require(context.fetch(FetchDescriptor<KadoSchemaV9.TaskRecord>()).first)
+        let habit = try #require(context.fetch(FetchDescriptor<KadoSchemaV9.HabitRecord>()).first)
+        #expect(goal.id == goalID)
+        #expect(goal.name == "Get into Cambridge")
+        #expect(task.id == taskID)
+        #expect(task.title == "Contact professors")
+        #expect(task.goal?.id == goalID)
+        #expect(habit.id == habitID)
+        #expect(habit.name == "Read")
+        #expect(habit.goal?.id == goalID)
+        #expect(Set(goal.tasks?.map(\.id) ?? []) == [taskID])
+        #expect(Set(goal.habits?.map(\.id) ?? []) == [habitID])
+        let completion = try #require(habit.completions?.first)
+        #expect(completion.id == completionID)
+        #expect(completion.value == 3.0)
+        #expect(completion.note == "Chapter")
+        #expect(goal.categoryRaw == "")
+        #expect(task.categoryRaw == "")
+        #expect(habit.categoryRaw == "")
+        #expect(goal.category == nil)
+        #expect(task.category == nil)
+        #expect(habit.category == nil)
+
+        goal.category = .study
+        task.category = .work
+        habit.category = .mind
+        try context.save()
+        let refetchedGoal = try #require(context.fetch(FetchDescriptor<KadoSchemaV9.GoalRecord>()).first)
+        let refetchedTask = try #require(context.fetch(FetchDescriptor<KadoSchemaV9.TaskRecord>()).first)
+        let refetchedHabit = try #require(context.fetch(FetchDescriptor<KadoSchemaV9.HabitRecord>()).first)
+        #expect(refetchedGoal.category == .study)
+        #expect(refetchedTask.category == .work)
+        #expect(refetchedHabit.category == .mind)
+        #expect(refetchedGoal.categoryRaw == "study")
+        #expect(refetchedTask.categoryRaw == "work")
+        #expect(refetchedHabit.categoryRaw == "mind")
     }
 
-    @Test("In-memory ModelContainer constructs from the current (V8) schema")
+    @Test("Migration plan declares a lightweight stage for each version through V9")
+    func migrationPlanShape() {
+        #expect(KadoMigrationPlan.schemas.count == 9)
+        #expect(KadoMigrationPlan.stages.count == 8)
+    }
+
+    @Test("In-memory ModelContainer constructs from the current (V9) schema")
     func containerBuildsFromPlan() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV8.self)
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
         let container = try ModelContainer(
             for: schema,
             migrationPlan: KadoMigrationPlan.self,

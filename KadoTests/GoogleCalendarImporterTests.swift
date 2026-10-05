@@ -11,7 +11,7 @@ struct GoogleCalendarImporterTests {
     private let calendarID = "primary"
 
     private func container() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV8.self)
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
         return try ModelContainer(
             for: schema,
             configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)

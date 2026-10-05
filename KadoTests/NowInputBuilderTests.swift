@@ -11,7 +11,7 @@ struct NowInputBuilderTests {
     private var now: Date { TestCalendar.instant(calendar, 2026, 4, 13, 10) }
 
     private func context() throws -> ModelContext {
-        let schema = Schema(versionedSchema: KadoSchemaV8.self)
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
         return ModelContext(try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)))
     }
 

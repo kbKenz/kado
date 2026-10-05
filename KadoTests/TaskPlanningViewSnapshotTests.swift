@@ -11,7 +11,7 @@ struct TaskPlanningViewSnapshotTests {
 
     @Test("Snapshots survive destruction of their managed records")
     func snapshotsAreValues() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV8.self)
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
         let container = try ModelContainer(
             for: schema, migrationPlan: KadoMigrationPlan.self,
             configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)

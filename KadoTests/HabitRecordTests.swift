@@ -39,6 +39,24 @@ struct HabitRecordTests {
         #expect(record.snapshot == expected)
     }
 
+    /// `Habit` equality compares ids only, so the category needs its
+    /// own assertion.
+    @Test("Snapshot carries the category, and nil when none is set")
+    func snapshotCarriesCategory() {
+        let record = HabitRecord(name: "Meditate", category: .mind)
+        container.mainContext.insert(record)
+        #expect(record.categoryRaw == "mind")
+        #expect(record.snapshot.category == .mind)
+
+        record.category = nil
+        #expect(record.categoryRaw == "")
+        #expect(record.snapshot.category == nil)
+
+        record.categoryRaw = "not-a-category"
+        #expect(record.category == nil)
+        #expect(record.snapshot.category == nil)
+    }
+
     @Test("frequency setter round-trips through the JSON-Data backing")
     func frequencyRoundTrip() {
         let record = HabitRecord(frequency: .everyNDays(3))

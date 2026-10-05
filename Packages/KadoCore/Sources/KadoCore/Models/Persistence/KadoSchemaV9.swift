@@ -1,18 +1,18 @@
 import Foundation
 import SwiftData
 
-/// Version 8 adds tracked work sessions (the Now tab). Planned blocks
-/// stay plans; actual time lives only in `WorkSessionRecord`. Additive,
-/// so V7 stores migrate lightweight.
-public enum KadoSchemaV8: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(8, 0, 0)
+/// Version 9 adds a category to tasks, habits and goals
+/// (`categoryRaw`, empty when not set). Every other model is the same
+/// as in V8. Additive, so V8 stores migrate lightweight.
+public enum KadoSchemaV9: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(9, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
         [HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self, GoalProgressEntryRecord.self, WorkSessionRecord.self]
     }
 }
 
-public extension KadoSchemaV8 {
+public extension KadoSchemaV9 {
     /// A goal groups ongoing habits and one-off tasks. Deleting it
     /// removes their links while preserving those items and history.
     @Model
@@ -33,6 +33,8 @@ public extension KadoSchemaV8 {
         public var progressTarget: Double = 1
         public var progressUnit: String = ""
         public var progressHabitID: UUID?
+        /// Raw `ItemCategory` value. Empty means "not set".
+        public var categoryRaw: String = ""
 
         @Relationship(deleteRule: .cascade, inverse: \GoalProgressEntryRecord.goal)
         public var progressEntries: [GoalProgressEntryRecord]? = []
@@ -64,7 +66,8 @@ public extension KadoSchemaV8 {
             completedAt: Date? = nil,
             archivedAt: Date? = nil,
             tasks: [TaskRecord]? = [],
-            habits: [HabitRecord]? = []
+            habits: [HabitRecord]? = [],
+            category: ItemCategory? = nil
         ) {
             self.id = id
             self.name = name
@@ -78,11 +81,19 @@ public extension KadoSchemaV8 {
             self.archivedAt = archivedAt
             self.tasks = tasks
             self.habits = habits
+            self.categoryRaw = category?.rawValue ?? ""
         }
 
         public var status: GoalStatus {
             get { GoalStatus(rawValue: statusRaw) ?? .active }
             set { statusRaw = newValue.rawValue }
+        }
+
+        /// The stored category, or `nil` when none is set. Readers that
+        /// need a value use `CategoryResolver`.
+        public var category: ItemCategory? {
+            get { ItemCategory(storedRaw: categoryRaw) }
+            set { categoryRaw = newValue?.rawValue ?? "" }
         }
     }
 
@@ -125,6 +136,8 @@ public extension KadoSchemaV8 {
         public var externalURL: String?
         public var externalUpdatedAt: Date?
         public var externalCancelledAt: Date?
+        /// Raw `ItemCategory` value. Empty means "not set".
+        public var categoryRaw: String = ""
 
         @Relationship(deleteRule: .cascade, inverse: \ScheduleBlockRecord.task)
         public var scheduleBlocks: [ScheduleBlockRecord]? = []
@@ -148,7 +161,8 @@ public extension KadoSchemaV8 {
             externalUpdatedAt: Date? = nil,
             externalCancelledAt: Date? = nil,
             scheduleBlocks: [ScheduleBlockRecord]? = [],
-            goal: GoalRecord? = nil
+            goal: GoalRecord? = nil,
+            category: ItemCategory? = nil
         ) {
             self.id = id
             self.title = title
@@ -166,6 +180,14 @@ public extension KadoSchemaV8 {
             self.externalCancelledAt = externalCancelledAt
             self.scheduleBlocks = scheduleBlocks
             self.goal = goal
+            self.categoryRaw = category?.rawValue ?? ""
+        }
+
+        /// The stored category, or `nil` when none is set. Readers that
+        /// need a value use `CategoryResolver`.
+        public var category: ItemCategory? {
+            get { ItemCategory(storedRaw: categoryRaw) }
+            set { categoryRaw = newValue?.rawValue ?? "" }
         }
     }
 
@@ -224,6 +246,8 @@ public extension KadoSchemaV8 {
         public var reminderMinute: Int = 0
         public var sortOrder: Int = 0
         public var goal: GoalRecord?
+        /// Raw `ItemCategory` value. Empty means "not set".
+        public var categoryRaw: String = ""
 
         @Relationship(deleteRule: .cascade, inverse: \CompletionRecord.habit)
         public var completions: [CompletionRecord]? = []
@@ -248,7 +272,8 @@ public extension KadoSchemaV8 {
             reminderMinute: Int = 0,
             sortOrder: Int = 0,
             completions: [CompletionRecord]? = [],
-            goal: GoalRecord? = nil
+            goal: GoalRecord? = nil,
+            category: ItemCategory? = nil
         ) {
             self.id = id
             self.name = name
@@ -264,6 +289,7 @@ public extension KadoSchemaV8 {
             self.sortOrder = sortOrder
             self.completions = completions
             self.goal = goal
+            self.categoryRaw = category?.rawValue ?? ""
         }
 
         public var frequency: Frequency {
@@ -281,6 +307,13 @@ public extension KadoSchemaV8 {
             set { colorRaw = newValue.rawValue }
         }
 
+        /// The stored category, or `nil` when none is set. Readers that
+        /// need a value use `CategoryResolver`.
+        public var category: ItemCategory? {
+            get { ItemCategory(storedRaw: categoryRaw) }
+            set { categoryRaw = newValue?.rawValue ?? "" }
+        }
+
         public var snapshot: Habit {
             Habit(
                 id: id,
@@ -295,7 +328,8 @@ public extension KadoSchemaV8 {
                 reminderHour: reminderHour,
                 reminderMinute: reminderMinute,
                 sortOrder: sortOrder,
-                goalID: goal?.id
+                goalID: goal?.id,
+                category: category
             )
         }
 
@@ -394,3 +428,11 @@ public extension KadoSchemaV8 {
         }
     }
 }
+
+public typealias HabitRecord = KadoSchemaV9.HabitRecord
+public typealias CompletionRecord = KadoSchemaV9.CompletionRecord
+public typealias TaskRecord = KadoSchemaV9.TaskRecord
+public typealias ScheduleBlockRecord = KadoSchemaV9.ScheduleBlockRecord
+public typealias GoalRecord = KadoSchemaV9.GoalRecord
+public typealias GoalProgressEntryRecord = KadoSchemaV9.GoalProgressEntryRecord
+public typealias WorkSessionRecord = KadoSchemaV9.WorkSessionRecord

@@ -69,14 +69,14 @@ struct InsightsRhythmTests {
         #expect(calculate(InsightsInput(habits: [walk, read]), T.context(period: .month)).bestWeekday == .sunday)
     }
 
-    @Test("Best weekday also over a year")
-    func bestWeekdayYear() {
-        // Every Tuesday of the year is done, nothing else.
-        let tuesdays = stride(from: -6, through: -364, by: -7).map { $0 }
-        let habit = T.habit(createdDaysAgo: 400, doneOffsets: tuesdays + [-365])
-        let rhythm = calculate(InsightsInput(habits: [habit]), T.context(period: .year))
+    @Test("Best weekday also over a quarter")
+    func bestWeekdayQuarter() {
+        // Every Tuesday of the quarter is done, nothing else.
+        let tuesdays = stride(from: -6, through: -89, by: -7).map { $0 }
+        let habit = T.habit(createdDaysAgo: 120, doneOffsets: tuesdays + [-97])
+        let rhythm = calculate(InsightsInput(habits: [habit]), T.context(period: .quarter))
         #expect(rhythm.bestWeekday == .tuesday)
-        #expect(rhythm.weekdays.first { $0.weekday == .tuesday }?.rate == InsightsRate(done: 52, total: 52))
+        #expect(rhythm.weekdays.first { $0.weekday == .tuesday }?.rate == InsightsRate(done: 12, total: 12))
     }
 
     @Test("An archived habit still counts on its days before the archive, never outside the period")

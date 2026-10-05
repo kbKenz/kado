@@ -45,14 +45,14 @@ enum InsightsPreviewData {
 
     static let rich = richReport(.month)
     static let richWeek = richReport(.week)
-    static let richYear = richReport(.year)
+    static let richQuarter = richReport(.quarter)
 
     /// The rich report for a period.
     static func rich(for period: InsightsPeriod) -> InsightsReport {
         switch period {
         case .week: richWeek
         case .month: rich
-        case .year: richYear
+        case .quarter: richQuarter
         }
     }
 
@@ -140,14 +140,14 @@ enum InsightsPreviewData {
                 activeDays: InsightsRate(done: 27, total: 30),
                 previousActiveDays: InsightsRate(done: 27, total: 30)
             )
-        case .year:
+        case .quarter:
             InsightsPulse(
-                consistency: InsightsRate(done: 1_650, total: 2_090),
-                previousConsistency: InsightsRate(done: 1_712, total: 2_080),
-                followThrough: InsightsRate(done: 301, total: 420),
-                previousFollowThrough: .empty,
-                activeDays: InsightsRate(done: 331, total: 365),
-                previousActiveDays: InsightsRate(done: 30, total: 36)
+                consistency: InsightsRate(done: 418, total: 516),
+                previousConsistency: InsightsRate(done: 402, total: 510),
+                followThrough: InsightsRate(done: 78, total: 112),
+                previousFollowThrough: InsightsRate(done: 70, total: 105),
+                activeDays: InsightsRate(done: 82, total: 90),
+                previousActiveDays: InsightsRate(done: 79, total: 90)
             )
         }
     }
@@ -169,11 +169,11 @@ enum InsightsPreviewData {
                 .peakFocusTime(.morning, share: 0.62),
                 .consistencyChange(points: 6),
             ]
-        case .year:
+        case .quarter:
             return [
                 .milestone(habitName: "Read", count: 250),
                 .bestWeekday(.tuesday, fraction: 0.91),
-                .perfectDays(count: activity(.year).perfectDays),
+                .perfectDays(count: activity(.quarter).perfectDays),
                 .consistencyChange(points: -3),
             ]
         }
@@ -259,7 +259,7 @@ enum InsightsPreviewData {
         switch period {
         case .week: sessions = 8
         case .month: sessions = 31
-        case .year: sessions = 342
+        case .quarter: sessions = 95
         }
         return InsightsFocus(
             total: total,
@@ -273,10 +273,10 @@ enum InsightsPreviewData {
         )
     }
 
-    /// A bucket per day for the week and the month, per calendar month
-    /// for the year, split between Study, Work and Creative.
+    /// A bucket per day for the week and the month, per calendar week
+    /// for the quarter, split between Study, Work and Creative.
     private static func focusBuckets(_ period: InsightsPeriod) -> [InsightsFocusBucket] {
-        guard period == .year else {
+        guard period == .quarter else {
             return days(period).enumerated().map { index, day in
                 let study = Double(((index * 37) % 5) * 20) * 60
                 let work = calendar.isDateInWeekend(day) ? 0 : Double(((index * 53) % 4) * 25) * 60
@@ -286,16 +286,16 @@ enum InsightsPreviewData {
         }
         guard let first = days(period).first else { return [] }
         var starts: [Date] = []
-        var cursor = calendar.dateInterval(of: .month, for: first)?.start ?? first
+        var cursor = calendar.dateInterval(of: .weekOfYear, for: first)?.start ?? first
         while cursor <= today, starts.count < 14 {
             starts.append(cursor)
-            guard let next = calendar.date(byAdding: .month, value: 1, to: cursor) else { break }
+            guard let next = calendar.date(byAdding: .weekOfYear, value: 1, to: cursor) else { break }
             cursor = calendar.startOfDay(for: next)
         }
         return starts.enumerated().map { index, start in
-            let study = Double(18 + (index * 7) % 11) * 3_600
-            let work = Double(9 + (index * 5) % 8) * 3_600
-            let creative = Double((index * 3) % 4) * 3_600
+            let study = Double(4 + (index * 7) % 5) * 3_600
+            let work = Double(2 + (index * 5) % 4) * 3_600
+            let creative = Double((index * 3) % 2) * 3_600
             return bucket(start, [.study: study, .work: work, .creative: creative])
         }
     }
@@ -482,15 +482,15 @@ enum InsightsPreviewData {
                 ],
                 overdueOpen: 4
             )
-        case .year:
+        case .quarter:
             InsightsTasks(
-                done: 301, undone: 119,
-                onTime: InsightsRate(done: 205, total: 260),
+                done: 78, undone: 34,
+                onTime: InsightsRate(done: 55, total: 70),
                 averageDaysToFinish: 2.9,
                 undoneByCategory: [
-                    InsightsCategoryUndone(category: .errands, undone: 41, total: 88),
-                    InsightsCategoryUndone(category: .work, undone: 37, total: 131),
-                    InsightsCategoryUndone(category: .money, undone: 9, total: 26),
+                    InsightsCategoryUndone(category: .errands, undone: 12, total: 26),
+                    InsightsCategoryUndone(category: .work, undone: 11, total: 38),
+                    InsightsCategoryUndone(category: .money, undone: 3, total: 9),
                 ],
                 overdueOpen: 4
             )
@@ -645,7 +645,7 @@ enum InsightsPreviewData {
         switch period {
         case .week: 7.0 / 30.0
         case .month: 1
-        case .year: 365.0 / 30.0
+        case .quarter: 90.0 / 30.0
         }
     }
 

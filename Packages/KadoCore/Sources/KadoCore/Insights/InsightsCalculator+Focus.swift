@@ -22,8 +22,8 @@ extension InsightsCalculator {
 }
 
 private extension InsightsSharedB {
-    /// One bar per day for a week or a month, one per calendar month for
-    /// a year, oldest first. Bars without time stay, so the chart has no
+    /// One bar per day for a week or a month, one per calendar week for
+    /// a quarter, oldest first. Bars without time stay, so the chart has no
     /// gaps.
     static func focusBuckets(_ sessions: [TrackedSession], _ scope: InsightsScope) -> [InsightsFocusBucket] {
         let calendar = scope.calendar
@@ -33,9 +33,9 @@ private extension InsightsSharedB {
         case .week, .month:
             starts = scope.days
             bucketStart = { $0 }
-        case .year:
-            starts = monthStarts(from: scope.days.first ?? scope.today, through: scope.today, calendar: calendar)
-            bucketStart = { monthStart(of: $0, calendar: calendar) }
+        case .quarter:
+            starts = weekStarts(from: scope.days.first ?? scope.today, through: scope.today, calendar: calendar)
+            bucketStart = { weekStart(of: $0, calendar: calendar) }
         }
         var buckets: [Date: InsightsFocusBucket] = [:]
         for start in starts {
@@ -61,22 +61,22 @@ private extension InsightsSharedB {
     }
 
     /// Start of the first day of the calendar month that holds `day`.
-    static func monthStart(of day: Date, calendar: Calendar) -> Date {
-        calendar.startOfDay(for: calendar.dateInterval(of: .month, for: day)?.start ?? day)
+    static func weekStart(of day: Date, calendar: Calendar) -> Date {
+        calendar.startOfDay(for: calendar.dateInterval(of: .weekOfYear, for: day)?.start ?? day)
     }
 
-    /// The start of every calendar month from the month of `first` to
-    /// the month of `last`, oldest first.
-    static func monthStarts(from first: Date, through last: Date, calendar: Calendar) -> [Date] {
-        let end = monthStart(of: last, calendar: calendar)
-        var month = monthStart(of: first, calendar: calendar)
+    /// The start of every calendar week from the week of `first` to
+    /// the week of `last`, oldest first.
+    static func weekStarts(from first: Date, through last: Date, calendar: Calendar) -> [Date] {
+        let end = weekStart(of: last, calendar: calendar)
+        var month = weekStart(of: first, calendar: calendar)
         var result: [Date] = []
         while month <= end {
             result.append(month)
-            guard let next = calendar.date(byAdding: .month, value: 1, to: month) else { break }
-            // Re-anchored: a month whose first day starts at 01:00 must
-            // not shift the months after it.
-            let nextMonth = monthStart(of: next, calendar: calendar)
+            guard let next = calendar.date(byAdding: .weekOfYear, value: 1, to: month) else { break }
+            // Re-anchored: a week whose first day starts at 01:00 must
+            // not shift the weeks after it.
+            let nextMonth = weekStart(of: next, calendar: calendar)
             guard nextMonth > month else { break }
             month = nextMonth
         }

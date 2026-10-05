@@ -16,8 +16,8 @@ struct InsightsActivityCard: View {
     var body: some View {
         InsightsCard(kind: .activity) {
             VStack(alignment: .leading, spacing: 14) {
-                if period == .year || dynamicTypeSize.isAccessibilitySize {
-                    InsightsHeatMap(days: activity.days, scrolls: period == .year)
+                if dynamicTypeSize.isAccessibilitySize {
+                    InsightsHeatMap(days: activity.days, scrolls: false)
                     InsightsStatRow { stats }
                 } else {
                     HStack(alignment: .top, spacing: 24) {
@@ -253,7 +253,7 @@ private struct InsightsHeatMapLegend: View {
 #Preview("Dark") {
     ScrollView {
         VStack(spacing: 16) {
-            InsightsActivityCard(activity: InsightsPreviewData.richYear.activity, period: .year)
+            InsightsActivityCard(activity: InsightsPreviewData.richQuarter.activity, period: .quarter)
             InsightsActivityCard(activity: InsightsPreviewData.sparse.activity, period: .month)
         }
         .padding()

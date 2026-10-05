@@ -10,8 +10,8 @@ import Foundation
 /// words.
 ///
 /// A title word that matches no keyword as written can still match a
-/// long keyword (8 letters or more) with a typo: same first letter, and
-/// at most a third of the shorter word's letters apart (see
+/// long keyword (8 letters or more) with a typo: same first two letters,
+/// and at most 2 edits (a third of the shorter word at most) apart (see
 /// `isTypo(_:of:)`). So "proffesors" still reads as "professor". There is
 /// no prefix matching: "cours" (class) never matches "courses".
 ///
@@ -63,8 +63,8 @@ nonisolated public enum CategoryClassifier {
         return result
     }
 
-    /// Whether `word` is a typo of `keyword`: same first letter, and at
-    /// most `n / 3` edits apart, where `n` is the shorter word's length.
+    /// Whether `word` is a typo of `keyword`: same first two letters, and
+    /// at most min(2, n / 3) edits apart, n being the shorter length.
     static func isTypo(_ word: String, of keyword: String) -> Bool {
         typoDistance(word, from: keyword) != nil
     }
@@ -72,8 +72,10 @@ nonisolated public enum CategoryClassifier {
     /// The edits between `word` and `keyword` when `word` is a typo of
     /// it (see `isTypo(_:of:)`), else `nil`.
     static func typoDistance(_ word: String, from keyword: String) -> Int? {
-        guard word != keyword, word.first == keyword.first else { return nil }
-        let allowance = min(word.count, keyword.count) / 3
+        // Same first two letters, and at most 2 edits: a looser rule
+        // read "Something" as a typo of a Fitness keyword.
+        guard word != keyword, word.prefix(2) == keyword.prefix(2) else { return nil }
+        let allowance = min(2, min(word.count, keyword.count) / 3)
         guard allowance > 0, abs(word.count - keyword.count) <= allowance else { return nil }
         let distance = TitleText.editDistance(word, keyword)
         return distance <= allowance ? distance : nil

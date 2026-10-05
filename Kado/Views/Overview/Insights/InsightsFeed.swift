@@ -98,7 +98,7 @@ private struct InsightsPeriodRow: View {
         Picker("Period", selection: $period) {
             Text("Week").tag(InsightsPeriod.week)
             Text("Month").tag(InsightsPeriod.month)
-            Text("Year").tag(InsightsPeriod.year)
+            Text("Quarter").tag(InsightsPeriod.quarter)
         }
         .pickerStyle(.segmented)
         .accessibilityIdentifier(AccessibilityID.Insights.periodPicker)
@@ -115,7 +115,7 @@ private struct InsightsPeriodRow: View {
         switch period {
         case .week: "Last 7 days"
         case .month: "Last 30 days"
-        case .year: "Last 12 months"
+        case .quarter: "Last 90 days"
         }
     }
 }
@@ -127,7 +127,7 @@ private struct InsightsPeriodRow: View {
 }
 
 #Preview("Dark") {
-    @Previewable @State var period = InsightsPeriod.year
+    @Previewable @State var period = InsightsPeriod.quarter
     InsightsFeed(report: InsightsPreviewData.rich(for: period), period: $period, actions: .none)
         .kadoTheme()
         .preferredColorScheme(.dark)

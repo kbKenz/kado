@@ -5,7 +5,7 @@ import Foundation
 nonisolated public enum InsightsPeriod: String, CaseIterable, Codable, Hashable, Sendable, Identifiable {
     case week
     case month
-    case year
+    case quarter
 
     public var id: String { rawValue }
 
@@ -14,7 +14,7 @@ nonisolated public enum InsightsPeriod: String, CaseIterable, Codable, Hashable,
         switch self {
         case .week: 7
         case .month: 30
-        case .year: 365
+        case .quarter: 90
         }
     }
 }

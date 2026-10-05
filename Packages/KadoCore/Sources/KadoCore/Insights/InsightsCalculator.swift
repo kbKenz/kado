@@ -70,6 +70,11 @@ nonisolated public struct InsightsScope: Sendable {
     public let previousDays: [Date]
     /// Per habit id: its completions grouped by calendar day.
     public let completionsByDay: [UUID: [Date: [Completion]]]
+    /// Per habit id: its outcome on every day from a week before
+    /// `previousDays` through today, worked out once. Every section asks
+    /// for the same pairs, and one outcome costs a pass over the habit's
+    /// completions.
+    private let outcomes: [UUID: [Date: HabitDayOutcome]]
 
     public init(input: InsightsInput, context: InsightsContext) {
         self.input = input
@@ -78,16 +83,34 @@ nonisolated public struct InsightsScope: Sendable {
         let count = context.period.dayCount
         let days = InsightsScope.days(endingAt: context.today, count: count, calendar: calendar)
         self.days = days
-        self.previousDays = InsightsScope.days(
+        let previousDays = InsightsScope.days(
             endingAt: InsightsScope.step(days.first ?? context.today, by: -1, calendar: calendar),
             count: count,
             calendar: calendar
         )
+        self.previousDays = previousDays
         var grouped: [UUID: [Date: [Completion]]] = [:]
         for habit in input.habits {
             grouped[habit.id] = Dictionary(grouping: habit.completions) { calendar.startOfDay(for: $0.date) }
         }
         self.completionsByDay = grouped
+        var table: [UUID: [Date: HabitDayOutcome]] = [:]
+        let first = InsightsScope.step(previousDays.first ?? context.today, by: -7, calendar: calendar)
+        let window = InsightsScope.days(
+            endingAt: context.today,
+            count: count * 2 + 7,
+            calendar: calendar
+        ).filter { $0 >= first }
+        for habit in input.habits {
+            var row: [Date: HabitDayOutcome] = [:]
+            for day in window {
+                row[day] = InsightsScope.computeOutcome(
+                    of: habit, on: day, onDay: grouped[habit.id]?[day] ?? [], context: context
+                )
+            }
+            table[habit.id] = row
+        }
+        self.outcomes = table
     }
 
     public var calendar: Calendar { context.calendar }
@@ -110,9 +133,22 @@ nonisolated public struct InsightsScope: Sendable {
 
     /// What `habit` did on `day`. See `HabitDayOutcome`.
     public func outcome(of habit: InsightsHabit, on day: Date) -> HabitDayOutcome {
+        if let known = outcomes[habit.id]?[day] { return known }
+        return Self.computeOutcome(
+            of: habit, on: day, onDay: completionsByDay[habit.id]?[day] ?? [], context: context
+        )
+    }
+
+    private static func computeOutcome(
+        of habit: InsightsHabit,
+        on day: Date,
+        onDay: [Completion],
+        context: InsightsContext
+    ) -> HabitDayOutcome {
+        let today = context.today
+        let calendar = context.calendar
         guard day <= today else { return .notCounted }
         let model = habit.habit
-        let onDay = completionsByDay[habit.id]?[day] ?? []
         let counted = context.frequencyEvaluator.isCounted(
             habit: model,
             on: day,

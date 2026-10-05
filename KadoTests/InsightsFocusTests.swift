@@ -101,23 +101,22 @@ struct InsightsFocusTests {
         #expect(focus.buckets.first?.seconds == 5.0 * 60)
     }
 
-    @Test("Year bars: one per calendar month, from the first month of the period to this month")
-    func yearBuckets() {
+    @Test("Quarter bars: one per calendar week, from the first week of the period to this week")
+    func quarterBuckets() {
         let input = InsightsInput(sessions: [
-            T.session(offset: -365, minutes: 99), // 2025-04-13, the day before the period
-            T.session(offset: -364, minutes: 30), // 2025-04-14, the first day of the period
-            T.session(offset: -12, minutes: 20),  // 2026-04-01
-            T.session(offset: 0, minutes: 10),    // 2026-04-13, today
+            T.session(offset: -90, minutes: 99), // the day before the period
+            T.session(offset: -89, minutes: 30), // 2026-01-14, the first day of the period (a Wednesday)
+            T.session(offset: -10, minutes: 20), // 2026-04-03
+            T.session(offset: 0, minutes: 10),   // 2026-04-13, today
         ])
-        let focus = calculate(input, T.context(period: .year))
-        // April 2025 to April 2026: 13 months.
-        let months = (3...15).map { index in
-            TestCalendar.instant(T.calendar, 2025 + index / 12, index % 12 + 1, 1)
-        }
-        #expect(focus.buckets.map(\.start) == months)
+        let focus = calculate(input, T.context(period: .quarter))
+        // Weeks start on Sunday in TestCalendar.utc: from Sunday 2026-01-11
+        // to Sunday 2026-04-12, 14 weeks.
+        let weeks = (0..<14).map { T.day(-92 + 7 * $0) }
+        #expect(focus.buckets.map(\.start) == weeks)
         #expect(focus.buckets.first?.seconds == 30.0 * 60)
-        #expect(focus.buckets.last?.seconds == 30.0 * 60)
-        #expect(focus.buckets.dropFirst().dropLast().allSatisfy { $0.seconds == 0 })
+        #expect(focus.buckets.last?.seconds == 10.0 * 60)
+        #expect(focus.buckets[11].seconds == 20.0 * 60)
         #expect(focus.total == 60.0 * 60)
         #expect(focus.previousTotal == 99.0 * 60)
     }

@@ -157,9 +157,9 @@ private struct InsightsFocusChart: View {
         }
     }
 
-    /// Year buckets are months; the others are days.
+    /// Quarter buckets are weeks; the others are days.
     private var unit: Calendar.Component {
-        period == .year ? .month : .day
+        period == .quarter ? .weekOfYear : .day
     }
 
     private var segments: [Segment] {
@@ -189,19 +189,22 @@ private struct InsightsFocusChart: View {
         return first...end
     }
 
-    /// A label on every bucket for the week and the year, on every
-    /// seventh day for the month.
+    /// A label on every bucket for the week, on every seventh day for
+    /// the month and on every fourth week for the quarter.
     private var axisDates: [Date] {
         let starts = buckets.map(\.start)
-        guard period == .month else { return starts }
-        return starts.enumerated().filter { $0.offset % 7 == 0 }.map(\.element)
+        switch period {
+        case .week: return starts
+        case .month: return starts.enumerated().filter { $0.offset % 7 == 0 }.map(\.element)
+        case .quarter: return starts.enumerated().filter { $0.offset % 4 == 0 }.map(\.element)
+        }
     }
 
     private var axisFormat: Date.FormatStyle {
         switch period {
         case .week: .dateTime.weekday(.narrow)
         case .month: .dateTime.day().month(.abbreviated)
-        case .year: .dateTime.month(.narrow)
+        case .quarter: .dateTime.day().month(.abbreviated)
         }
     }
 }
@@ -215,7 +218,7 @@ private struct InsightsFocusChart: View {
 #Preview("Dark") {
     ScrollView {
         VStack(spacing: 16) {
-            InsightsFocusCard(focus: InsightsPreviewData.richYear.focus, period: .year)
+            InsightsFocusCard(focus: InsightsPreviewData.richQuarter.focus, period: .quarter)
             InsightsFocusCard(focus: InsightsPreviewData.sparse.focus, period: .month)
         }
         .padding()

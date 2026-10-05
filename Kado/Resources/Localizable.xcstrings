@@ -7697,6 +7697,23 @@
         }
       }
     },
+    "Last 90 days" : {
+      "comment" : "Insights caption under the period picker for the quarter.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 90 days"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "90 derniers jours"
+          }
+        }
+      }
+    },
     "Last export: %@" : {
       "comment" : "Footnote under the Export button. Arg: localized date and time of the most recent successful export.",
       "localizations" : {
@@ -10491,6 +10508,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Achat en attente"
+          }
+        }
+      }
+    },
+    "Quarter" : {
+      "comment" : "Insights period picker: the last 90 days.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quarter"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trimestre"
           }
         }
       }

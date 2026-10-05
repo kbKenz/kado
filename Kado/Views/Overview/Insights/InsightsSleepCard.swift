@@ -203,7 +203,7 @@ private struct InsightsNightsChart: View {
 #Preview("Dark") {
     ScrollView {
         VStack(spacing: 16) {
-            InsightsSleepCard(sleep: InsightsPreviewData.richYear.sleep, days: InsightsPreviewData.richYear.days, actions: .none)
+            InsightsSleepCard(sleep: InsightsPreviewData.richQuarter.sleep, days: InsightsPreviewData.richQuarter.days, actions: .none)
             InsightsSleepCard(sleep: InsightsPreviewData.sparse.sleep, days: InsightsPreviewData.sparse.days, actions: .none)
         }
         .padding()

@@ -90,6 +90,13 @@ struct TaskPlanningViewSnapshotTests {
         #expect(TaskListItem(unknown).resolvedCategory == .other)
     }
 
+    @Test("A goal row resolves its category from what is stored, then from its name")
+    func goalResolvesCategory() {
+        #expect(GoalListItem(name: "Run a marathon", category: .health).resolvedCategory == .health)
+        #expect(GoalListItem(name: "Run a marathon").resolvedCategory == .fitness)
+        #expect(GoalListItem(name: "Be more present").resolvedCategory == .other)
+    }
+
     @Test("A timed overnight block overlaps both civil days")
     func overnightMembership() {
         let start = TestCalendar.instant(calendar, 2026, 4, 13, 22)

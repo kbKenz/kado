@@ -5,7 +5,23 @@ struct GoalRowView: View {
     let item: GoalListItem
     var progress: GoalProgressResult? = nil
 
+    /// Wide enough for the widest category symbol, so every name starts
+    /// at the same place.
+    @ScaledMetric(relativeTo: .body) private var iconWidth: CGFloat = 26
+
     var body: some View {
+        // The icon sits in a column of its own, so the details, progress
+        // and dates below line up with the name.
+        HStack(alignment: .firstTextBaseline, spacing: 10) {
+            ItemGlyphView(glyph: ItemGlyph(category: item.resolvedCategory))
+                .font(.body.weight(.semibold))
+                .frame(width: iconWidth)
+            details
+        }
+        .padding(.vertical, 5)
+    }
+
+    private var details: some View {
         VStack(alignment: .leading, spacing: 7) {
             Text(item.name)
                 .font(.body.weight(.semibold))
@@ -30,7 +46,6 @@ struct GoalRowView: View {
             .font(.caption)
             .foregroundStyle(Color.kadoForegroundSecondary)
         }
-        .padding(.vertical, 5)
     }
 
     @ViewBuilder
@@ -47,6 +62,7 @@ private enum GoalRowPreview {
     static let active = GoalListItem(name: "Make more time for health", details: "Build a routine that fits an ordinary week.", targetDate: .now)
     static let paused = GoalListItem(name: "Learn conversational Japanese", status: .paused)
     static let completed = GoalListItem(name: "Finish the first draft", status: .completed, completedAt: .now)
+    static let study = GoalListItem(name: "Get into Cambridge", details: "Apply for the 2027 intake.", targetDate: .now, category: .study)
 }
 
 #Preview("Goal states") {
@@ -54,6 +70,7 @@ private enum GoalRowPreview {
         GoalRowView(item: GoalRowPreview.active)
         GoalRowView(item: GoalRowPreview.paused)
         GoalRowView(item: GoalRowPreview.completed)
+        GoalRowView(item: GoalRowPreview.study)
     }
     .kadoTheme()
 }
@@ -62,7 +79,16 @@ private enum GoalRowPreview {
     List {
         GoalRowView(item: GoalRowPreview.active)
         GoalRowView(item: GoalRowPreview.completed)
+        GoalRowView(item: GoalRowPreview.study)
     }
     .kadoTheme()
     .preferredColorScheme(.dark)
+}
+
+#Preview("XXXL") {
+    List {
+        GoalRowView(item: GoalRowPreview.study)
+    }
+    .kadoTheme()
+    .dynamicTypeSize(.accessibility3)
 }

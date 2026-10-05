@@ -16,19 +16,35 @@ import KadoCore
 struct TodayRow: Identifiable {
     let habit: Habit
     let completions: [Completion]
+    /// The earliest of the habit's creation and every record's date, the
+    /// day strip's lower bound. Kept apart from `completions` because a
+    /// record whose habit link is still unset mid-import has no snapshot
+    /// but still counts here.
+    let earliestDate: Date
 
     var id: UUID { habit.id }
 
     init(habit: Habit, completions: [Completion]) {
         self.habit = habit
         self.completions = completions
+        self.earliestDate = completions.lazy.map(\.date).reduce(habit.createdAt, min)
     }
 
     init(_ record: HabitRecord) {
-        self.init(
-            habit: record.snapshot,
-            completions: (record.completions ?? []).compactMap(\.snapshot)
-        )
+        var completions: [Completion] = []
+        var earliest = record.createdAt
+        // One walk over the records, reading each one once.
+        for completion in record.completions ?? [] {
+            if let snapshot = completion.snapshot {
+                completions.append(snapshot)
+                earliest = min(earliest, snapshot.date)
+            } else {
+                earliest = min(earliest, completion.date)
+            }
+        }
+        self.habit = record.snapshot
+        self.completions = completions
+        self.earliestDate = earliest
     }
 }
 
@@ -46,12 +62,23 @@ extension TodayRow {
         evaluator: any FrequencyEvaluating,
         calendar: Calendar
     ) -> (due: [TodayRow], other: [TodayRow]) {
-        var due: [TodayRow] = []
-        var other: [TodayRow] = []
         // Spelled out rather than `map(TodayRow.init)`: passing a
         // MainActor-isolated initializer as a function value to a
         // nonisolated generic loses the isolation and warns.
-        for row in records.map({ TodayRow($0) }) {
+        sections(from: records.map({ TodayRow($0) }), on: now, evaluator: evaluator, calendar: calendar)
+    }
+
+    /// Same split, over rows already snapshotted, so a view that needs
+    /// the rows for something else too snapshots only once.
+    static func sections(
+        from rows: [TodayRow],
+        on now: Date,
+        evaluator: any FrequencyEvaluating,
+        calendar: Calendar
+    ) -> (due: [TodayRow], other: [TodayRow]) {
+        var due: [TodayRow] = []
+        var other: [TodayRow] = []
+        for row in rows {
             // Days before a habit's first day aren't its days at all;
             // listing it there would let a tap backdate its start (#104).
             // Note: raising "Day starts at" after creating a habit between

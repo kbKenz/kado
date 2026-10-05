@@ -79,6 +79,19 @@ algorithm to native iOS — MIT, free, no account, no subscription.
   Loop / Way of Life pattern with Kadō's score DNA. Tap a day to mark
   a habit completed right from the popover. Completions logged
   off-schedule show up too, instead of hiding as rest days.
+- **Insights** — Overview opens on a feed of cards for the last week,
+  month or year: consistency rings, highlights, an activity heat map,
+  focus time by category, sleep and movement, habits, tasks, goals,
+  your rhythm through the week, and all-time totals. Numbers you never
+  had to type, computed on the device; Apple Health sleep and workouts
+  are read live when Health is on. The habits × days grid is one tap
+  away.
+- **Categories** — every task, habit and goal belongs to one of twelve
+  categories. Tasks and goals wear the category's icon on Today, Goals,
+  the Calendar and Now; habits keep their own. Typing a title suggests
+  the category, the goal and a new habit's icon, on the device
+  ("Contact professors at Cambridge" → Study, and the "Get into
+  Cambridge" goal).
 - **Flexible schedules** — daily, N days per week, specific weekdays,
   every N days (the cycle re-anchors on each completion, so finishing
   early never costs you a day). Binary, counter, or timer habit types.
@@ -144,8 +157,8 @@ user has asked for either since launch. Both stay listed in
 reconsidered on real demand.
 
 **Next** — Live Activities and Dynamic Island for timer habits, then
-the remaining v1.x polish (themes, biometrics, categories, backup
-files). Full roadmap in [`docs/ROADMAP.md`](./docs/ROADMAP.md).
+the remaining v1.x polish (themes, biometrics, backup files). Full
+roadmap in [`docs/ROADMAP.md`](./docs/ROADMAP.md).
 
 ## Tech stack
 

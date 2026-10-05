@@ -176,8 +176,10 @@ extension InsightsSeed {
         .init("Book flights for the interview", goal: .cambridge, created: -5, planned: [45]),
     ]
 
-    /// Errands are the ones most often left undone. A few titles have
-    /// no category, so the keyword classifier finds it.
+    /// Over the whole history (and so in a year report), Errands are
+    /// the ones most often left undone. Over the last month, Study
+    /// leads instead. A few titles have no category, so the keyword
+    /// classifier finds it.
     private static let otherTasks: [InsightsSeedTask] = [
         .init("Buy running shoes", goal: .marathon, created: -58, planned: [-55], done: -56),
         .init("Sign up for the race", goal: .marathon, created: -50, planned: [-40], done: -40),

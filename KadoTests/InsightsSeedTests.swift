@@ -178,14 +178,16 @@ struct InsightsSeedTests {
         #expect(unset.count == 18)
     }
 
-    @Test("Errands are the category most often left undone")
+    @Test("Over the whole history, Errands are the category most often left undone")
     func errandsLeftUndone() throws {
         let tasks = try input().tasks
         let undone = Dictionary(grouping: tasks.filter { task in
             task.completedAt == nil && (task.targetDay.map { $0 < today } ?? false)
         }, by: \.category).mapValues(\.count)
-        #expect(undone[.errands] == 3)
-        #expect(undone.values.allSatisfy { $0 <= 3 })
+        let errands = try #require(undone[.errands])
+        #expect(errands == 3)
+        // Strictly below: a tie would make the highlight pick either one.
+        #expect(undone.filter { $0.key != .errands }.values.allSatisfy { $0 < errands })
     }
 
     // MARK: - Goals

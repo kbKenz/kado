@@ -152,11 +152,17 @@ struct NowView: View {
         let time = block.start.formatted(date: .omitted, time: .shortened)
         return VStack(alignment: .leading, spacing: 4) {
             Text("Up next").font(.subheadline).foregroundStyle(Color.kadoForegroundSecondary)
-            HStack(alignment: .firstTextBaseline, spacing: 6) {
-                if let glyph { ItemGlyphView(glyph: glyph) }
-                Text(verbatim: block.item.title)
-                Text(block.start, format: .dateTime.hour().minute())
-                    .foregroundStyle(Color.kadoForegroundSecondary)
+            // One line when it fits; otherwise the time goes under the
+            // title, so a long title or large text is not squeezed.
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    upNextTitle(block, glyph: glyph)
+                    upNextTime(block)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    upNextTitle(block, glyph: glyph)
+                    upNextTime(block)
+                }
             }
             .font(.body)
             .foregroundStyle(Color.kadoForeground)
@@ -164,6 +170,18 @@ struct NowView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(String(localized: "Up next: \(block.item.title) at \(time)"))
         .accessibilityIdentifier(AccessibilityID.Now.upNext)
+    }
+
+    private func upNextTitle(_ block: NowBlock, glyph: ItemGlyph?) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            if let glyph { ItemGlyphView(glyph: glyph) }
+            Text(verbatim: block.item.title)
+        }
+    }
+
+    private func upNextTime(_ block: NowBlock) -> some View {
+        Text(block.start, format: .dateTime.hour().minute())
+            .foregroundStyle(Color.kadoForegroundSecondary)
     }
 
     private var builder: NowInputBuilder {

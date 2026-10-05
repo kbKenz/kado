@@ -6,6 +6,8 @@ struct NowSessionCard: View {
     let open: OpenSession
     let plannedRange: ClosedRange<Date>?
     let now: Date
+    /// The task's category icon or the habit's own icon, before the title.
+    var glyph: ItemGlyph? = nil
     let onTitle: () -> Void
     let onPause: () -> Void
     let onResume: () -> Void
@@ -17,15 +19,7 @@ struct NowSessionCard: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.kadoForegroundSecondary)
                 .accessibilityHidden(true)
-            Button(action: onTitle) {
-                Text(open.item.title)
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(Color.kadoForeground)
-                    .multilineTextAlignment(.leading)
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint(Text("Opens details"))
-            .accessibilityIdentifier(AccessibilityID.Now.title)
+            NowCardTitle(title: open.item.title, glyph: glyph, action: onTitle)
             details
             buttons
         }
@@ -134,7 +128,7 @@ extension ClosedRange where Bound == Date {
     NowSessionCard(
         open: OpenSession(id: UUID(), item: .task(id: UUID(), title: "Research"), session: WorkSession(startedAt: start), blockID: nil),
         plannedRange: start.addingTimeInterval(-17 * 60)...start.addingTimeInterval(103 * 60),
-        now: .now, onTitle: {}, onPause: {}, onResume: {}, onFinish: {}
+        now: .now, glyph: ItemGlyph(category: .study), onTitle: {}, onPause: {}, onResume: {}, onFinish: {}
     )
     .padding()
     .background(Color.kadoBackground)
@@ -156,7 +150,8 @@ extension ClosedRange where Bound == Date {
     NowSessionCard(
         open: OpenSession(id: UUID(), item: .habit(id: UUID(), name: "Read 20 pages"),
                           session: WorkSession(startedAt: start, pausedAt: .now.addingTimeInterval(-12 * 60)), blockID: nil),
-        plannedRange: nil, now: .now, onTitle: {}, onPause: {}, onResume: {}, onFinish: {}
+        plannedRange: nil, now: .now, glyph: ItemGlyph(habitIcon: "book.fill", color: .purple),
+        onTitle: {}, onPause: {}, onResume: {}, onFinish: {}
     )
     .padding()
     .background(Color.kadoBackground)
@@ -168,7 +163,7 @@ extension ClosedRange where Bound == Date {
     NowSessionCard(
         open: OpenSession(id: UUID(), item: .task(id: UUID(), title: "Research"), session: WorkSession(startedAt: start), blockID: nil),
         plannedRange: start.addingTimeInterval(-17 * 60)...start.addingTimeInterval(103 * 60),
-        now: .now, onTitle: {}, onPause: {}, onResume: {}, onFinish: {}
+        now: .now, glyph: ItemGlyph(category: .study), onTitle: {}, onPause: {}, onResume: {}, onFinish: {}
     )
     .padding()
     .background(Color.kadoBackground)

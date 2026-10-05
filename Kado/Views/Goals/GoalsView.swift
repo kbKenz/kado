@@ -75,6 +75,10 @@ struct GoalsView: View {
             GoalRowView(item: item, progress: item.measurement.enabled ? GoalProgressCalculator.calculate(goalID: item.id, measurement: item.measurement, startDate: item.startDate, today: today, calendar: calendar, entries: entries.compactMap(\.snapshot), tasks: tasks.map { TaskBackup(id: $0.id, title: $0.title, createdAt: $0.createdAt, updatedAt: $0.updatedAt, completedAt: $0.completedAt, goalID: $0.goal?.id) }, habits: habits.map(\.snapshot), completions: completions.compactMap(\.snapshot)) : nil)
         }
         .accessibilityElement(children: .combine)
+        .accessibilityLabel { label in
+            label
+            Text(item.resolvedCategory.localizedName)
+        }
         .accessibilityIdentifier(AccessibilityID.Goals.row(item.id))
         .listRowBackground(Color.kadoBackgroundSecondary)
     }

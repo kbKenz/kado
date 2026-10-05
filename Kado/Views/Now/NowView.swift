@@ -87,8 +87,8 @@ struct NowView: View {
             GeometryReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 32) {
-                        main(screen.state, now: now)
-                        if let next = screen.upNext { upNext(next) }
+                        main(screen.state, glyphs: input.glyphs, now: now)
+                        if let next = screen.upNext { upNext(next, glyph: input.glyphs[next.item.id]) }
                     }
                     .frame(maxWidth: Self.maxContentWidth)
                     .padding()
@@ -110,22 +110,24 @@ struct NowView: View {
     }
 
     @ViewBuilder
-    private func main(_ state: NowState, now: Date) -> some View {
+    private func main(_ state: NowState, glyphs: [UUID: ItemGlyph], now: Date) -> some View {
         switch state {
         case .running(let open, let range), .paused(let open, let range):
             NowSessionCard(
-                open: open, plannedRange: range, now: now,
+                open: open, plannedRange: range, now: now, glyph: glyphs[open.item.id],
                 onTitle: { detail = open.item },
                 onPause: { run { try tracker.pause(in: modelContext) } },
                 onResume: { run { try tracker.resume(in: modelContext) } },
                 onFinish: { confirmingFinish = true }
             )
         case .suggestedCurrent(let block):
-            NowSuggestionCard(block: block, isCurrent: true, now: now, onTitle: { detail = block.item }) {
+            NowSuggestionCard(block: block, isCurrent: true, now: now, glyph: glyphs[block.item.id],
+                              onTitle: { detail = block.item }) {
                 start(block.item, blockID: block.id)
             }
         case .suggestedNext(let block):
-            NowSuggestionCard(block: block, isCurrent: false, now: now, onTitle: { detail = block.item }) {
+            NowSuggestionCard(block: block, isCurrent: false, now: now, glyph: glyphs[block.item.id],
+                              onTitle: { detail = block.item }) {
                 start(block.item, blockID: block.id)
             }
             startSomethingButton
@@ -146,14 +148,21 @@ struct NowView: View {
             .accessibilityIdentifier(AccessibilityID.Now.startSomething)
     }
 
-    private func upNext(_ block: NowBlock) -> some View {
+    private func upNext(_ block: NowBlock, glyph: ItemGlyph?) -> some View {
         let time = block.start.formatted(date: .omitted, time: .shortened)
         return VStack(alignment: .leading, spacing: 4) {
             Text("Up next").font(.subheadline).foregroundStyle(Color.kadoForegroundSecondary)
-            HStack(spacing: 6) {
-                Text(verbatim: block.item.title)
-                Text(block.start, format: .dateTime.hour().minute())
-                    .foregroundStyle(Color.kadoForegroundSecondary)
+            // One line when it fits; otherwise the time goes under the
+            // title, so a long title or large text is not squeezed.
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    upNextTitle(block, glyph: glyph)
+                    upNextTime(block)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    upNextTitle(block, glyph: glyph)
+                    upNextTime(block)
+                }
             }
             .font(.body)
             .foregroundStyle(Color.kadoForeground)
@@ -161,6 +170,18 @@ struct NowView: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(String(localized: "Up next: \(block.item.title) at \(time)"))
         .accessibilityIdentifier(AccessibilityID.Now.upNext)
+    }
+
+    private func upNextTitle(_ block: NowBlock, glyph: ItemGlyph?) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            if let glyph { ItemGlyphView(glyph: glyph) }
+            Text(verbatim: block.item.title)
+        }
+    }
+
+    private func upNextTime(_ block: NowBlock) -> some View {
+        Text(block.start, format: .dateTime.hour().minute())
+            .foregroundStyle(Color.kadoForegroundSecondary)
     }
 
     private var builder: NowInputBuilder {

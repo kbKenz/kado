@@ -135,6 +135,12 @@ struct GoalDetailView: View {
         Section {
             Label(goal.status.plannerTitle, systemImage: goal.status.plannerSymbol)
                 .foregroundStyle(Color.kadoAccent)
+            Label {
+                Text(goal.resolvedCategory.localizedName)
+                    .foregroundStyle(Color.kadoForeground)
+            } icon: {
+                ItemGlyphView(glyph: ItemGlyph(category: goal.resolvedCategory))
+            }
             if goal.archivedAt != nil {
                 Label("Archived", systemImage: "archivebox")
                     .foregroundStyle(Color.kadoForegroundSecondary)

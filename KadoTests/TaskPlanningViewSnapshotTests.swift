@@ -63,6 +63,78 @@ struct TaskPlanningViewSnapshotTests {
         #expect(GoalListItem(name: "Direct").category == nil)
     }
 
+    @Test("A task row resolves its category as Insights does: stored, then the goal's, then the title")
+    func taskResolvesCategory() throws {
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let container = try ModelContainer(
+            for: schema,
+            configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+        let goal = GoalRecord(name: "Get into Cambridge", category: .study)
+        let uncategorizedGoal = GoalRecord(name: "Run a marathon")
+        let stored = TaskRecord(title: "Contact professors", goal: goal, category: .work)
+        let fromGoal = TaskRecord(title: "Pay the deposit", goal: goal)
+        let fromTitle = TaskRecord(title: "Pay the deposit", goal: uncategorizedGoal)
+        let unknown = TaskRecord(title: "Something else")
+        [goal, uncategorizedGoal].forEach(context.insert)
+        [stored, fromGoal, fromTitle, unknown].forEach(context.insert)
+        try context.save()
+
+        #expect(TaskListItem(stored).resolvedCategory == .work)
+        #expect(TaskListItem(fromGoal).goalCategory == .study)
+        #expect(TaskListItem(fromGoal).resolvedCategory == .study)
+        // Only a goal's stored category passes down; its name is not guessed for the task.
+        #expect(TaskListItem(fromTitle).goalCategory == nil)
+        #expect(TaskListItem(fromTitle).resolvedCategory == .money)
+        #expect(TaskListItem(unknown).resolvedCategory == .other)
+    }
+
+    @Test("A calendar block carries its task's category glyph, or its habit's own icon, as a value")
+    func calendarBlockGlyphs() throws {
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let container = try ModelContainer(
+            for: schema,
+            configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+        let day = TestCalendar.referenceDate
+        let goal = GoalRecord(name: "Get into Cambridge", category: .study)
+        let task = TaskRecord(title: "Contact professors", goal: goal)
+        let habit = HabitRecord(name: "Read", color: .purple, icon: "book.fill")
+        let taskBlock = ScheduleBlockRecord(plannedDay: day, startAt: day, task: task)
+        let habitBlock = ScheduleBlockRecord(plannedDay: day, startAt: day, habit: habit)
+        let unlinked = ScheduleBlockRecord(plannedDay: day, startAt: day)
+        context.insert(goal)
+        context.insert(task)
+        context.insert(habit)
+        [taskBlock, habitBlock, unlinked].forEach(context.insert)
+        try context.save()
+        let taskItem = CalendarBlockItem(taskBlock, on: day, calendar: calendar)
+        let habitItem = CalendarBlockItem(habitBlock, on: day, calendar: calendar)
+        let unlinkedItem = CalendarBlockItem(unlinked, on: day, calendar: calendar)
+        context.delete(task)
+        context.delete(habit)
+        try context.save()
+
+        #expect(taskItem.glyph == ItemGlyph(category: .study))
+        #expect(habitItem.glyph == ItemGlyph(habitIcon: "book.fill", color: .purple))
+        #expect(unlinkedItem.glyph == nil)
+        let sleep = HealthTimelineEntry(id: UUID(), kind: .sleep, interval: DateInterval(start: day, duration: 3_600))
+        #expect(CalendarBlockItem(sleep).glyph == nil)
+        // Built by hand, a task block falls back to its task's category.
+        let schedule = TaskScheduleItem(plannedDay: day)
+        let manual = CalendarBlockItem(title: "Pay rent", schedule: schedule, task: TaskListItem(title: "Pay rent"))
+        #expect(manual.glyph == ItemGlyph(category: .money))
+    }
+
+    @Test("A goal row resolves its category from what is stored, then from its name")
+    func goalResolvesCategory() {
+        #expect(GoalListItem(name: "Run a marathon", category: .health).resolvedCategory == .health)
+        #expect(GoalListItem(name: "Run a marathon").resolvedCategory == .fitness)
+        #expect(GoalListItem(name: "Be more present").resolvedCategory == .other)
+    }
+
     @Test("A timed overnight block overlaps both civil days")
     func overnightMembership() {
         let start = TestCalendar.instant(calendar, 2026, 4, 13, 22)

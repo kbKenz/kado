@@ -15,8 +15,17 @@ struct TaskListItem: Identifiable {
     let goalName: String?
     /// The stored category, or `nil` when none is set.
     let category: ItemCategory?
+    /// The linked goal's stored category, the first fallback when the
+    /// task has none.
+    let goalCategory: ItemCategory?
 
     var isComplete: Bool { completedAt != nil }
+
+    /// The category rows show: stored, else the goal's, else guessed
+    /// from the title, else Other. The rule Insights counts by.
+    var resolvedCategory: ItemCategory {
+        CategoryResolver.resolve(stored: category, goalCategory: goalCategory, title: title)
+    }
 
     init(_ record: TaskRecord) {
         id = record.id
@@ -28,6 +37,7 @@ struct TaskListItem: Identifiable {
         goalID = record.goal?.id
         goalName = record.goal?.name
         category = record.category
+        goalCategory = record.goal?.category
         schedules = (record.scheduleBlocks ?? [])
             .map { TaskScheduleItem($0) }
             .sorted { $0.plannedDay == $1.plannedDay
@@ -39,7 +49,7 @@ struct TaskListItem: Identifiable {
         id: UUID = UUID(), title: String, notes: String = "", dueDate: Date? = nil,
         completedAt: Date? = nil, isFromGoogle: Bool = false,
         schedules: [TaskScheduleItem] = [], goalID: UUID? = nil, goalName: String? = nil,
-        category: ItemCategory? = nil
+        category: ItemCategory? = nil, goalCategory: ItemCategory? = nil
     ) {
         self.id = id
         self.title = title
@@ -51,6 +61,7 @@ struct TaskListItem: Identifiable {
         self.goalID = goalID
         self.goalName = goalName
         self.category = category
+        self.goalCategory = goalCategory
     }
 }
 

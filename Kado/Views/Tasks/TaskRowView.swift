@@ -13,6 +13,10 @@ struct TaskRowView: View {
 
     @Environment(\.calendar) private var calendar
     @Environment(\.civilToday) private var today
+    /// The icon column of the lines under the title: wide enough for
+    /// the widest category symbol, so every line's text starts at the
+    /// same place.
+    @ScaledMetric(relativeTo: .caption) private var iconWidth: CGFloat = 18
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -36,19 +40,23 @@ struct TaskRowView: View {
                         .foregroundStyle(item.isComplete ? Color.kadoForegroundSecondary : Color.kadoForeground)
                         .strikethrough(item.isComplete)
                         .multilineTextAlignment(.leading)
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundStyle(Color.kadoForegroundSecondary)
-                        .multilineTextAlignment(.leading)
+                    // The category glyph leads the date line, so the
+                    // title keeps the row's full width.
+                    detailLine(Text(subtitle)) {
+                        ItemGlyphView(glyph: ItemGlyph(category: category))
+                    }
+                    .font(.caption)
                     if item.isFromGoogle {
-                        Label("Google Calendar", systemImage: "arrow.triangle.2.circlepath")
-                            .font(.caption2)
-                            .foregroundStyle(Color.kadoForegroundSecondary)
+                        detailLine(Text("Google Calendar")) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                        }
+                        .font(.caption2)
                     }
                     if let goalName = item.goalName {
-                        Label(goalName, systemImage: "target")
-                            .font(.caption)
-                            .foregroundStyle(Color.kadoForegroundSecondary)
+                        detailLine(Text(goalName)) {
+                            Image(systemName: "target")
+                        }
+                        .font(.caption)
                     }
                 }
                 .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
@@ -56,6 +64,10 @@ struct TaskRowView: View {
             }
             .buttonStyle(.borderless)
             .accessibilityElement(children: .combine)
+            .accessibilityLabel { label in
+                label
+                Text(category.localizedName)
+            }
             .accessibilityValue(item.isComplete ? String(localized: "Complete") : String(localized: "Incomplete"))
             .accessibilityHint(item.isFromGoogle ? Text("View event") : Text("Edit task"))
             .accessibilityIdentifier(AccessibilityID.Tasks.row(item.id))
@@ -73,6 +85,21 @@ struct TaskRowView: View {
         .accessibilityAction(named: item.isComplete ? Text("Mark incomplete") : Text("Complete task"), onToggle)
         .accessibilityAction(named: Text("Edit task"), onEdit)
         .accessibilityAction(named: item.isFromGoogle ? Text("Remove from planner") : Text("Delete task"), onDelete)
+    }
+
+    private var category: ItemCategory { item.resolvedCategory }
+
+    /// A line under the title: an icon in a fixed column, then the text.
+    /// The icon is decorative; the row's label carries what it means.
+    private func detailLine<Icon: View>(_ text: Text, @ViewBuilder icon: () -> Icon) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 5) {
+            icon()
+                .frame(width: iconWidth, alignment: .leading)
+                .accessibilityHidden(true)
+            text
+                .multilineTextAlignment(.leading)
+        }
+        .foregroundStyle(Color.kadoForegroundSecondary)
     }
 
     private var subtitle: String {
@@ -98,6 +125,9 @@ struct TaskRowView: View {
     List {
         TaskRowView(item: TaskListItem(title: "Prepare for tomorrow"), onToggle: {}, onEdit: {}, onDelete: {})
         TaskRowView(item: TaskListItem(title: "Meeting with Thomas", dueDate: .now, isFromGoogle: true), onToggle: {}, onEdit: {}, onDelete: {})
+        TaskRowView(item: TaskListItem(title: "Contact professors at Cambridge", dueDate: .now,
+                                       goalName: "Get into Cambridge", goalCategory: .study),
+                    onToggle: {}, onEdit: {}, onDelete: {})
     }
     .kadoTheme()
 }
@@ -106,7 +136,18 @@ struct TaskRowView: View {
     List {
         TaskRowView(item: TaskListItem(title: "Read a chapter", dueDate: .now, completedAt: .now), onToggle: {}, onEdit: {}, onDelete: {})
         TaskRowView(item: TaskListItem(title: "Meeting with Thomas", isFromGoogle: true), onToggle: {}, onEdit: {}, onDelete: {})
+        TaskRowView(item: TaskListItem(title: "Pay the electricity bill", dueDate: .now), onToggle: {}, onEdit: {}, onDelete: {})
     }
     .kadoTheme()
     .preferredColorScheme(.dark)
+}
+
+#Preview("XXXL") {
+    List {
+        TaskRowView(item: TaskListItem(title: "Prepare the slides for the quarterly planning meeting", dueDate: .now,
+                                       goalName: "Get promoted"),
+                    onToggle: {}, onEdit: {}, onDelete: {})
+    }
+    .kadoTheme()
+    .dynamicTypeSize(.accessibility3)
 }

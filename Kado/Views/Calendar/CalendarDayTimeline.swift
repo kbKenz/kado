@@ -20,6 +20,8 @@ struct CalendarDayTimeline: View {
 
     private let pointsPerMinute: CGFloat = 1.1
     private let labelWidth: CGFloat = 64
+    /// Narrower cards drop the category glyph, so the title keeps room.
+    private let minimumGlyphCardWidth: CGFloat = 80
 
     var body: some View {
         if dynamicTypeSize.isAccessibilitySize || maximumOverlappingColumns > 3 {
@@ -68,8 +70,9 @@ struct CalendarDayTimeline: View {
                     let lanes = max(1, placement.laneCount)
                     let available = max(80, geometry.size.width - labelWidth - 8)
                     let laneWidth = available / CGFloat(lanes)
-                    laneCard(placement.block)
-                        .frame(width: max(44, laneWidth - 6), height: placement.height, alignment: .topLeading)
+                    let cardWidth = max(44, laneWidth - 6)
+                    laneCard(placement.block, showsGlyph: cardWidth >= minimumGlyphCardWidth)
+                        .frame(width: cardWidth, height: placement.height, alignment: .topLeading)
                         .offset(x: labelWidth + CGFloat(placement.lane) * laneWidth, y: placement.y)
                 }
             }
@@ -146,8 +149,8 @@ struct CalendarDayTimeline: View {
     }
 
     @ViewBuilder
-    private func laneCard(_ block: CalendarBlockItem) -> some View {
-        if block.isFromHealth { workoutCard(block) } else { timelineCard(block) }
+    private func laneCard(_ block: CalendarBlockItem, showsGlyph: Bool) -> some View {
+        if block.isFromHealth { workoutCard(block) } else { timelineCard(block, showsGlyph: showsGlyph) }
     }
 
     /// Read-only: no button, no menu, no completion.
@@ -180,15 +183,21 @@ struct CalendarDayTimeline: View {
         .accessibilityIdentifier(AccessibilityID.Calendar.health(block.id))
     }
 
-    private func timelineCard(_ block: CalendarBlockItem) -> some View {
+    private func timelineCard(_ block: CalendarBlockItem, showsGlyph: Bool) -> some View {
         Button { onEdit(block) } label: {
             VStack(alignment: .leading, spacing: 3) {
                 HStack(alignment: .top, spacing: 4) {
-                    Text(block.title)
-                        .font(.caption.weight(.semibold))
-                        .strikethrough(block.isComplete)
-                        .lineLimit(2)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        if showsGlyph, let glyph = block.glyph {
+                            ItemGlyphView(glyph: glyph)
+                                .font(.caption2.weight(.semibold))
+                        }
+                        Text(block.title)
+                            .font(.caption.weight(.semibold))
+                            .strikethrough(block.isComplete)
+                            .lineLimit(2)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    }
                     if block.isComplete {
                         Image(systemName: "checkmark.circle.fill")
                             .accessibilityHidden(true)
@@ -221,6 +230,10 @@ struct CalendarDayTimeline: View {
         .buttonStyle(.plain)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(block.title)
+        .accessibilityLabel { label in
+            label
+            if let categoryName = block.glyph?.categoryName { Text(categoryName) }
+        }
         .accessibilityValue(Text("\(block.schedule.timeLabel), \(block.isComplete ? String(localized: "Complete") : String(localized: "Incomplete"))"))
         .accessibilityHint("Open task. Long-press for completion and other actions.")
         .accessibilityIdentifier(AccessibilityID.Calendar.block(block.id))
@@ -367,9 +380,13 @@ private enum CalendarTimelinePreview {
             interval: DateInterval(start: calendar.date(bySettingHour: 7, minute: 30, second: 0, of: day)!,
                                    end: calendar.date(bySettingHour: 8, minute: 15, second: 0, of: day)!)),
     ]
+    static let walkSchedule = TaskScheduleItem(plannedDay: day, startAt: calendar.date(bySettingHour: 11, minute: 0, second: 0, of: day)!,
+                                              endAt: calendar.date(bySettingHour: 11, minute: 45, second: 0, of: day)!)
     static let blocks = [
         CalendarBlockItem(id: meetingSchedule.id, title: meeting.title, schedule: meetingSchedule, task: meeting),
-        CalendarBlockItem(id: readingSchedule.id, title: reading.title, schedule: readingSchedule, task: reading, isComplete: true)
+        CalendarBlockItem(id: readingSchedule.id, title: reading.title, schedule: readingSchedule, task: reading, isComplete: true),
+        CalendarBlockItem(id: walkSchedule.id, title: "Morning walk", schedule: walkSchedule, habitID: UUID(),
+                          glyph: ItemGlyph(habitIcon: "figure.walk", color: .orange))
     ]
 }
 

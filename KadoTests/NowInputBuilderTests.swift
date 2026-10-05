@@ -172,4 +172,43 @@ struct NowInputBuilderTests {
         let input = try builder.build(now: now, in: context)
         #expect(input.startCandidates.isEmpty)
     }
+
+    @Test("Block items carry their icon: the task's category as Insights resolves it, or the habit's own icon")
+    func blockGlyphs() throws {
+        let context = try context()
+        let goal = GoalRecord(name: "Save for a house", category: .money)
+        // Alone, the title reads as People: the goal's category wins.
+        let linked = TaskRecord(title: "Call grandma", goal: goal)
+        let stored = TaskRecord(title: "Revise chemistry", category: .work)
+        let guessed = TaskRecord(title: "Revise chemistry notes")
+        let unknown = TaskRecord(title: "Something else")
+        let habit = HabitRecord(name: "Read", createdAt: now.addingTimeInterval(-86_400 * 3), color: .purple, icon: "book.fill")
+        context.insert(goal)
+        [linked, stored, guessed, unknown].forEach(context.insert)
+        context.insert(habit)
+        for task in [linked, stored, guessed, unknown] {
+            context.insert(ScheduleBlockRecord(plannedDay: now, startAt: now, task: task))
+        }
+        context.insert(ScheduleBlockRecord(plannedDay: now, startAt: now, habit: habit))
+        try context.save()
+
+        let input = try builder.build(now: now, in: context)
+        #expect(input.glyphs[linked.id] == ItemGlyph(category: .money))
+        #expect(input.glyphs[stored.id] == ItemGlyph(category: .work))
+        #expect(input.glyphs[guessed.id] == ItemGlyph(category: .study))
+        #expect(input.glyphs[unknown.id] == ItemGlyph(category: .other))
+        #expect(input.glyphs[habit.id] == ItemGlyph(habitIcon: "book.fill", color: .purple))
+    }
+
+    @Test("The open session's item carries its icon without a block today")
+    func sessionGlyph() throws {
+        let context = try context()
+        let task = TaskRecord(title: "Pay the rent")
+        context.insert(task)
+        context.insert(WorkSessionRecord(startedAt: now, task: task))
+        try context.save()
+
+        let input = try builder.build(now: now, in: context)
+        #expect(input.glyphs[task.id] == ItemGlyph(category: .money))
+    }
 }

@@ -15,6 +15,12 @@ struct GoalListItem: Identifiable {
     /// The stored category, or `nil` when none is set.
     let category: ItemCategory?
 
+    /// The category rows show: stored, else guessed from the name, else
+    /// Other. The rule Insights counts by.
+    var resolvedCategory: ItemCategory {
+        CategoryResolver.resolve(stored: category, goalCategory: nil, title: name)
+    }
+
     init(_ record: GoalRecord) {
         id = record.id
         name = record.name

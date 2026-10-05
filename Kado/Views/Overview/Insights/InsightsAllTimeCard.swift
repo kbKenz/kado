@@ -23,7 +23,10 @@ struct InsightsAllTimeCard: View {
                 LazyVGrid(columns: columns, alignment: .leading, spacing: 14) {
                     InsightsStat(value: InsightsFormat.count(allTime.habitTimesDone), label: "Times done")
                     InsightsStat(value: InsightsFormat.count(allTime.tasksDone), label: "Tasks done")
-                    InsightsStat(value: InsightsFormat.duration(allTime.focusSeconds), label: "Focus")
+                    // No "0m" for someone who never tracked a session.
+                    if allTime.focusSeconds > 0 {
+                        InsightsStat(value: InsightsFormat.duration(allTime.focusSeconds), label: "Focus")
+                    }
                 }
                 // A habit name needs the whole width.
                 if let best = allTime.bestStreak {
@@ -77,7 +80,9 @@ struct InsightsAllTimeCard: View {
         }
         parts.append(String(localized: "\(allTime.habitTimesDone) times done", comment: "Insights All time, VoiceOver: habit days done since the start."))
         parts.append(String(localized: "\(allTime.tasksDone) tasks done", comment: "Insights, VoiceOver: a count of tasks completed."))
-        parts.append(String(localized: "\(InsightsFormat.duration(allTime.focusSeconds)) of focus", comment: "Insights: total session time. The value is a duration such as 12h 40m."))
+        if allTime.focusSeconds > 0 {
+            parts.append(String(localized: "\(InsightsFormat.duration(allTime.focusSeconds)) of focus", comment: "Insights: total session time. The value is a duration such as 12h 40m."))
+        }
         if let best = allTime.bestStreak {
             parts.append(String(localized: "Best streak: \(best.name), \(best.count) days", comment: "Insights All time, VoiceOver: the habit with the best streak ever and that streak in days."))
         }

@@ -12,6 +12,10 @@ struct NowInputBuilder {
         var openSession: OpenSession?
         /// Most recent activity first: a Now session, a habit log, or an edit.
         var startCandidates: [NowItem]
+        /// The icon beside each title on the cards, by item id: the
+        /// task's category or the habit's own icon. Only the block and
+        /// session items are filled, which is what the cards show.
+        var glyphs: [UUID: ItemGlyph] = [:]
     }
 
     let boundary: DayBoundary
@@ -45,17 +49,20 @@ struct NowInputBuilder {
             (block.startAt ?? distantPast) >= dayStart && (block.startAt ?? distantPast) < dayEnd
         }
         let todaysBlocks = try context.fetch(FetchDescriptor<ScheduleBlockRecord>(predicate: inDay))
+        var glyphs: [UUID: ItemGlyph] = [:]
         // Untimed or unworkable blocks are not Now's concern.
         let blocks = todaysBlocks.compactMap { block -> NowBlock? in
             guard let start = block.startAt else { return nil }
             // `NowBlock.isCurrent` is half-open, so an empty or inverted range never shows.
             if let end = block.endAt, end <= start { return nil }
             guard let item = workableItem(for: block, taskIDs: taskIDs, habitIDs: habitIDs) else { return nil }
+            glyphs[item.id] = Self.glyph(for: item, task: block.task, habit: block.habit)
             return NowBlock(id: block.id, item: item, start: start, end: block.endAt, createdAt: block.createdAt)
         }
 
         let open = try WorkSessionTracker.openSession(in: context).flatMap { record -> OpenSession? in
             guard let item = item(task: record.task, habit: record.habit) else { return nil }
+            glyphs[item.id] = Self.glyph(for: item, task: record.task, habit: record.habit)
             return OpenSession(id: record.id, item: item, session: record.snapshot, blockID: record.scheduleBlock?.id)
         }
 
@@ -63,7 +70,22 @@ struct NowInputBuilder {
         let recentTasks = workableTasks.map { (item: NowItem.task(id: $0.id, title: $0.title), last: Self.lastActivity(of: $0)) }
         let recentHabits = workableHabits.map { (item: NowItem.habit(id: $0.id, name: $0.name), last: Self.lastActivity(of: $0)) }
         let candidates = (recentTasks + recentHabits).sorted { $0.last > $1.last }.map(\.item)
-        return Input(blocks: blocks, openSession: open, startCandidates: candidates)
+        return Input(blocks: blocks, openSession: open, startCandidates: candidates, glyphs: glyphs)
+    }
+
+    /// A task's category, resolved as Insights does, or a habit's own
+    /// icon (habits keep their icon).
+    private static func glyph(for item: NowItem, task: TaskRecord?, habit: HabitRecord?) -> ItemGlyph? {
+        switch item {
+        case .task:
+            guard let task else { return nil }
+            return ItemGlyph(category: CategoryResolver.resolve(
+                stored: task.category, goalCategory: task.goal?.category, title: task.title
+            ))
+        case .habit:
+            guard let habit else { return nil }
+            return ItemGlyph(habitIcon: habit.icon, color: habit.color)
+        }
     }
 
     private static func lastActivity(of task: TaskRecord) -> Date {

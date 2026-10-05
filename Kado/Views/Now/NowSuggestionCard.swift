@@ -6,6 +6,8 @@ struct NowSuggestionCard: View {
     let block: NowBlock
     let isCurrent: Bool
     let now: Date
+    /// The task's category icon or the habit's own icon, before the title.
+    var glyph: ItemGlyph? = nil
     let onTitle: () -> Void
     let onStart: () -> Void
 
@@ -15,15 +17,7 @@ struct NowSuggestionCard: View {
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(Color.kadoForegroundSecondary)
                 .accessibilityHidden(true)
-            Button(action: onTitle) {
-                Text(block.item.title)
-                    .font(.largeTitle.bold())
-                    .foregroundStyle(Color.kadoForeground)
-                    .multilineTextAlignment(.leading)
-            }
-            .buttonStyle(.plain)
-            .accessibilityHint(Text("Opens details"))
-            .accessibilityIdentifier(AccessibilityID.Now.title)
+            NowCardTitle(title: block.item.title, glyph: glyph, action: onTitle)
             // One sentence: planned range, then how far it is from now.
             VStack(alignment: .leading, spacing: 12) {
                 Text(block.range.nowTimeText)
@@ -66,7 +60,7 @@ struct NowEmptyState: View {
     NowSuggestionCard(
         block: NowBlock(id: UUID(), item: .task(id: UUID(), title: "Research"),
                         start: .now.addingTimeInterval(-17 * 60), end: .now.addingTimeInterval(43 * 60), createdAt: .now),
-        isCurrent: true, now: .now, onTitle: {}, onStart: {}
+        isCurrent: true, now: .now, glyph: ItemGlyph(category: .study), onTitle: {}, onStart: {}
     )
     .padding()
     .background(Color.kadoBackground)
@@ -76,7 +70,7 @@ struct NowEmptyState: View {
     NowSuggestionCard(
         block: NowBlock(id: UUID(), item: .habit(id: UUID(), name: "Read 20 pages"),
                         start: .now.addingTimeInterval(95 * 60), end: nil, createdAt: .now),
-        isCurrent: false, now: .now, onTitle: {}, onStart: {}
+        isCurrent: false, now: .now, glyph: ItemGlyph(habitIcon: "book.fill", color: .purple), onTitle: {}, onStart: {}
     )
     .padding()
     .background(Color.kadoBackground)
@@ -86,7 +80,7 @@ struct NowEmptyState: View {
     NowSuggestionCard(
         block: NowBlock(id: UUID(), item: .task(id: UUID(), title: "Prepare the board meeting slides"),
                         start: .now.addingTimeInterval(25 * 60), end: nil, createdAt: .now),
-        isCurrent: false, now: .now, onTitle: {}, onStart: {}
+        isCurrent: false, now: .now, glyph: ItemGlyph(category: .work), onTitle: {}, onStart: {}
     )
     .padding()
     .background(Color.kadoBackground)

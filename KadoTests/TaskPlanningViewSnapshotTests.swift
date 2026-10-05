@@ -40,6 +40,29 @@ struct TaskPlanningViewSnapshotTests {
         #expect(calendarItem.isComplete)
     }
 
+    @Test("Task and goal list items carry the stored category, or nil")
+    func listItemsCarryCategory() throws {
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let container = try ModelContainer(
+            for: schema,
+            configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        )
+        let context = container.mainContext
+        let goal = GoalRecord(name: "Get into Cambridge", category: .study)
+        let task = TaskRecord(title: "Contact professors", goal: goal, category: .work)
+        let plain = TaskRecord(title: "No category")
+        context.insert(goal)
+        context.insert(task)
+        context.insert(plain)
+        try context.save()
+
+        #expect(TaskListItem(task).category == .work)
+        #expect(TaskListItem(plain).category == nil)
+        #expect(GoalListItem(goal).category == .study)
+        #expect(TaskListItem(title: "Direct").category == nil)
+        #expect(GoalListItem(name: "Direct").category == nil)
+    }
+
     @Test("A timed overnight block overlaps both civil days")
     func overnightMembership() {
         let start = TestCalendar.instant(calendar, 2026, 4, 13, 22)

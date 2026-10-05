@@ -12,6 +12,8 @@ struct GoalListItem: Identifiable {
     let completedAt: Date?
     let archivedAt: Date?
     let measurement: GoalMeasurement
+    /// The stored category, or `nil` when none is set.
+    let category: ItemCategory?
 
     init(_ record: GoalRecord) {
         id = record.id
@@ -23,12 +25,14 @@ struct GoalListItem: Identifiable {
         completedAt = record.completedAt
         archivedAt = record.archivedAt
         measurement = record.measurement
+        category = record.category
     }
 
     init(
         id: UUID = UUID(), name: String, details: String = "", status: GoalStatus = .active,
         startDate: Date? = nil, targetDate: Date? = nil,
-        completedAt: Date? = nil, archivedAt: Date? = nil, measurement: GoalMeasurement = GoalMeasurement()
+        completedAt: Date? = nil, archivedAt: Date? = nil, measurement: GoalMeasurement = GoalMeasurement(),
+        category: ItemCategory? = nil
     ) {
         self.id = id
         self.name = name
@@ -39,6 +43,7 @@ struct GoalListItem: Identifiable {
         self.completedAt = completedAt
         self.archivedAt = archivedAt
         self.measurement = measurement
+        self.category = category
     }
 }
 

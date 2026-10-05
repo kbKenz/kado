@@ -227,13 +227,25 @@ final class GoogleCalendarConnection {
               GIDSignIn.sharedInstance.currentUser?.userID == accountID,
               !DevModeDefaults.sharedDefaults.bool(forKey: DevModeDefaults.key),
               !Task.isCancelled else { return }
-        importedEventCount = try GoogleCalendarImporter().apply(
-            events: events,
-            accountID: accountID,
-            calendarID: Self.calendarID,
-            window: DateInterval(start: from, end: to),
-            to: context
-        )
+        // Off the main actor: a 211-day window expands recurring events into
+        // hundreds of rows, and this runs every minute while the app is open.
+        // The importer saves through its own context; the UI context merges it.
+        let container = context.container
+        let calendarID = Self.calendarID
+        let window = DateInterval(start: from, end: to)
+        let count = try await Task.detached(priority: .utility) {
+            try GoogleCalendarImporter().apply(
+                events: events,
+                accountID: accountID,
+                calendarID: calendarID,
+                window: window,
+                in: container
+            )
+        }.value
+        // The import itself can't be recalled, but a disconnect or store swap
+        // made while it ran must not see its status come back.
+        guard generation == sessionGeneration else { return }
+        importedEventCount = count
         lastSync = .now
         defaults.set(lastSync, forKey: lastSyncKey(accountID))
         errorMessage = nil

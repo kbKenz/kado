@@ -3,8 +3,10 @@ import SwiftData
 
 /// Converts a *complete* bounded Google snapshot into tasks and planned blocks.
 /// Remote edits never change local completion or user archive state.
-@MainActor
-public struct GoogleCalendarImporter {
+///
+/// Nonisolated: it writes through a context of its own, so the app can
+/// run it off the main actor and the UI context picks the save up.
+public struct GoogleCalendarImporter: Sendable {
     private let calendar: Calendar
 
     public init(calendar: Calendar = .current) { self.calendar = calendar }
@@ -12,29 +14,49 @@ public struct GoogleCalendarImporter {
     @discardableResult
     public func apply(events: [GoogleCalendarEvent], accountID: String, calendarID: String,
                       window: DateInterval, to context: ModelContext) throws -> Int {
+        try apply(events: events, accountID: accountID, calendarID: calendarID,
+                  window: window, in: context.container)
+    }
+
+    /// Imports into `container` through a context created here, on the
+    /// caller's thread — safe to call from a detached task.
+    @discardableResult
+    public func apply(events: [GoogleCalendarEvent], accountID: String, calendarID: String,
+                      window: DateInterval, in container: ModelContainer) throws -> Int {
         // Validate before any writes. A malformed active event must not turn a partial response
-        // into cancellations for the rest of the calendar.
-        var incoming: [String: GoogleCalendarEvent] = [:]
+        // into cancellations for the rest of the calendar. The schedule is kept so the
+        // import below doesn't parse every timestamp a second time.
+        var incoming: [String: (event: GoogleCalendarEvent, schedule: GoogleCalendarEvent.Schedule?)] = [:]
         for event in events {
             guard !event.id.isEmpty else { throw GoogleCalendarImportError.invalidEvent }
-            guard event.isCancelled || event.schedule(using: calendar) != nil else {
+            let schedule = event.isCancelled ? nil : event.schedule(using: calendar)
+            guard event.isCancelled || schedule != nil else {
                 throw GoogleCalendarImportError.invalidEvent
             }
-            incoming[event.id] = event
+            incoming[event.id] = (event, schedule)
         }
 
         // A dedicated context keeps failed sync from rolling back an unrelated UI edit.
-        let syncContext = ModelContext(context.container)
+        let syncContext = ModelContext(container)
         syncContext.autosaveEnabled = false
-        let records = try syncContext.fetch(FetchDescriptor<TaskRecord>())
+        // Only this calendar's copies, with their plans in the same fetch: the loops below
+        // read `scheduleBlocks` on most of them, one fault each otherwise. App-only code,
+        // so the predicate's widget-extension trap doesn't apply.
+        let account: String? = accountID
+        let calendarKey: String? = calendarID
+        var descriptor = FetchDescriptor<TaskRecord>(predicate: #Predicate {
+            $0.externalAccountID == account && $0.externalCalendarID == calendarKey
+        })
+        descriptor.relationshipKeyPathsForPrefetching = [\.scheduleBlocks]
+        let records = try syncContext.fetch(descriptor)
         var linked: [String: TaskRecord] = [:]
-        for record in records where record.externalAccountID == accountID && record.externalCalendarID == calendarID {
+        for record in records {
             if let id = record.externalEventID, linked[id] == nil { linked[id] = record }
         }
         let now = Date.now
         var importedCount = 0
         do {
-            for event in incoming.values {
+            for (event, schedule) in incoming.values {
                 if event.isCancelled {
                     if let record = linked[event.id], record.externalCancelledAt == nil {
                         record.externalCancelledAt = now
@@ -42,7 +64,7 @@ public struct GoogleCalendarImporter {
                     }
                     continue
                 }
-                guard let schedule = event.schedule(using: calendar) else { continue }
+                guard let schedule else { continue }
                 let record: TaskRecord
                 if let existing = linked[event.id] {
                     record = existing

@@ -25,8 +25,12 @@ import KadoCore
 /// view mutating through its own `@Query` re-renders on a value-only
 /// save (issue #80), and nothing retained across renders holds a
 /// record that a container swap could invalidate (issue #63).
+///
+/// This view reads the store and computes the rows; `OverviewMatrixGrid`
+/// draws them and owns the selection and the haptic. A tap or a
+/// popover dismissal then re-renders the grid alone, and an edit
+/// scores only the habit it changed (`OverviewGridRows`).
 struct OverviewGridView: View {
-    @Environment(\.habitTheme) private var habitTheme
     @Query(
         filter: #Predicate<HabitRecord> { $0.archivedAt == nil },
         sort: \HabitRecord.sortOrder
@@ -38,29 +42,12 @@ struct OverviewGridView: View {
     @Environment(\.frequencyEvaluator) private var frequencyEvaluator
     @Environment(\.streakCalculator) private var streakCalculator
     @Environment(\.habitScoreCalculator) private var scoreCalculator
-    @Environment(\.modelContext) private var modelContext
 
-    @State private var selection: CellSelection?
     @State private var showingNewHabit = false
-    /// The latest popover step, for the haptic — recorded at the
-    /// mutation site, as on the detail screen.
-    @State private var quickLog: QuickLogEvent?
+    /// Rows and metrics from earlier renders, reused per habit.
+    @State private var gridRows = OverviewGridRows()
 
     private static let dayWindow = 30
-    private static let cellSize: CGFloat = 36
-    private static let cellSpacing: CGFloat = 6
-    private static let labelHeight: CGFloat = 28
-    private static let labelBottomPadding: CGFloat = 8
-    private static let rowGap: CGFloat = 12
-    private static let headerHeight: CGFloat = 40
-
-    /// The cell whose popover is up. Addressed by id and day only: the
-    /// popover reads its value from the current render, so nothing
-    /// captured at tap time can go stale under it.
-    struct CellSelection: Equatable {
-        let habitID: UUID
-        let date: Date
-    }
 
     var body: some View {
         content
@@ -98,32 +85,88 @@ struct OverviewGridView: View {
     private var matrix: some View {
         let today = calendar.startOfDay(for: now)
         let days = dayRange(endingAt: today)
-        let snapshots = records.map { record -> (Habit, [Completion]) in
+        let snapshots = records.map { record -> (habit: Habit, completions: [Completion]) in
             (record.snapshot, (record.completions ?? []).compactMap(\.snapshot))
         }
-        let habits = snapshots.map(\.0)
-        let completions = snapshots.flatMap(\.1)
-        let rows = OverviewMatrix.compute(
-            habits: habits,
-            completions: completions,
+        let output = gridRows.compute(
+            snapshots,
             days: days,
             today: today,
+            now: now,
             calendar: calendar,
-            frequencyEvaluator: frequencyEvaluator
+            frequencyEvaluator: frequencyEvaluator,
+            streakCalculator: streakCalculator,
+            scoreCalculator: scoreCalculator
         )
-        let metrics = Dictionary(uniqueKeysWithValues: snapshots.map { (habit, comps) in
-            let streak = streakCalculator.current(for: habit, completions: comps, asOf: now)
-            let score = scoreCalculator.currentScore(for: habit, completions: comps, asOf: now)
-            return (habit.id, (streak: streak, scorePercent: Int((score * 100).rounded())))
-        })
         // What the popover reads its value from — the same snapshots the
         // cells were drawn from, so the two can't disagree.
-        let completionsByHabit = Dictionary(uniqueKeysWithValues: snapshots.map { ($0.id, $1) })
+        let completionsByHabit = Dictionary(uniqueKeysWithValues: snapshots.map { ($0.habit.id, $0.completions) })
 
+        return OverviewMatrixGrid(
+            rows: output.rows,
+            days: days,
+            metrics: output.metrics,
+            completionsByHabit: completionsByHabit,
+            record: record(for:)
+        )
+    }
+
+    /// The live record behind a cell, resolved against the query that
+    /// is mounted now. Called from the mutations only, never from a
+    /// render — see the type comment.
+    private func record(for habitID: UUID) -> HabitRecord? {
+        records.first { $0.id == habitID }
+    }
+
+    private func dayRange(endingAt today: Date) -> [Date] {
+        (0..<Self.dayWindow).reversed().compactMap { offset in
+            calendar.date(byAdding: .day, value: -offset, to: today)
+        }
+    }
+}
+
+/// The Grid itself: cells, labels and the cell popover. Owns the
+/// selection and the haptic, so changing either re-renders this view
+/// and not the one that reads the store.
+private struct OverviewMatrixGrid: View {
+    let rows: [MatrixRow]
+    let days: [Date]
+    let metrics: [UUID: OverviewGridRows.Metrics]
+    let completionsByHabit: [UUID: [Completion]]
+    /// Resolves a habit's live record. Called from the mutations only.
+    let record: (UUID) -> HabitRecord?
+
+    @Environment(\.habitTheme) private var habitTheme
+    @Environment(\.calendar) private var calendar
+    @Environment(\.modelContext) private var modelContext
+
+    @State private var selection: CellSelection?
+    /// The latest popover step, for the haptic — recorded at the
+    /// mutation site, as on the detail screen.
+    @State private var quickLog: QuickLogEvent?
+
+    private static let cellSize: CGFloat = 36
+    private static let cellSpacing: CGFloat = 6
+    private static let labelHeight: CGFloat = 28
+    private static let labelBottomPadding: CGFloat = 8
+    private static let rowGap: CGFloat = 12
+    private static let headerHeight: CGFloat = 40
+
+    /// The cell whose popover is up. Addressed by id and day only: the
+    /// popover reads its value from the current render, so nothing
+    /// captured at tap time can go stale under it.
+    struct CellSelection: Equatable {
+        let habitID: UUID
+        let date: Date
+    }
+
+    var body: some View {
+        // One date string per column, shared by every row's cells.
+        let dateLabels = days.map { Self.fullDate($0, calendar: calendar) }
         return ScrollView(.vertical) {
             ZStack(alignment: .topLeading) {
-                scrollingCells(rows: rows, days: days, completionsByHabit: completionsByHabit)
-                labelsOverlay(rows: rows, metrics: metrics)
+                scrollingCells(dateLabels: dateLabels)
+                labelsOverlay
             }
             .padding(.vertical, 8)
         }
@@ -156,11 +199,7 @@ struct OverviewGridView: View {
         )
     }
 
-    private func scrollingCells(
-        rows: [MatrixRow],
-        days: [Date],
-        completionsByHabit: [UUID: [Completion]]
-    ) -> some View {
+    private func scrollingCells(dateLabels: [String]) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
                 // Date column headers — scroll horizontally with the cells.
@@ -176,7 +215,7 @@ struct OverviewGridView: View {
                 ForEach(rows, id: \.habit.id) { row in
                     // Transparent spacer where the label + padding overlay.
                     Color.clear.frame(height: Self.labelHeight + Self.labelBottomPadding)
-                    cellRow(row, days: days, completions: completionsByHabit[row.habit.id] ?? [])
+                    cellRow(row, dateLabels: dateLabels, completions: completionsByHabit[row.habit.id] ?? [])
                     if row.habit.id != rows.last?.habit.id {
                         Color.clear.frame(height: Self.rowGap)
                     }
@@ -187,10 +226,7 @@ struct OverviewGridView: View {
         .defaultScrollAnchor(.trailing)
     }
 
-    private func labelsOverlay(
-        rows: [MatrixRow],
-        metrics: [UUID: (streak: Int, scorePercent: Int)]
-    ) -> some View {
+    private var labelsOverlay: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Match the date-header row + its trailing gap so the first
             // label lands in the first habit's spacer slot.
@@ -233,13 +269,14 @@ struct OverviewGridView: View {
         .allowsHitTesting(false)
     }
 
-    private func cellRow(_ row: MatrixRow, days: [Date], completions: [Completion]) -> some View {
+    private func cellRow(_ row: MatrixRow, dateLabels: [String], completions: [Completion]) -> some View {
         HStack(spacing: Self.cellSpacing) {
             ForEach(Array(zip(days, row.days).enumerated()), id: \.offset) { offset, pair in
                 let (day, cell) = pair
                 matrixCell(
                     row: row,
                     day: day,
+                    dateLabel: dateLabels[offset],
                     cell: cell,
                     daysAgo: days.count - 1 - offset,
                     completions: completions
@@ -266,11 +303,12 @@ struct OverviewGridView: View {
     private func matrixCell(
         row: MatrixRow,
         day: Date,
+        dateLabel: String,
         cell: DayCell,
         daysAgo: Int,
         completions: [Completion]
     ) -> some View {
-        let label = Self.accessibilityLabel(habit: row.habit, date: day, cell: cell, calendar: calendar)
+        let label = Self.accessibilityLabel(habit: row.habit, dateString: dateLabel, cell: cell)
         let identifier = AccessibilityID.Overview.cell(row.habit.id, daysAgo: daysAgo)
         let visual = MatrixCell(state: cell, color: row.habit.color, size: Self.cellSize)
         if cell.isEditable || isSelected(habitID: row.habit.id, date: day) {
@@ -337,13 +375,6 @@ struct OverviewGridView: View {
 
     private var dayEditor: DayCompletionEditor { DayCompletionEditor(calendar: calendar) }
 
-    /// The live record behind a cell, resolved against the query that
-    /// is mounted now. Called from the mutations only, never from a
-    /// render — see the type comment.
-    private func record(for habit: Habit) -> HabitRecord? {
-        records.first { $0.id == habit.id }
-    }
-
     private func recordQuickLog(_ change: DayCompletionEditor.Change, type: HabitType) {
         guard let event = QuickLogEvent.next(
             after: quickLog, type: type, oldValue: change.before, newValue: change.after
@@ -352,54 +383,70 @@ struct OverviewGridView: View {
     }
 
     private func toggle(_ habit: Habit, on day: Date) {
-        guard let record = record(for: habit) else { return }
+        guard let record = record(habit.id) else { return }
         let change = dayEditor.toggle(for: record, on: day, in: modelContext)
         recordQuickLog(change, type: habit.type)
     }
 
     private func setCounter(_ value: Double, for habit: Habit, on day: Date) {
-        guard let record = record(for: habit) else { return }
+        guard let record = record(habit.id) else { return }
         let change = dayEditor.setCounter(value, for: record, on: day, in: modelContext)
         recordQuickLog(change, type: habit.type)
     }
 
     private func setTimerSeconds(_ seconds: TimeInterval, for habit: Habit, on day: Date) {
-        guard let record = record(for: habit) else { return }
+        guard let record = record(habit.id) else { return }
         let change = dayEditor.setTimerSeconds(seconds, for: record, on: day, in: modelContext)
         recordQuickLog(change, type: habit.type)
     }
 
     private func clear(_ habit: Habit, on day: Date) {
-        guard let record = record(for: habit) else { return }
+        guard let record = record(habit.id) else { return }
         let change = dayEditor.clear(for: record, on: day, in: modelContext)
         recordQuickLog(change, type: habit.type)
     }
 
     private func setNote(_ note: String?, for habit: Habit, on day: Date) {
-        guard let record = record(for: habit) else { return }
+        guard let record = record(habit.id) else { return }
         dayEditor.setNote(note, for: record, on: day, in: modelContext)
     }
 
-    private func dayRange(endingAt today: Date) -> [Date] {
-        (0..<Self.dayWindow).reversed().compactMap { offset in
-            calendar.date(byAdding: .day, value: -offset, to: today)
+    // MARK: - VoiceOver labels
+
+    /// What a `.full` date formatter is built from. The formatter's own
+    /// time zone defaults to the system's, so that is part of it too.
+    private struct FormatterKey: Hashable {
+        let calendar: Calendar
+        let locale: Locale
+        let timeZone: TimeZone
+    }
+
+    /// `DateFormatter` is costly to make, and every render labels each
+    /// column, so one is kept per calendar, locale and zone. Main actor
+    /// only, like the renders that read it.
+    private static var fullDateFormatters: [FormatterKey: DateFormatter] = [:]
+
+    /// The column's date, spelled out for VoiceOver.
+    private static func fullDate(_ date: Date, calendar: Calendar) -> String {
+        let key = FormatterKey(calendar: calendar, locale: calendar.locale ?? .current, timeZone: .current)
+        if let formatter = fullDateFormatters[key] {
+            return formatter.string(from: date)
         }
+        let formatter = DateFormatter()
+        formatter.calendar = key.calendar
+        formatter.locale = key.locale
+        formatter.dateStyle = .full
+        fullDateFormatters[key] = formatter
+        return formatter.string(from: date)
     }
 
     /// Composes a per-cell VoiceOver label:
     /// `"{habit}, {localized date}, {state}"`.
     private static func accessibilityLabel(
         habit: Habit,
-        date: Date,
-        cell: DayCell,
-        calendar: Calendar
+        dateString: String,
+        cell: DayCell
     ) -> String {
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = calendar.locale ?? .current
-        formatter.dateStyle = .full
-        let dateString = formatter.string(from: date)
-
         let state: String
         switch cell {
         case .future:

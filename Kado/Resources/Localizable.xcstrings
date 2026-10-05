@@ -1087,6 +1087,23 @@
         }
       }
     },
+    "%@ consistent" : {
+      "comment" : "Insights: share of due habit-days done. The value is a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ consistent"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ de régularité"
+          }
+        }
+      }
+    },
     "%@ doesn't accept that kind of value." : {
       "comment" : "Defensive Siri dialog when LogHabitValueIntent is invoked on an unexpected habit kind.",
       "extractionState" : "stale",
@@ -1095,6 +1112,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ n'accepte pas ce type de valeur."
+          }
+        }
+      }
+    },
+    "%@ focus" : {
+      "comment" : "Insights Categories: session time in this category. The value is a duration.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ focus"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ de concentration"
           }
         }
       }
@@ -1129,6 +1163,64 @@
         }
       }
     },
+    "%@ is on a %lld-day streak" : {
+      "comment" : "Insights highlight: the longest current streak across habits. The values are the habit name and the days.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ is on a %lld-day streak"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ is on a %lld-day streak"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ : série de %lld jour en cours"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ : série de %lld jours en cours"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ is your most consistent day" : {
+      "comment" : "Insights highlight: the weekday with the best habit consistency. The value is a weekday name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ is your most consistent day"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le %@ est ton jour le plus régulier"
+          }
+        }
+      }
+    },
     "%@ isn't in Kadō — open the app to set it up first." : {
       "comment" : "Siri dialog when GetHabitStatsIntent can't find the habit in the snapshot.",
       "extractionState" : "stale",
@@ -1141,6 +1233,40 @@
         }
       }
     },
+    "%@ less than before" : {
+      "comment" : "Insights: a total time fell against the previous period. The value is a duration such as 2h 10m.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ less than before"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ de moins qu'avant"
+          }
+        }
+      }
+    },
+    "%@ more than before" : {
+      "comment" : "Insights: a total time rose against the previous period. The value is a duration such as 2h 10m.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ more than before"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ de plus qu'avant"
+          }
+        }
+      }
+    },
     "%@ needs a value — opening Kadō." : {
       "comment" : "Siri dialog when CompleteHabitIntent is invoked on a counter or timer habit (opens the app).",
       "extractionState" : "stale",
@@ -1149,6 +1275,98 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ a besoin d'une valeur — j'ouvre Kadō."
+          }
+        }
+      }
+    },
+    "%@ of focus" : {
+      "comment" : "Insights: total session time. The value is a duration such as 12h 40m.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ of focus"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ de concentration"
+          }
+        }
+      }
+    },
+    "%@ reached %lld times" : {
+      "comment" : "Insights highlight: a habit passed a round number of days done. The values are the habit name and that number.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ reached %lld time"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ reached %lld times"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ : cap des %lld fois atteint"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ : cap des %lld fois atteint"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@ tasks are most often left undone (%lld of %lld)" : {
+      "comment" : "Insights highlight: the category whose tasks are most often not done by their day. Then undone of all.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ tasks are most often left undone (%lld of %lld)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les tâches « %@ » restent le plus souvent non faites (%lld sur %lld)"
+          }
+        }
+      }
+    },
+    "%@ total" : {
+      "comment" : "Insights Habits: a counter habit's summed count in the period. The value is a number.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ total"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ au total"
           }
         }
       }
@@ -1166,6 +1384,47 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Entraînement : %@"
+          }
+        }
+      }
+    },
+    "%@ · %lld days" : {
+      "comment" : "Insights All time: the habit with the best streak ever and that streak in days.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ · %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@ · %lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ · %lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ · %lld jours"
+                }
+              }
+            }
           }
         }
       }
@@ -1289,6 +1548,105 @@
         }
       }
     },
+    "%@: %@ consistent" : {
+      "comment" : "Insights, VoiceOver: a habit's share of due days done. The values are the habit name and a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: %@ consistent"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ : %@ de régularité"
+          }
+        }
+      }
+    },
+    "%@: %lld days, your best streak ever" : {
+      "comment" : "Insights highlight: a habit's current streak equals its best ever. The values are the habit name and the streak in days.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: %lld day, your best streak ever"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: %lld days, your best streak ever"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ : %lld jour, ta meilleure série"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ : %lld jours, ta meilleure série"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%@: %lld of %lld left undone" : {
+      "comment" : "Insights Tasks: a category's tasks left undone out of its tasks done or left undone.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: %lld of %lld left undone"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%@: %lld of %lld left undone"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ : %lld non faite sur %lld"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%@ : %lld non faites sur %lld"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%@: %lld-day streak, score %lld%%. Not done today yet." : {
       "comment" : "Siri dialog reporting a habit's streak, score, and that today isn't done yet. Arg 1: habit name. Arg 2: streak in days. Arg 3: score 0-100.",
       "extractionState" : "stale",
@@ -1337,6 +1695,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@. %2$@"
+          }
+        }
+      }
+    },
+    "%@: no data yet" : {
+      "comment" : "Insights, VoiceOver: a habit had nothing due in this period. The value is the habit name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@: no data yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ : pas encore de données"
           }
         }
       }
@@ -1446,6 +1821,47 @@
         }
       }
     },
+    "%lld days" : {
+      "comment" : "Insights Activity: the longest run of perfect days, in days.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld jours"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld days ago" : {
       "comment" : "Relative date label in the completion history list, for dates between 2 and 6 days in the past.",
       "localizations" : {
@@ -1510,6 +1926,47 @@
         }
       }
     },
+    "%lld days left" : {
+      "comment" : "Insights Goals: days until the goal's target date.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld day left"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld days left"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld jour restant"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld jours restants"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld days per week" : {
       "comment" : "Stepper label in the new-habit form and frequency summary in habit detail, for the 'N days per week' frequency.",
       "localizations" : {
@@ -1544,6 +2001,88 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld jours par semaine"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld done" : {
+      "comment" : "Insights Categories: habit days and tasks done in this category.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld done"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld done"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld fait"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld faits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld left undone" : {
+      "comment" : "Insights: tasks not done by the day they were planned for.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld left undone"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld left undone"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld non faite"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld non faites"
                 }
               }
             }
@@ -1729,6 +2268,457 @@
         }
       }
     },
+    "%lld pts" : {
+      "comment" : "Insights: a rate went up or down by this many percentage points, after an arrow. pts is short for points.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pts"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld pt"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld pts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld perfect days" : {
+      "comment" : "Insights: days on which every due habit was done.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld perfect day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld perfect days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld jour parfait"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld jours parfaits"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld nights" : {
+      "comment" : "Insights Sleep: nights of 7 hours or more out of all nights recorded.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld of %lld nights"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld of %lld nights"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld nuit sur %lld"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld nuits sur %lld"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld tasks" : {
+      "comment" : "Insights Goals: linked tasks done out of all linked tasks.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld of %lld tasks"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld of %lld tasks"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld tâche sur %lld"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld tâches sur %lld"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld open tasks are overdue" : {
+      "comment" : "Insights Tasks: open tasks whose planned or due day has passed.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld open task is overdue"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld open tasks are overdue"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld tâche ouverte est en retard"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld tâches ouvertes sont en retard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld sessions" : {
+      "comment" : "Insights Focus, VoiceOver: how many sessions ran in the period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld session"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld sessions"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld session"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld sessions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld slips" : {
+      "comment" : "Insights Habits: days a negative habit was slipped in the period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld slip"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld slips"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld écart"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld écarts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld tasks done" : {
+      "comment" : "Insights, VoiceOver: a count of tasks completed.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld task done"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tasks done"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld tâche faite"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld tâches faites"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld times" : {
+      "comment" : "Insights: how many times something was done in the period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld time"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld times"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld fois"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld fois"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld times done" : {
+      "comment" : "Insights All time, VoiceOver: habit days done since the start.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld time done"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld times done"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld réalisation"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld réalisations"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld workouts" : {
+      "comment" : "Insights Movement: Apple Health workouts in the period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workout"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld workouts"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld entraînement"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld entraînements"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld%% complete" : {
       "comment" : "VoiceOver state for an Overview cell that shows partial completion (counter or timer between 0 and target). %lld is the percentage 0-100.",
       "localizations" : {
@@ -1742,6 +2732,47 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld %% accompli"
+          }
+        }
+      }
+    },
+    "%lld-day streak" : {
+      "comment" : "Insights Habits, VoiceOver: the habit's current streak in days.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld-day streak"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld-day streak"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "série de %lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "série de %lld jours"
+                }
+              }
+            }
           }
         }
       }
@@ -1824,6 +2855,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "+5 min"
+          }
+        }
+      }
+    },
+    "7 h or more" : {
+      "comment" : "Insights Sleep: label of the nights of 7 hours or more. h is short for hours.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7 h or more"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "7 h ou plus"
+          }
+        }
+      }
+    },
+    "7 hours" : {
+      "comment" : "Insights Sleep chart: the dashed 7-hour line. Read by VoiceOver only.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7 hours"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "7 heures"
+          }
+        }
+      }
+    },
+    "7 hours or more: %@" : {
+      "comment" : "Insights Sleep, VoiceOver: nights of 7 hours or more. The value reads like 14 of 21 nights.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "7 hours or more: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "7 heures ou plus : %@"
           }
         }
       }
@@ -1932,6 +3014,74 @@
         }
       }
     },
+    "Active days" : {
+      "comment" : "Insights Pulse: ring label, share of days with any activity.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active days"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jours actifs"
+          }
+        }
+      }
+    },
+    "Active days %@" : {
+      "comment" : "Insights Pulse, VoiceOver: share of days with any activity. The value is a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active days %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jours actifs : %@"
+          }
+        }
+      }
+    },
+    "Active days: no data yet." : {
+      "comment" : "Insights Pulse, VoiceOver: no day counts in this period yet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Active days: no data yet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jours actifs : pas encore de données."
+          }
+        }
+      }
+    },
+    "Activity" : {
+      "comment" : "Insights: title of the heat map card of habit days.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activity"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Activité"
+          }
+        }
+      }
+    },
     "Add" : {
       "comment" : "Open Today’s menu for creating either a task or a habit.",
       "extractionState" : "manual",
@@ -1984,6 +3134,23 @@
         }
       }
     },
+    "Add a sleep habit" : {
+      "comment" : "Insights Sleep: button that opens a new habit prefilled for sleep.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a sleep habit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter une habitude de sommeil"
+          }
+        }
+      }
+    },
     "Add a task to plan this day. Start and end times are optional." : {
       "comment" : "Explain optional task times in the Calendar empty state.",
       "extractionState" : "manual",
@@ -1998,6 +3165,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ajoute une tâche pour planifier cette journée. Le début et la fin sont facultatifs."
+          }
+        }
+      }
+    },
+    "Add a workout habit" : {
+      "comment" : "Insights Movement: button that opens a new habit prefilled for workouts.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a workout habit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter une habitude sportive"
           }
         }
       }
@@ -2073,6 +3257,40 @@
         }
       }
     },
+    "Afternoon" : {
+      "comment" : "Insights Rhythm: focus that started between 12:00 and 16:59.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afternoon"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Après-midi"
+          }
+        }
+      }
+    },
+    "Ahead" : {
+      "comment" : "Insights Goals: progress is ahead of the time that has passed.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahead"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En avance"
+          }
+        }
+      }
+    },
     "All done" : {
       "comment" : "Small home widget empty state when every due habit is complete.",
       "extractionState" : "stale",
@@ -2104,6 +3322,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tout est fait pour aujourd'hui"
+          }
+        }
+      }
+    },
+    "All time" : {
+      "comment" : "Insights: title of the card with totals since the first record.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All time"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Depuis le début"
           }
         }
       }
@@ -2228,6 +3463,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apparence"
+          }
+        }
+      }
+    },
+    "Apple Health" : {
+      "comment" : "Insights Movement: caption over the workouts read from Apple Health.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Health"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Santé"
           }
         }
       }
@@ -2440,6 +3692,91 @@
         }
       }
     },
+    "Average" : {
+      "comment" : "Insights Focus: label of the average session length.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Average"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moyenne"
+          }
+        }
+      }
+    },
+    "Average %@" : {
+      "comment" : "Insights, VoiceOver: an average length. The value is a duration.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Average %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En moyenne %@"
+          }
+        }
+      }
+    },
+    "Average night" : {
+      "comment" : "Insights Sleep: caption under the average sleep duration.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Average night"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nuit moyenne"
+          }
+        }
+      }
+    },
+    "Average sleep %@" : {
+      "comment" : "Insights Sleep, VoiceOver: average sleep per night. The value is a duration.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Average sleep %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sommeil moyen : %@"
+          }
+        }
+      }
+    },
+    "avg %@" : {
+      "comment" : "Insights Movement: average length. avg is short for average. The value is a duration.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "avg %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "moy. %@"
+          }
+        }
+      }
+    },
     "Avoid" : {
       "comment" : "Habit type label for negative habits (things the user is trying NOT to do). Used in the new-habit picker and as the type subtitle on habit detail.",
       "localizations" : {
@@ -2493,6 +3830,40 @@
         }
       }
     },
+    "Bedtime" : {
+      "comment" : "Insights Sleep: label of the usual time the user goes to bed.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bedtime"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Coucher"
+          }
+        }
+      }
+    },
+    "Bedtime %@ consistent" : {
+      "comment" : "Insights Sleep, VoiceOver: share of nights that started near the usual bedtime.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bedtime %@ consistent"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Heure de coucher régulière à %@"
+          }
+        }
+      }
+    },
     "Before this habit started. Logging this day makes it the new start date." : {
       "comment" : "Caption in the day-edit popover on a calendar day before the habit's start, warning that logging it back-dates the habit.",
       "localizations" : {
@@ -2523,6 +3894,156 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "avant le début du suivi"
+          }
+        }
+      }
+    },
+    "Behind" : {
+      "comment" : "Insights Goals: progress is behind the time that has passed.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Behind"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En retard"
+          }
+        }
+      }
+    },
+    "Best day: %@" : {
+      "comment" : "Insights Rhythm: the weekday with the best habit consistency. The value is a weekday name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best day: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meilleur jour : %@"
+          }
+        }
+      }
+    },
+    "Best run" : {
+      "comment" : "Insights Activity: label of the longest run of perfect days.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best run"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meilleure suite"
+          }
+        }
+      }
+    },
+    "Best run: %lld days" : {
+      "comment" : "Insights Activity, VoiceOver: the longest run of perfect days in the period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Best run: %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Best run: %lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Meilleure suite : %lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Meilleure suite : %lld jours"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Best streak" : {
+      "comment" : "Insights All time: label of the best streak ever.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Best streak"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Meilleure série"
+          }
+        }
+      }
+    },
+    "Best streak: %@, %lld days" : {
+      "comment" : "Insights All time, VoiceOver: the habit with the best streak ever and that streak.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Best streak: %@, %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Best streak: %@, %lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Meilleure série : %@, %lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Meilleure série : %@, %lld jours"
+                }
+              }
+            }
           }
         }
       }
@@ -2576,6 +4097,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Annuler"
+          }
+        }
+      }
+    },
+    "Categories" : {
+      "comment" : "Insights: title of the card with one row per category.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Categories"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Catégories"
           }
         }
       }
@@ -2967,6 +4505,57 @@
         }
       }
     },
+    "Connect Apple Health" : {
+      "comment" : "Insights Sleep and Movement: button that turns on Apple Health.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Apple Health"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Connecter Santé"
+          }
+        }
+      }
+    },
+    "Connect Apple Health to see your nights." : {
+      "comment" : "Insights Sleep: shown while Apple Health is off.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Apple Health to see your nights."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Connecte Santé pour voir tes nuits."
+          }
+        }
+      }
+    },
+    "Connect Apple Health to see your workouts." : {
+      "comment" : "Insights Movement: shown while Apple Health is off.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connect Apple Health to see your workouts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Connecte Santé pour voir tes entraînements."
+          }
+        }
+      }
+    },
     "Connect Google Calendar to sync events." : {
       "comment" : "Explain a manual refresh attempted without an account connection.",
       "extractionState" : "manual",
@@ -3053,6 +4642,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Connexion"
+          }
+        }
+      }
+    },
+    "Consistency" : {
+      "comment" : "Insights Rhythm chart: the axis of habit consistency. Read by VoiceOver only.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consistency"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Régularité"
           }
         }
       }
@@ -3725,6 +5331,47 @@
         }
       }
     },
+    "Down %lld points" : {
+      "comment" : "Insights, VoiceOver: a rate fell by this many percentage points against the previous period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Down %lld point"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Down %lld points"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "En baisse de %lld point"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "En baisse de %lld points"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Due" : {
       "comment" : "Header of the Today task section listing open tasks due on a past day picked in the day strip.",
       "localizations" : {
@@ -3973,6 +5620,23 @@
         }
       }
     },
+    "Ends today" : {
+      "comment" : "Insights Goals: the goal's target date is today.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ends today"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Se termine aujourd'hui"
+          }
+        }
+      }
+    },
     "Enter a finite amount greater than zero." : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",
@@ -4021,6 +5685,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Courses"
+          }
+        }
+      }
+    },
+    "Evening" : {
+      "comment" : "Insights Rhythm: focus that started between 17:00 and 21:59.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Evening"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Soir"
           }
         }
       }
@@ -4250,6 +5931,40 @@
         }
       }
     },
+    "Finished in %@ days on average" : {
+      "comment" : "Insights Tasks: mean days from creating a task to finishing it, with one decimal.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finished in %@ days on average"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminées en %@ j en moyenne"
+          }
+        }
+      }
+    },
+    "Finished the same day on average" : {
+      "comment" : "Insights Tasks: tasks done in the period were finished the day they were created.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finished the same day on average"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminées le jour même en moyenne"
+          }
+        }
+      }
+    },
     "Firefly" : {
       "comment" : "App icon picker, under the icon's Japanese name: what Hotaru means.",
       "extractionState" : "manual",
@@ -4292,6 +6007,132 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Sport"
+          }
+        }
+      }
+    },
+    "Fitness habits and tasks: %lld times" : {
+      "comment" : "Insights Movement, VoiceOver: Fitness habit days and tasks done in the period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fitness habits and tasks: %lld time"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Fitness habits and tasks: %lld times"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Habitudes et tâches sportives : %lld fois"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Habitudes et tâches sportives : %lld fois"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Focus" : {
+      "comment" : "Insights: title of the session time card; also all-time session time.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Concentration"
+          }
+        }
+      }
+    },
+    "Focus by time of day" : {
+      "comment" : "Insights Rhythm: caption over the focus time split by part of the day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus by time of day"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Concentration selon le moment"
+          }
+        }
+      }
+    },
+    "Focus time %@" : {
+      "comment" : "Insights Focus, VoiceOver: total session time in the period. The value is a duration.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus time %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Temps de concentration : %@"
+          }
+        }
+      }
+    },
+    "Follow-through" : {
+      "comment" : "Insights Tasks: label of the share of planned tasks done.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follow-through"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Menées à bien"
+          }
+        }
+      }
+    },
+    "Follow-through %@" : {
+      "comment" : "Insights Tasks, VoiceOver: share of planned tasks done. The value is a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follow-through %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Menées à bien : %@"
           }
         }
       }
@@ -4754,6 +6595,23 @@
         }
       }
     },
+    "Grid" : {
+      "comment" : "Overview: segment that shows the habits × days grid.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grid"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Grille"
+          }
+        }
+      }
+    },
     "Habit" : {
       "comment" : "Habit option of the Task/Habit switch in the Start something sheet; also the `habit` parameter title on Kadō's AppIntents.",
       "extractionState" : "stale",
@@ -4779,6 +6637,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Couleurs des habitudes"
+          }
+        }
+      }
+    },
+    "Habit consistency %@" : {
+      "comment" : "Insights Pulse, VoiceOver: share of due habit-days done. The value is a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habit consistency %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Régularité des habitudes : %@"
+          }
+        }
+      }
+    },
+    "Habit consistency: no data yet." : {
+      "comment" : "Insights Pulse, VoiceOver: no habit was due in this period yet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habit consistency: no data yet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Régularité des habitudes : pas encore de données."
           }
         }
       }
@@ -4866,6 +6758,122 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Habitudes"
+          }
+        }
+      }
+    },
+    "Habits and tasks" : {
+      "comment" : "Insights Movement: caption over the Fitness habits and tasks figures.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habits and tasks"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Habitudes et tâches"
+          }
+        }
+      }
+    },
+    "Habits are down %lld points" : {
+      "comment" : "Insights highlight: habit consistency fell by this many percentage points against the previous period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Habits are down %lld point"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Habits are down %lld points"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Habitudes en baisse de %lld point"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Habitudes en baisse de %lld points"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Habits are up %lld points" : {
+      "comment" : "Insights highlight: habit consistency rose by this many percentage points against the previous period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Habits are up %lld point"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Habits are up %lld points"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Habitudes en hausse de %lld point"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Habitudes en hausse de %lld points"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Habits by weekday" : {
+      "comment" : "Insights Rhythm: caption over the habit consistency bars per weekday.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habits by weekday"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Habitudes par jour"
           }
         }
       }
@@ -5061,6 +7069,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Santé"
+          }
+        }
+      }
+    },
+    "Highlights" : {
+      "comment" : "Insights: title of the card with up to four plain facts.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Highlights"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Faits marquants"
           }
         }
       }
@@ -5443,6 +7468,23 @@
         }
       }
     },
+    "Insights" : {
+      "comment" : "Overview: segment that shows the Insights feed.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Insights"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Bilan"
+          }
+        }
+      }
+    },
     "It reflects your habit's strength over time, not a streak." : {
       "comment" : "First bullet in the score explanation sheet; plain-English statement that the score is not a streak.",
       "localizations" : {
@@ -5604,6 +7646,57 @@
         }
       }
     },
+    "Last 12 months" : {
+      "comment" : "Insights: the span the Year period covers.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 12 months"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "12 derniers mois"
+          }
+        }
+      }
+    },
+    "Last 30 days" : {
+      "comment" : "Insights: the span the Month period covers.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 30 days"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "30 derniers jours"
+          }
+        }
+      }
+    },
+    "Last 7 days" : {
+      "comment" : "Insights: the span the Week period covers.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last 7 days"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "7 derniers jours"
+          }
+        }
+      }
+    },
     "Last export: %@" : {
       "comment" : "Footnote under the Export button. Arg: localized date and time of the most recent successful export.",
       "localizations" : {
@@ -5721,6 +7814,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La ligne %lld n'a pas le nombre de colonnes attendu."
+          }
+        }
+      }
+    },
+    "Less" : {
+      "comment" : "Insights Activity legend: the lightest shade, fewer habits done that day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Less"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Moins"
+          }
+        }
+      }
+    },
+    "Left undone" : {
+      "comment" : "Insights Tasks: label of the count of tasks not done by their day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Left undone"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non faites"
           }
         }
       }
@@ -5995,6 +8122,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Maintiens une ligne pour la supprimer."
+          }
+        }
+      }
+    },
+    "Longest" : {
+      "comment" : "Insights Focus: label of the longest session.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longest"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La plus longue"
+          }
+        }
+      }
+    },
+    "Longest %@" : {
+      "comment" : "Insights Focus, VoiceOver: the longest session. The value is a duration.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Longest %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La plus longue : %@"
           }
         }
       }
@@ -6299,6 +8460,40 @@
         }
       }
     },
+    "Month" : {
+      "comment" : "Insights period picker: the last 30 days.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Month"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mois"
+          }
+        }
+      }
+    },
+    "More" : {
+      "comment" : "Insights Activity legend: the strongest shade, more habits done that day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "More"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plus"
+          }
+        }
+      }
+    },
     "More habit colours" : {
       "comment" : "Supporter pack contents: title of the paid colour themes item.",
       "localizations" : {
@@ -6312,6 +8507,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Plus de couleurs d'habitudes"
+          }
+        }
+      }
+    },
+    "Morning" : {
+      "comment" : "Insights Rhythm: focus that started between 5:00 and 11:59.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Morning"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Matin"
+          }
+        }
+      }
+    },
+    "Most focus went to %@: %@" : {
+      "comment" : "Insights highlight: the category with the most session time, then that time, such as 6h 20m.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Most focus went to %@: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ta concentration est surtout allée à « %@ » : %@"
           }
         }
       }
@@ -6348,6 +8577,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Déplacer vers cet objectif"
+          }
+        }
+      }
+    },
+    "Movement" : {
+      "comment" : "Insights: title of the workouts and fitness habits card.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Movement"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mouvement"
           }
         }
       }
@@ -6544,6 +8790,23 @@
         }
       }
     },
+    "Night" : {
+      "comment" : "Insights: focus that started between 22:00 and 4:59; also one night of sleep in a chart.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Night"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Nuit"
+          }
+        }
+      }
+    },
     "No archived habits" : {
       "comment" : "Empty-state title of the Archived habits list.",
       "localizations" : {
@@ -6557,6 +8820,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aucune habitude archivée"
+          }
+        }
+      }
+    },
+    "No data yet" : {
+      "comment" : "Insights: a figure has nothing to count in this period yet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No data yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pas encore de données"
           }
         }
       }
@@ -6575,6 +8855,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aucun jour sélectionné"
+          }
+        }
+      }
+    },
+    "No earlier data" : {
+      "comment" : "Insights: the previous period has nothing to compare with.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No earlier data"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucune donnée avant"
           }
         }
       }
@@ -6811,6 +9108,40 @@
         }
       }
     },
+    "No sessions in this period." : {
+      "comment" : "Insights Focus: sessions were tracked before, but none in this period.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sessions in this period."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucune session sur cette période."
+          }
+        }
+      }
+    },
+    "No sleep data from Apple Health in this period." : {
+      "comment" : "Insights Sleep: Apple Health is on but has no night in this period.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No sleep data from Apple Health in this period."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucune donnée de sommeil dans Santé sur cette période."
+          }
+        }
+      }
+    },
     "No slip recorded today" : {
       "comment" : "Linked negative habit caption when no slip was recorded today; this must remain distinct from a positive habit completion.",
       "extractionState" : "manual",
@@ -6825,6 +9156,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aucun écart enregistré aujourd’hui"
+          }
+        }
+      }
+    },
+    "No workouts from Apple Health in this period." : {
+      "comment" : "Insights Movement: Apple Health is on but has no workout in this period.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No workouts from Apple Health in this period."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucun entraînement dans Santé sur cette période."
           }
         }
       }
@@ -7259,6 +9607,74 @@
         }
       }
     },
+    "On plan" : {
+      "comment" : "Insights Focus: sessions lasted about as long as their planned blocks.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On plan"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comme prévu"
+          }
+        }
+      }
+    },
+    "On time" : {
+      "comment" : "Insights Tasks: label of the share of done tasks finished by their day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On time"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "À temps"
+          }
+        }
+      }
+    },
+    "On time %@" : {
+      "comment" : "Insights Tasks, VoiceOver: share of done tasks finished by their day. The value is a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On time %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "À temps : %@"
+          }
+        }
+      }
+    },
+    "On track" : {
+      "comment" : "Insights Goals: progress keeps up with the time that has passed.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On track"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans les temps"
+          }
+        }
+      }
+    },
     "One-line summary of today's habits." : {
       "comment" : "Inline lock widget description.",
       "extractionState" : "stale",
@@ -7483,6 +9899,40 @@
         }
       }
     },
+    "Opens the goal." : {
+      "comment" : "Insights Goals, VoiceOver hint on a goal row.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the goal."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvre l'objectif."
+          }
+        }
+      }
+    },
+    "Opens the habit." : {
+      "comment" : "Insights Habits, VoiceOver hint on a habit row.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the habit."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvre l'habitude."
+          }
+        }
+      }
+    },
     "Opens the Supporter pack." : {
       "comment" : "VoiceOver hint on a locked habit colour theme or app icon in Settings.",
       "localizations" : {
@@ -7618,6 +10068,40 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Relations"
+          }
+        }
+      }
+    },
+    "Perfect days" : {
+      "comment" : "Insights Activity: label of the days on which every due habit was done.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfect days"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jours parfaits"
+          }
+        }
+      }
+    },
+    "Period" : {
+      "comment" : "Insights: label of the Week / Month / Year picker.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Période"
           }
         }
       }
@@ -7817,6 +10301,23 @@
         }
       }
     },
+    "Progress %@" : {
+      "comment" : "Insights Goals, VoiceOver: how far the goal is. The value is a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progress %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Progression : %@"
+          }
+        }
+      }
+    },
     "Progress counts from the start date through today. The deadline does not stop counting; goal completion stays manual." : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",
@@ -7939,6 +10440,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Source de progression"
+          }
+        }
+      }
+    },
+    "Pulse" : {
+      "comment" : "Insights: title of the card with the three rings at the top.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulse"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L'essentiel"
           }
         }
       }
@@ -8332,6 +10850,23 @@
         }
       }
     },
+    "Rhythm" : {
+      "comment" : "Insights: title of the card about weekdays and times of day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rhythm"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rythme"
+          }
+        }
+      }
+    },
     "Rowing" : {
       "comment" : "Workout type shown on the Calendar timeline.",
       "extractionState" : "manual",
@@ -8364,6 +10899,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Course"
+          }
+        }
+      }
+    },
+    "Same as before" : {
+      "comment" : "Insights: a figure did not change against the previous period.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same as before"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comme avant"
           }
         }
       }
@@ -8665,6 +11217,57 @@
         }
       }
     },
+    "Sessions" : {
+      "comment" : "Insights Focus: label of the count of sessions in the period.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sessions"
+          }
+        }
+      }
+    },
+    "Sessions ran %@ longer than planned" : {
+      "comment" : "Insights Focus: sessions lasted longer than their planned blocks. The value is a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessions ran %@ longer than planned"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tes sessions ont duré %@ de plus que prévu"
+          }
+        }
+      }
+    },
+    "Sessions ran %@ shorter than planned" : {
+      "comment" : "Insights Focus: sessions were shorter than their planned blocks. The value is a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessions ran %@ shorter than planned"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tes sessions ont duré %@ de moins que prévu"
+          }
+        }
+      }
+    },
     "Set category to %@" : {
       "comment" : "Suggestion chip button: sets the form's category to the named one.",
       "localizations" : {
@@ -8763,6 +11366,88 @@
         }
       }
     },
+    "Since %@ · %lld days" : {
+      "comment" : "Insights All time: the day of the first record, then days since then.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Since %@ · %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Since %@ · %lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Depuis le %@ · %lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Depuis le %@ · %lld jours"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Since %@, %lld days" : {
+      "comment" : "Insights All time, VoiceOver: the day of the first record, then days since then.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Since %@, %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Since %@, %lld days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Depuis le %@, %lld jour"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Depuis le %@, %lld jours"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Skip" : {
       "comment" : "Text for a notification action that skips a habit.",
       "isCommentAutoGenerated" : true,
@@ -8788,6 +11473,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Sommeil"
+          }
+        }
+      }
+    },
+    "Sleep 7+ hours" : {
+      "comment" : "Name a new habit starts with when created from the Insights Sleep card.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep 7+ hours"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dormir 7 h ou plus"
           }
         }
       }
@@ -8905,6 +11607,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jours précis"
+          }
+        }
+      }
+    },
+    "Start a session from Now to see your focus time." : {
+      "comment" : "Insights Focus: shown before the first session ever. Now is the tab's name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start a session from Now to see your focus time."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lance une session depuis Maintenant pour voir ton temps de concentration."
           }
         }
       }
@@ -9548,6 +12267,40 @@
         }
       }
     },
+    "Task follow-through %@" : {
+      "comment" : "Insights Pulse, VoiceOver: share of planned tasks done. The value is a percent.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Task follow-through %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tâches menées à bien : %@"
+          }
+        }
+      }
+    },
+    "Task follow-through: no data yet." : {
+      "comment" : "Insights Pulse, VoiceOver: no task was done or left undone in this period yet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Task follow-through: no data yet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tâches menées à bien : pas encore de données."
+          }
+        }
+      }
+    },
     "Task inbox" : {
       "comment" : "Head tasks with no due day or planned block in Today.",
       "extractionState" : "manual",
@@ -9656,6 +12409,23 @@
         }
       }
     },
+    "Tasks done" : {
+      "comment" : "Insights All time: label of tasks done since the first record.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasks done"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tâches faites"
+          }
+        }
+      }
+    },
     "Tasks today & overdue" : {
       "comment" : "Head Today’s due, planned-today, and overdue task section.",
       "extractionState" : "manual",
@@ -9739,6 +12509,47 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Merci de soutenir Kadō. Tes extras sont débloqués sur tous les appareils connectés à ce compte Apple."
+          }
+        }
+      }
+    },
+    "That's about %lld films' worth of focus" : {
+      "comment" : "Insights All time: a light comparison of all focus time with two-hour films.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "That's about %lld film's worth of focus"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "That's about %lld films' worth of focus"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Soit environ %lld film de concentration"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Soit environ %lld films de concentration"
+                }
+              }
+            }
           }
         }
       }
@@ -10304,6 +13115,23 @@
         }
       }
     },
+    "Times done" : {
+      "comment" : "Insights All time: label of habit days done since the first record.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Times done"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réalisations"
+          }
+        }
+      }
+    },
     "Tip pending" : {
       "comment" : "Alert title when a tip purchase is pending approval (e.g. Ask to Buy).",
       "localizations" : {
@@ -10439,6 +13267,64 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Valeur du jour"
+          }
+        }
+      }
+    },
+    "Top: %@, %lld times" : {
+      "comment" : "Insights Movement: the most frequent workout type and how often it was done.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Top: %@, %lld time"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Top: %@, %lld times"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Le plus fréquent : %@, %lld fois"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Le plus fréquent : %@, %lld fois"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Track a habit, finish a task or start a session from Now." : {
+      "comment" : "Insights: how to fill the first-run state. Now is the tab's name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Track a habit, finish a task or start a session from Now."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suis une habitude, termine une tâche ou lance une session depuis Maintenant."
           }
         }
       }
@@ -10879,6 +13765,47 @@
         }
       }
     },
+    "Up %lld points" : {
+      "comment" : "Insights, VoiceOver: a rate rose by this many percentage points against the previous period.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Up %lld point"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Up %lld points"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "En hausse de %lld point"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "En hausse de %lld points"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "upcoming" : {
       "comment" : "VoiceOver state for a future day cell in the monthly calendar grid.",
       "localizations" : {
@@ -10960,6 +13887,23 @@
         }
       }
     },
+    "Usual bedtime %@, wake-up %@" : {
+      "comment" : "Insights Sleep, VoiceOver: median bedtime and wake time. The values are times of day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usual bedtime %@, wake-up %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Coucher habituel %@, réveil %@"
+          }
+        }
+      }
+    },
     "Value" : {
       "comment" : "Title of the `value` parameter on LogHabitValueIntent.",
       "extractionState" : "stale",
@@ -11024,6 +13968,23 @@
         }
       }
     },
+    "Wake-up" : {
+      "comment" : "Insights Sleep: label of the usual time the user wakes up.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wake-up"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réveil"
+          }
+        }
+      }
+    },
     "Walking" : {
       "comment" : "Workout type shown on the Calendar timeline.",
       "extractionState" : "manual",
@@ -11072,6 +14033,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La semaine commence le"
+          }
+        }
+      }
+    },
+    "Weekday" : {
+      "comment" : "Insights Rhythm chart: the axis of weekdays. Read by VoiceOver only.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weekday"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jour de la semaine"
           }
         }
       }
@@ -11147,6 +14125,23 @@
         }
       }
     },
+    "Work out" : {
+      "comment" : "Name a new habit starts with when created from the Insights Movement card.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Work out"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Faire du sport"
+          }
+        }
+      }
+    },
     "Workout" : {
       "comment" : "Generic workout name shown on the Calendar timeline.",
       "extractionState" : "manual",
@@ -11161,6 +14156,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entraînement"
+          }
+        }
+      }
+    },
+    "Year" : {
+      "comment" : "Insights period picker: the last 12 months.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Year"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Année"
           }
         }
       }
@@ -11231,6 +14243,74 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Tu décides quand mettre un objectif en pause ou le marquer comme terminé. Les tâches et habitudes liées conservent leur propre historique."
+          }
+        }
+      }
+    },
+    "You focus most at night (%@)" : {
+      "comment" : "Insights highlight: most session time starts at night. The value is that share.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You focus most at night (%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tu te concentres surtout la nuit (%@)"
+          }
+        }
+      }
+    },
+    "You focus most in the afternoon (%@)" : {
+      "comment" : "Insights highlight: most session time starts in the afternoon. The value is that share.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You focus most in the afternoon (%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tu te concentres surtout l'après-midi (%@)"
+          }
+        }
+      }
+    },
+    "You focus most in the evening (%@)" : {
+      "comment" : "Insights highlight: most session time starts in the evening. The value is that share.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You focus most in the evening (%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tu te concentres surtout le soir (%@)"
+          }
+        }
+      }
+    },
+    "You focus most in the morning (%@)" : {
+      "comment" : "Insights highlight: most session time starts in the morning. The value is that share.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You focus most in the morning (%@)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tu te concentres surtout le matin (%@)"
           }
         }
       }
@@ -11360,6 +14440,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tes habitudes seront remplacées par un jeu de démonstration pendant le mode développeur. Tes vraies habitudes sont en sécurité et reviendront dès que tu le désactives."
+          }
+        }
+      }
+    },
+    "Your insights will appear here" : {
+      "comment" : "Insights: first-run title, before any habit, task or session exists.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your insights will appear here"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ton bilan apparaîtra ici"
           }
         }
       }

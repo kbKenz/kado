@@ -27,7 +27,7 @@ final class OverviewDayEditTests: KadoUITestCase {
         let habitID = try XCTUnwrap(openCounterHabitDetail(in: app), "No counter habit in the seed.")
         app.navigationBars.buttons.firstMatch.tap()
 
-        tapTab(.overview, in: app)
+        openOverviewGrid(in: app)
         let cell = app.buttons[AccessibilityID.Overview.cell(habitID, daysAgo: 0)]
         XCTAssertTrue(cell.waitForExistence(timeout: 10), "Today's cell for the counter habit never appeared.")
         scrollTo(cell, in: app)
@@ -55,7 +55,7 @@ final class OverviewDayEditTests: KadoUITestCase {
     @MainActor
     func testMarkingABinaryHabitDoneFromTheOverviewPopover() throws {
         let app = launchApp(devMode: true)
-        tapTab(.overview, in: app)
+        openOverviewGrid(in: app)
 
         let todayCells = elements(withIdentifierPrefix: AccessibilityID.Overview.cellPrefix, in: app)
             .matching(NSPredicate(format: "identifier ENDSWITH %@", ".0"))

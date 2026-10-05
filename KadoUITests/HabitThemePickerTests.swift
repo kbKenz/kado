@@ -47,7 +47,7 @@ final class HabitThemePickerTests: KadoUITestCase {
         XCTAssertFalse(kado.isSelected, "Choosing Classic should deselect Kadō.")
         capture(app, "habit-theme-picker-classic")
 
-        tapTab(.overview, in: app)
+        openOverviewGrid(in: app)
         capture(app, "habit-theme-overview-classic")
 
         tapTab(.today, in: app)
@@ -96,7 +96,7 @@ final class HabitPaletteCaptureTests: KadoUITestCase {
             )
             waitForTodayRows(in: app)
             capture(app, "palette-\(theme)-today")
-            tapTab(.overview, in: app)
+            openOverviewGrid(in: app)
             Thread.sleep(forTimeInterval: 1.0)
             capture(app, "palette-\(theme)-overview")
             app.terminate()

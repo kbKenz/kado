@@ -309,9 +309,10 @@ enum AccessibilityID {
     }
 
     /// The Overview tab's Insights feed (`InsightsView`) and its
-    /// Insights / Grid switch.
+    /// Insights / History / Grid switch.
     enum Insights {
-        /// The segmented Insights / Grid switch at the top of Overview.
+        /// The segmented Insights / History / Grid switch at the top of
+        /// Overview.
         static let modePicker = "overview.mode"
         /// The segmented Week / Month / Year picker.
         static let periodPicker = "insights.period"
@@ -332,6 +333,27 @@ enum AccessibilityID {
         /// A one-tap template button on an empty card, keyed by the
         /// template's name ("sleep", "workout").
         static func template(_ name: String) -> String { "insights.template.\(name)" }
+    }
+
+    /// The Overview tab's History mode (`HistoryScreen`).
+    enum History {
+        /// The All / Tasks / Habits chips.
+        static func kind(_ name: String) -> String { "history.kind.\(name)" }
+        /// A category chip, keyed by the category's raw value.
+        static func category(_ name: String) -> String { "history.category.\(name)" }
+        /// The sort menu in the toolbar.
+        static let sortMenu = "history.sort"
+        /// The "Go to date" button in the toolbar.
+        static let jumpButton = "history.jump"
+        /// A day's header, keyed by its date as `yyyy-MM-dd`.
+        static func day(_ key: String) -> String { "history.day.\(key)" }
+        /// One entry row, keyed by `HistoryEntry.id`.
+        static func entry(_ id: String) -> String { "history.entry.\(id)" }
+        /// The first-run state, and the no-match state under a filter.
+        static let empty = "history.empty"
+        static let noMatch = "history.noMatch"
+        /// The marker under the oldest day.
+        static let end = "history.end"
     }
 
     /// The category row and the title suggestions in the task, habit

@@ -207,10 +207,15 @@ nonisolated enum UITestSupport {
         // Today's List / Calendar choice persists, so a run that picked
         // Calendar would start every later run in it.
         UserDefaults.standard.removeObject(forKey: TodayModeDefaults.key)
-        // Overview's Insights / Grid choice and the Insights period
-        // persist the same way: every run starts on Insights, Month.
+        // Overview's Insights / History / Grid choice, the Insights
+        // period and the History's filter and sort persist the same
+        // way: every run starts on Insights, Month, and an unfiltered
+        // History, newest first.
         UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.key)
         UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.insightsPeriodKey)
+        UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.historyKindKey)
+        UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.historyDayOrderKey)
+        UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.historyItemOrderKey)
         applyTipNudgeState(arguments)
         applyAppearanceAnnouncementState(arguments)
     }

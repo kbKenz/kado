@@ -3,7 +3,8 @@ import SwiftUI
 import KadoCore
 
 /// The Overview tab. Owns the navigation stack and the title, and
-/// switches between the Insights feed (`InsightsScreen`) and the
+/// switches between the Insights feed (`InsightsScreen`), the
+/// day-by-day record of what was done (`HistoryScreen`) and the
 /// habits × days matrix (`OverviewGridView`), like Today's List /
 /// Calendar switch. The choice is remembered across launches.
 struct OverviewView: View {
@@ -15,6 +16,7 @@ struct OverviewView: View {
             Group {
                 switch mode {
                 case .insights: InsightsScreen(path: $path)
+                case .history: HistoryScreen(path: $path)
                 case .grid: OverviewGridView()
                 }
             }
@@ -28,13 +30,14 @@ struct OverviewView: View {
     }
 }
 
-/// The Insights / Grid switch under the title.
+/// The Insights / History / Grid switch under the title.
 private struct OverviewModePicker: View {
     @Binding var mode: OverviewMode
 
     var body: some View {
         Picker("View", selection: $mode) {
             Text("Insights").tag(OverviewMode.insights)
+            Text("History").tag(OverviewMode.history)
             Text("Grid").tag(OverviewMode.grid)
         }
         .pickerStyle(.segmented)

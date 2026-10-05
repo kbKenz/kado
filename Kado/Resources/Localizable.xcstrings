@@ -2049,6 +2049,47 @@
         }
       }
     },
+    "%lld habits logged" : {
+      "comment" : "History day header, VoiceOver: habit records that day.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld habit logged"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld habits logged"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld habitude notée"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld habitudes notées"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld left undone" : {
       "comment" : "Insights: tasks not done by the day they were planned for.",
       "localizations" : {
@@ -2466,6 +2507,47 @@
                 "stringUnit" : {
                   "state" : "needs_review",
                   "value" : "%lld tâches ouvertes sont en retard"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld quiet days" : {
+      "comment" : "History: the number of days with nothing done between two days in the list.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld quiet day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld quiet days"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld jour calme"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld jours calmes"
                 }
               }
             }
@@ -3291,6 +3373,23 @@
         }
       }
     },
+    "All" : {
+      "comment" : "History filter chip: show tasks and habits.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "All"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tout"
+          }
+        }
+      }
+    },
     "All done" : {
       "comment" : "Small home widget empty state when every due habit is complete.",
       "extractionState" : "stale",
@@ -4066,6 +4165,57 @@
         }
       }
     },
+    "By category" : {
+      "comment" : "History sort menu: order a day's items by category.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By category"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Par catégorie"
+          }
+        }
+      }
+    },
+    "By name" : {
+      "comment" : "History sort menu: order a day's items by title, A to Z.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By name"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Par nom"
+          }
+        }
+      }
+    },
+    "By time" : {
+      "comment" : "History sort menu: order a day's items by the time they were done.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "By time"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Par heure"
+          }
+        }
+      }
+    },
     "Calendar" : {
       "comment" : "Name the internal planning tab and its day timeline.",
       "extractionState" : "manual",
@@ -4289,6 +4439,23 @@
         }
       }
     },
+    "Clear filters" : {
+      "comment" : "History: button that resets the type and category filters.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear filters"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Effacer les filtres"
+          }
+        }
+      }
+    },
     "Close" : {
       "comment" : "Button dismissing the Tip Jar or Appearance sheet opened from a Today card.",
       "localizations" : {
@@ -4349,6 +4516,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Terminer"
+          }
+        }
+      }
+    },
+    "Complete a task or log a habit, and it shows up here, day by day." : {
+      "comment" : "History: text before the first task is completed or habit logged.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Complete a task or log a habit, and it shows up here, day by day."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Termine une tâche ou note une habitude : elle s'affichera ici, jour après jour."
           }
         }
       }
@@ -4734,6 +4918,23 @@
         }
       }
     },
+    "Couldn't save" : {
+      "comment" : "History: alert title when a change to a task or habit record fails to save.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Enregistrement impossible"
+          }
+        }
+      }
+    },
     "Counter" : {
       "comment" : "Habit type picker option — habits measured by an incrementing count (e.g. glasses of water).",
       "localizations" : {
@@ -5026,6 +5227,23 @@
         }
       }
     },
+    "Days" : {
+      "comment" : "History sort menu: section that orders the days.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Days"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Jours"
+          }
+        }
+      }
+    },
     "Decrement" : {
       "comment" : "VoiceOver label for the minus button in the counter quick-log control.",
       "localizations" : {
@@ -5091,6 +5309,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Supprimer l’objectif"
+          }
+        }
+      }
+    },
+    "Delete entry" : {
+      "comment" : "History: menu item that deletes one habit record from a day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete entry"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer l'entrée"
           }
         }
       }
@@ -6213,6 +6448,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Obtenir le pack de soutien, %@"
+          }
+        }
+      }
+    },
+    "Go to date" : {
+      "comment" : "History: toolbar button and sheet title to jump the list to a day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Go to date"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aller à une date"
           }
         }
       }
@@ -8143,6 +8395,23 @@
         }
       }
     },
+    "Long-press an item to edit or undo it." : {
+      "comment" : "History: footer that says the rows have a long-press menu.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Long-press an item to edit or undo it."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appuie longuement sur un élément pour le modifier ou l'annuler."
+          }
+        }
+      }
+    },
     "Longest" : {
       "comment" : "Insights Focus: label of the longest session.",
       "localizations" : {
@@ -8772,6 +9041,23 @@
         }
       }
     },
+    "Newest first" : {
+      "comment" : "History sort menu: show the most recent day at the top.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Newest first"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plus récents d'abord"
+          }
+        }
+      }
+    },
     "Next month" : {
       "comment" : "Accessibility label for the forward chevron in the month navigator.",
       "localizations" : {
@@ -9013,6 +9299,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Aucune tâche liée pour l’instant"
+          }
+        }
+      }
+    },
+    "No matches" : {
+      "comment" : "History: title when the search or the filters hide every item.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No matches"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Aucun résultat"
           }
         }
       }
@@ -9430,6 +9733,23 @@
         }
       }
     },
+    "Nothing done yet" : {
+      "comment" : "History: title before the first task is completed or habit logged.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing done yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rien de fait pour l'instant"
+          }
+        }
+      }
+    },
     "Nothing due" : {
       "comment" : "Day strip cell accessibility value when no habit is due that day",
       "localizations" : {
@@ -9513,6 +9833,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rien à restaurer"
+          }
+        }
+      }
+    },
+    "Nothing you've done matches these filters." : {
+      "comment" : "History: text when the search or the filters hide every item.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing you've done matches these filters."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rien de ce que tu as fait ne correspond à ces filtres."
           }
         }
       }
@@ -9620,6 +9957,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
+          }
+        }
+      }
+    },
+    "Oldest first" : {
+      "comment" : "History sort menu: show the oldest day at the top.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oldest first"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plus anciens d'abord"
           }
         }
       }
@@ -9846,6 +10200,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Rouvre les réglages Google Calendar pour te connecter."
+          }
+        }
+      }
+    },
+    "Open habit" : {
+      "comment" : "History: menu item and VoiceOver hint that open the habit's detail.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open habit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir l'habitude"
           }
         }
       }
@@ -11140,6 +11511,23 @@
         }
       }
     },
+    "Search history" : {
+      "comment" : "History: placeholder of the search field over the list of done items.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search history"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rechercher dans l'historique"
+          }
+        }
+      }
+    },
     "Search items" : {
       "comment" : "Search field prompt in the task/habit linking sheet.",
       "extractionState" : "manual",
@@ -11576,6 +11964,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Écart aujourd’hui"
+          }
+        }
+      }
+    },
+    "Sort" : {
+      "comment" : "History: toolbar menu that orders the days and the items.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sort"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Trier"
           }
         }
       }
@@ -12584,6 +12989,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "That's the beginning" : {
+      "comment" : "History: marker under the oldest day in the list.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That's the beginning"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "C'est le début"
           }
         }
       }
@@ -14124,6 +14546,23 @@
         }
       }
     },
+    "Within a day" : {
+      "comment" : "History sort menu: section that orders the items inside each day.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Within a day"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans une journée"
+          }
+        }
+      }
+    },
     "Without a day, this task stays in your Today inbox. You can schedule it later." : {
       "comment" : "Explain the task inbox when a task has no planned day.",
       "extractionState" : "manual",
@@ -14172,6 +14611,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Faire du sport"
+          }
+        }
+      }
+    },
+    "Worked %@" : {
+      "comment" : "History, VoiceOver: time tracked on a task or habit that was not finished that day. The value is a duration.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worked %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ de travail"
           }
         }
       }
@@ -14407,6 +14863,23 @@
         }
       }
     },
+    "You're up to date" : {
+      "comment" : "History: marker under the newest day when the list runs oldest first.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You're up to date"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tu es à jour"
+          }
+        }
+      }
+    },
     "Your day is open" : {
       "comment" : "Show the Calendar empty state when no task is planned for this day.",
       "extractionState" : "manual",
@@ -14421,6 +14894,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ta journée est libre"
+          }
+        }
+      }
+    },
+    "Your first entry was on %@." : {
+      "comment" : "History: under the end marker. The value is a date.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your first entry was on %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ta première entrée date du %@."
           }
         }
       }

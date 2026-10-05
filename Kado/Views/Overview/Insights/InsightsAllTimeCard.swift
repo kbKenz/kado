@@ -24,9 +24,10 @@ struct InsightsAllTimeCard: View {
                     InsightsStat(value: InsightsFormat.count(allTime.habitTimesDone), label: "Times done")
                     InsightsStat(value: InsightsFormat.count(allTime.tasksDone), label: "Tasks done")
                     InsightsStat(value: InsightsFormat.duration(allTime.focusSeconds), label: "Focus")
-                    if let best = allTime.bestStreak {
-                        InsightsStat(value: bestStreakText(best), label: "Best streak")
-                    }
+                }
+                // A habit name needs the whole width.
+                if let best = allTime.bestStreak {
+                    InsightsStat(value: bestStreakText(best), label: "Best streak")
                 }
                 if let films = filmsText {
                     Label {

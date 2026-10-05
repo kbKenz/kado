@@ -349,7 +349,7 @@ enum InsightsPreviewData {
         var nights: [InsightsNight] = []
         // Three nights in ten have no record, as when the watch charges.
         for (index, day) in periodDays.enumerated() where ![2, 5, 8].contains(index % 10) {
-            let bedtime = 22 * 60 + 30 + (index * 17) % 75
+            let bedtime = 21 * 60 + 55 + (index * 17) % 125
             let wake = 6 * 60 + 5 + (index * 23) % 70
             let evening = InsightsScope.step(day, by: -1, calendar: calendar)
             guard let start = calendar.date(bySettingHour: bedtime / 60, minute: bedtime % 60, second: 0, of: evening),

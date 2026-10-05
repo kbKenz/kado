@@ -60,6 +60,8 @@ private struct InsightsHeatMap: View {
     @ScaledMetric(relativeTo: .caption2) private var cell: CGFloat = 14
     @ScaledMetric(relativeTo: .caption2) private var gap: CGFloat = 3
     @ScaledMetric(relativeTo: .caption2) private var monthHeight: CGFloat = 14
+    /// The width the scrolling year gets, once measured.
+    @State private var availableWidth: CGFloat?
 
     var body: some View {
         let columns = InsightsWeekColumns.columns(of: days, calendar: calendar)
@@ -70,10 +72,27 @@ private struct InsightsHeatMap: View {
                     grid(columns)
                 }
                 .defaultScrollAnchor(.trailing)
+                .defaultScrollAnchor(.trailing, for: .sizeChanges)
+                .frame(width: wholeColumnsWidth)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .onGeometryChange(for: CGFloat.self) { proxy in
+                    proxy.size.width
+                } action: { width in
+                    availableWidth = width
+                }
             } else {
                 grid(columns)
             }
         }
+    }
+
+    /// The scrolling year shows whole weeks only: a sliver of a cut
+    /// column at the leading edge reads as a stray line.
+    private var wholeColumnsWidth: CGFloat? {
+        guard let availableWidth, availableWidth > cell else { return nil }
+        let pitch = cell + gap
+        let count = ((availableWidth + gap) / pitch).rounded(.down)
+        return max(cell, count * pitch - gap)
     }
 
     private var weekdayLabels: some View {
@@ -105,19 +124,21 @@ private struct InsightsHeatMap: View {
         }
     }
 
-    /// The month's short name over the week its first day falls in.
+    /// The month's initial over the week its first day falls in, as the
+    /// year charts write months. One letter fits a column, so no label
+    /// spills past the edge of the scroll.
     private func monthLabel(_ column: InsightsWeekColumns.Column) -> some View {
         let first = column.cells.compactMap { $0 }.first { calendar.component(.day, from: $0.date) == 1 }
-        return ZStack(alignment: .leading) {
-            Color.clear.frame(width: cell, height: monthHeight)
+        return ZStack {
+            Color.clear
             if let first {
-                Text(first.date, format: .dateTime.month(.abbreviated))
+                Text(first.date, format: .dateTime.month(.narrow))
                     .font(.caption2)
                     .foregroundStyle(Color.kadoForegroundSecondary)
                     .fixedSize()
             }
         }
-        .frame(width: cell, height: monthHeight, alignment: .leading)
+        .frame(width: cell, height: monthHeight)
     }
 
     @ViewBuilder
@@ -144,7 +165,6 @@ private struct InsightsHeatMap: View {
         guard fraction > 0 else { return Color.kadoHairline }
         return Color.kadoAccent.opacity(0.25 + 0.75 * min(1, fraction))
     }
-
 }
 
 /// The heat map's layout: the days in week columns, each from the

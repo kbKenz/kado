@@ -105,10 +105,13 @@ struct InsightsShareBar: View {
             .fill(Color.kadoHairline)
             .frame(height: height)
             .overlay(alignment: .leading) {
-                GeometryReader { proxy in
-                    Capsule()
-                        .fill(color)
-                        .frame(width: max(height, proxy.size.width * min(1, max(0, fraction))))
+                // No fill for a zero share: a dot would read as some time.
+                if fraction > 0 {
+                    GeometryReader { proxy in
+                        Capsule()
+                            .fill(color)
+                            .frame(width: max(height, proxy.size.width * min(1, fraction)))
+                    }
                 }
             }
             .accessibilityHidden(true)

@@ -64,8 +64,10 @@ struct InsightsSleepCard: View {
                 }
             }
             InsightsNightsChart(nights: sleep.nights, days: days)
+            // "14 of 21 nights" needs the width of a row to stay on one
+            // line, so the two times get a row of their own.
+            InsightsStat(value: nightsOverSeven, label: "7 h or more")
             InsightsStatRow {
-                InsightsStat(value: nightsOverSeven, label: "7 h or more")
                 InsightsStat(value: time(sleep.medianBedtimeMinutes), label: "Bedtime")
                 InsightsStat(value: time(sleep.medianWakeMinutes), label: "Wake-up")
             }
@@ -124,28 +126,34 @@ private struct InsightsNightsChart: View {
             ForEach(nights) { night in
                 BarMark(
                     x: .value("Night", night.day, unit: .day),
-                    y: .value("Sleep", night.duration / 3600)
+                    y: .value("Sleep", night.duration / 3600),
+                    // A year of nights reads as one shape, not a barcode.
+                    width: days.count > 31 ? .ratio(1) : .automatic
                 )
                 .foregroundStyle(ItemCategory.sleep.chartColor(in: habitTheme))
             }
             RuleMark(y: .value("7 hours", Self.sevenHours))
                 .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 .foregroundStyle(Color.kadoForegroundSecondary)
-                .annotation(position: .top, alignment: .trailing, spacing: 2) {
-                    Text(InsightsFormat.duration(Self.sevenHours * 3600))
-                        .font(.caption2)
-                        .foregroundStyle(Color.kadoForegroundSecondary)
-                }
         }
         .chartXScale(domain: xDomain)
         .chartYScale(domain: 0...yTop)
-        .chartYAxis(.hidden)
-        .chartXAxis {
-            AxisMarks(values: axisDates) { _ in
-                AxisValueLabel(format: axisFormat, centered: true)
+        // The 7-hour line's label sits beside the plot, clear of the bars.
+        .chartYAxis {
+            AxisMarks(position: .trailing, values: [Self.sevenHours]) { _ in
+                AxisValueLabel {
+                    Text(InsightsFormat.duration(Self.sevenHours * 3600))
+                }
             }
         }
-        .frame(height: height)
+        .chartXAxis {
+            AxisMarks(values: axisDates) { _ in
+                // Large text: drop the labels that would overlap.
+                AxisValueLabel(format: axisFormat, centered: true, collisionResolution: .greedy)
+            }
+        }
+        // Grows with the text, up to a point.
+        .frame(height: min(height, 200))
     }
 
     private var yTop: Double {

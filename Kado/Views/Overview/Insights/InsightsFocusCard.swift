@@ -118,12 +118,13 @@ private struct InsightsFocusChart: View {
         }
         .chartForegroundStyleScale(
             domain: categories.map(\.localizedName),
-            range: categories.map { $0.chartColor(in: habitTheme) }
+            range: colors(for: categories)
         )
         .chartXScale(domain: xDomain)
         .chartXAxis {
             AxisMarks(values: axisDates) { _ in
-                AxisValueLabel(format: axisFormat, centered: true)
+                // Large text: drop the labels that would overlap.
+                AxisValueLabel(format: axisFormat, centered: true, collisionResolution: .greedy)
             }
         }
         .chartYAxis {
@@ -131,14 +132,29 @@ private struct InsightsFocusChart: View {
                 AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
                     .foregroundStyle(Color.kadoHairline)
                 AxisValueLabel {
-                    if let hours = value.as(Double.self) {
+                    if let hours = value.as(Double.self), hours > 0 {
                         Text(InsightsFormat.duration(hours * 3600))
                     }
                 }
             }
         }
         .chartLegend(position: .bottom, alignment: .leading, spacing: 10)
-        .frame(height: height)
+        // Grows with the text, up to a point.
+        .frame(height: min(height, 220))
+    }
+
+    /// Each category's colour. Some categories share a palette slot
+    /// (Study and Creative are both purple); a second one in the same
+    /// chart takes the slot's lighter tint, so the stacks stay apart.
+    private func colors(for categories: [ItemCategory]) -> [Color] {
+        var used: Set<HabitColor> = []
+        return categories.map { category in
+            guard let slot = category.color else { return category.chartColor(in: habitTheme) }
+            if used.insert(slot).inserted {
+                return slot.color(in: habitTheme)
+            }
+            return slot.tint(.tilePartial, in: habitTheme)
+        }
     }
 
     /// Year buckets are months; the others are days.

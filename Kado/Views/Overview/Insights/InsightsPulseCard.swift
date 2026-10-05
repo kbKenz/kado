@@ -133,8 +133,10 @@ private struct InsightsPulseRing: View {
 
     private var ring: some View {
         ZStack {
+            // The divider tone, so the empty part of the ring still
+            // shows on the dark card.
             Circle()
-                .stroke(Color.kadoHairline, lineWidth: lineWidth)
+                .stroke(Color.kadoDivider, lineWidth: lineWidth)
             if let fraction = rate.fraction {
                 Circle()
                     .trim(from: 0, to: max(0.001, min(1, fraction)))

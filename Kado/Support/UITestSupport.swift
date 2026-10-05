@@ -51,6 +51,11 @@ nonisolated enum UITestSupport {
         /// by nothing else. The two datasets exist for opposite
         /// reasons — see the note at the top of `ScreenshotSeed`.
         static let seedForScreenshots = "-uiTestSeedForScreenshots"
+        /// Seed the (redirected) production store with `InsightsSeed`
+        /// instead: four months of habits, goals, tasks and sessions,
+        /// so every Insights card has something to show. Enough on its
+        /// own; like `seedProduction`, only into an empty store.
+        static let seedInsights = "-uiTestSeedInsights"
         /// `1` to start in dev mode, `0` to start on the real store.
         /// Followed by its value. See the note at the top of this file
         /// for why this is not just `-kado.devMode`.
@@ -292,13 +297,17 @@ nonisolated enum UITestSupport {
     /// shape that traps with `NSCocoaErrorDomain 134422`.
     @MainActor
     static func seedProductionIfRequested(using container: ModelContainer) {
+        let arguments = ProcessInfo.processInfo.arguments
+        let seedsInsights = arguments.contains(Argument.seedInsights)
         guard isRunningUITests,
-              ProcessInfo.processInfo.arguments.contains(Argument.seedProduction)
+              seedsInsights || arguments.contains(Argument.seedProduction)
         else { return }
         let context = container.mainContext
         let count = (try? context.fetchCount(FetchDescriptor<HabitRecord>())) ?? 0
         guard count == 0 else { return }
-        if ProcessInfo.processInfo.arguments.contains(Argument.seedForScreenshots) {
+        if seedsInsights {
+            InsightsSeed.seed(into: context)
+        } else if arguments.contains(Argument.seedForScreenshots) {
             ScreenshotSeed.seed(into: context)
         } else {
             DevModeSeed.seed(into: context)

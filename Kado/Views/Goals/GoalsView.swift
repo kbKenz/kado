@@ -38,6 +38,11 @@ struct GoalsView: View {
     @ViewBuilder
     private var content: some View {
         let snapshots = records.map { GoalListItem($0) }
+        // One pass over each table for every row, not one per row.
+        let inputs = GoalProgressInputs(
+            measurements: snapshots.map(\.measurement),
+            entries: entries, tasks: tasks, habits: habits, completions: completions
+        )
         if snapshots.isEmpty {
             ContentUnavailableView {
                 Label("No goals yet", systemImage: "scope")
@@ -54,14 +59,14 @@ struct GoalsView: View {
                     let matching = snapshots.filter { $0.archivedAt == nil && $0.status == status }
                     if !matching.isEmpty {
                         Section(status.plannerTitle) {
-                            ForEach(matching) { goalRow($0) }
+                            ForEach(matching) { goalRow($0, inputs: inputs) }
                         }
                     }
                 }
                 let archived = snapshots.filter { $0.archivedAt != nil }
                 if !archived.isEmpty {
                     Section {
-                        ForEach(archived) { goalRow($0) }
+                        ForEach(archived) { goalRow($0, inputs: inputs) }
                     } header: { Text("Archived") }
                     footer: { Text("Open an archived goal to restore it. Linked items keep their history.") }
                 }
@@ -70,9 +75,9 @@ struct GoalsView: View {
         }
     }
 
-    private func goalRow(_ item: GoalListItem) -> some View {
+    private func goalRow(_ item: GoalListItem, inputs: GoalProgressInputs) -> some View {
         NavigationLink(value: GoalRoute(id: item.id)) {
-            GoalRowView(item: item, progress: item.measurement.enabled ? GoalProgressCalculator.calculate(goalID: item.id, measurement: item.measurement, startDate: item.startDate, today: today, calendar: calendar, entries: entries.compactMap(\.snapshot), tasks: tasks.map { TaskBackup(id: $0.id, title: $0.title, createdAt: $0.createdAt, updatedAt: $0.updatedAt, completedAt: $0.completedAt, goalID: $0.goal?.id) }, habits: habits.map(\.snapshot), completions: completions.compactMap(\.snapshot)) : nil)
+            GoalRowView(item: item, progress: item.measurement.enabled ? inputs.progress(goalID: item.id, measurement: item.measurement, startDate: item.startDate, today: today, calendar: calendar) : nil)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel { label in

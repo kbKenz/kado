@@ -23,6 +23,39 @@ nonisolated enum TitleText {
         if word.hasSuffix("es") { forms.append(String(word.dropLast(2))) }
         return forms
     }
+
+    /// The number of edits that turn `lhs` into `rhs`: inserting,
+    /// deleting or replacing one letter, or swapping two letters next
+    /// to each other (optimal string alignment). A letter takes part in
+    /// one swap at most, so "ca" to "abc" is 3, not 2.
+    static func editDistance(_ lhs: String, _ rhs: String) -> Int {
+        let a = Array(lhs)
+        let b = Array(rhs)
+        if a.isEmpty { return b.count }
+        if b.isEmpty { return a.count }
+        // Three rows of the classic table: two rows back, one row
+        // back, and the current one.
+        var twoBack = [Int](repeating: 0, count: b.count + 1)
+        var oneBack = Array(0...b.count)
+        var current = [Int](repeating: 0, count: b.count + 1)
+        for i in 1...a.count {
+            current[0] = i
+            for j in 1...b.count {
+                let cost = a[i - 1] == b[j - 1] ? 0 : 1
+                var value = min(
+                    oneBack[j] + 1,        // delete
+                    current[j - 1] + 1,    // insert
+                    oneBack[j - 1] + cost  // replace
+                )
+                if i > 1, j > 1, a[i - 1] == b[j - 2], a[i - 2] == b[j - 1] {
+                    value = min(value, twoBack[j - 2] + 1)  // swap
+                }
+                current[j] = value
+            }
+            (twoBack, oneBack, current) = (oneBack, current, twoBack)
+        }
+        return oneBack[b.count]
+    }
 }
 
 /// A keyword list entry: one word ("rent") or a phrase ("go to bed"),

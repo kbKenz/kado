@@ -24,6 +24,12 @@ final class GoogleCalendarConnection {
     @ObservationIgnored private let allowsConnection: Bool
     @ObservationIgnored private var sessionGeneration = UUID()
     @ObservationIgnored private var lastForegroundAttempt: Date?
+    /// The import running off the main actor, if any. `isSyncing` is
+    /// cleared by a disconnect or store swap while an import still runs,
+    /// so a new sync can start before it ends; the next import waits for
+    /// it, or both would miss each other's new rows and insert the same
+    /// event twice.
+    @ObservationIgnored private var runningImport: Task<Int, any Error>?
 
     private static let calendarID = "primary"
     private static let eventsScope = "https://www.googleapis.com/auth/calendar.events.readonly"
@@ -227,13 +233,30 @@ final class GoogleCalendarConnection {
               GIDSignIn.sharedInstance.currentUser?.userID == accountID,
               !DevModeDefaults.sharedDefaults.bool(forKey: DevModeDefaults.key),
               !Task.isCancelled else { return }
-        importedEventCount = try GoogleCalendarImporter().apply(
-            events: events,
-            accountID: accountID,
-            calendarID: Self.calendarID,
-            window: DateInterval(start: from, end: to),
-            to: context
-        )
+        // Off the main actor: a 211-day window expands recurring events into
+        // hundreds of rows, and this runs every minute while the app is open.
+        // The importer saves through its own context; the UI context merges it.
+        let container = context.container
+        let calendarID = Self.calendarID
+        let window = DateInterval(start: from, end: to)
+        let previous = runningImport
+        let importTask = Task.detached(priority: .utility) {
+            // Its outcome belongs to its own caller; only the order matters here.
+            _ = try? await previous?.value
+            return try GoogleCalendarImporter().apply(
+                events: events,
+                accountID: accountID,
+                calendarID: calendarID,
+                window: window,
+                in: container
+            )
+        }
+        runningImport = importTask
+        let count = try await importTask.value
+        // The import itself can't be recalled, but a disconnect or store swap
+        // made while it ran must not see its status come back.
+        guard generation == sessionGeneration else { return }
+        importedEventCount = count
         lastSync = .now
         defaults.set(lastSync, forKey: lastSyncKey(accountID))
         errorMessage = nil

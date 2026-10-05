@@ -15,9 +15,15 @@ public enum WidgetSnapshotStore {
     /// Encode + write a series. Silent on failure — widgets will fall
     /// back to their empty state if the file is missing or corrupt.
     public static func write(_ series: WidgetSnapshotSeries) {
+        guard let data = try? encode(series) else { return }
+        write(data)
+    }
+
+    /// Write an already-encoded series. Same silence on failure.
+    public static func write(_ data: Data) {
         guard let url = url() else { return }
         do {
-            try encode(series).write(to: url, options: .atomic)
+            try data.write(to: url, options: .atomic)
         } catch {
             // Snapshot write is best-effort; widgets will render
             // whatever the last successful snapshot was, or the

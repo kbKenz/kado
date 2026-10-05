@@ -86,13 +86,37 @@ public enum WidgetSnapshotBuilder {
         streakCalculator: (any StreakCalculating)? = nil,
         frequencyEvaluator: (any FrequencyEvaluating)? = nil
     ) -> WidgetSnapshotSeries {
+        buildSeries(
+            source: Source(context: context),
+            asOf: reference,
+            calendar: calendar,
+            horizonDays: horizonDays,
+            matrixWindowDays: matrixWindowDays,
+            scoreCalculator: scoreCalculator,
+            streakCalculator: streakCalculator,
+            frequencyEvaluator: frequencyEvaluator
+        )
+    }
+
+    /// `buildSeries(from:)` on a store already read into values. Pure,
+    /// so it can run off the main actor: the store read is the only
+    /// part that needs the context.
+    nonisolated public static func buildSeries(
+        source: Source,
+        asOf reference: Date = .now,
+        calendar: Calendar = .current,
+        horizonDays: Int = Self.horizonDays,
+        matrixWindowDays: Int = 7,
+        scoreCalculator: (any HabitScoreCalculating)? = nil,
+        streakCalculator: (any StreakCalculating)? = nil,
+        frequencyEvaluator: (any FrequencyEvaluating)? = nil
+    ) -> WidgetSnapshotSeries {
         let services = Services(
             calendar: calendar,
             score: scoreCalculator,
             streak: streakCalculator,
             frequency: frequencyEvaluator
         )
-        let source = Source(context: context)
         let first = calendar.startOfDay(for: reference)
         let days = (0..<max(horizonDays, 1)).compactMap { offset in
             calendar.date(byAdding: .day, value: offset, to: first)
@@ -151,23 +175,133 @@ public enum WidgetSnapshotBuilder {
     /// means no surface can complete the day without the confetti
     /// hearing about it.
     public static func rebuildAndWrite(using context: ModelContext) {
-        // Widgets render a pre-computed snapshot and never ask what day
-        // it is — nor which day a week opens on — so both preferences
-        // have to be resolved here, once. The week start reaches the
-        // streak calculator, whose `.daysPerWeek` count is bucketed
-        // into whole calendar weeks.
-        let day = DayStartDefaults.boundary().startOfDay(for: .now)
-        let series = buildSeries(
-            from: context,
-            asOf: day,
-            calendar: WeekStartDefaults.calendar()
-        )
-        WidgetSnapshotStore.write(series)
+        let pass = Pass(context: context)
+        let series = pass.buildSeries()
+        pass.write(series)
         WidgetCenter.shared.reloadAllTimelines()
         // Today's progress only: the days after it are computed with
         // nothing logged, and a day that hasn't started can't be done.
         if let today = series.days.first {
-            DayCompletionCelebration.shared.observe(today.dayProgress, on: day)
+            report(today.dayProgress, for: pass)
+        }
+    }
+
+    /// `rebuildAndWrite` off the main actor: the store read, the
+    /// series, its JSON and the file write all run detached, so a tap
+    /// never waits on them. Only the preferences, the write ticket and
+    /// the confetti report touch the main actor.
+    ///
+    /// The read goes through a context of its own rather than the
+    /// caller's: the main context would have to be read on the main
+    /// actor, and one read later than the turn that made it can outlive
+    /// a container torn down meanwhile (a test, a dev-mode swap) — its
+    /// autosave timer then traps in SwiftData. The callers save before
+    /// they reload, so a fresh context sees the same rows.
+    ///
+    /// Two passes can overlap here, or overlap a synchronous
+    /// `rebuildAndWrite`; the ticket taken before the read keeps a
+    /// slower, older pass from landing over a newer file, and from
+    /// reporting an older tally to the confetti.
+    public static func beginBackgroundRebuild(in container: ModelContainer) async -> BackgroundRebuild {
+        // Resolved here, as in `Pass(context:)`, then handed over.
+        let day = DayStartDefaults.boundary().startOfDay(for: .now)
+        let calendar = WeekStartDefaults.calendar()
+        let ticket = WidgetSnapshotWriteOrder.shared.ticket()
+        let pass = await Task.detached(priority: .userInitiated) {
+            Pass(day: day, calendar: calendar, source: Source(context: ModelContext(container)), ticket: ticket)
+        }.value
+        report(pass.todayProgress(), for: pass)
+        return BackgroundRebuild(pass: pass)
+    }
+
+    /// A background rebuild whose store read is done.
+    nonisolated public struct BackgroundRebuild: Sendable {
+        fileprivate let pass: Pass
+
+        /// The store as the pass read it.
+        public var source: Source { pass.source }
+
+        /// Builds and writes the series off the main actor, then asks
+        /// WidgetKit to reload.
+        @MainActor
+        public func finish() async {
+            let pass = pass
+            await Task.detached(priority: .utility) {
+                pass.write(pass.buildSeries())
+            }.value
+            WidgetCenter.shared.reloadAllTimelines()
+        }
+    }
+
+    /// The newest read whose tally the confetti has heard.
+    private static var reportedTicket = 0
+
+    /// Reports today's progress unless a newer read already has: a
+    /// background pass can finish its read after a synchronous intent
+    /// write, and its older tally would read as the day coming undone.
+    private static func report(_ progress: DayProgress, for pass: Pass) {
+        guard pass.ticket > reportedTicket else { return }
+        reportedTicket = pass.ticket
+        DayCompletionCelebration.shared.observe(progress, on: pass.day)
+    }
+
+    /// Today's tally as `build` counts it — the due-or-logged habits
+    /// and how many of them are done — without building the rest of
+    /// the day.
+    nonisolated public static func dayProgress(
+        source: Source,
+        asOf reference: Date,
+        calendar: Calendar = .current,
+        frequencyEvaluator: (any FrequencyEvaluating)? = nil
+    ) -> DayProgress {
+        let services = Services(calendar: calendar, score: nil, streak: nil, frequency: frequencyEvaluator)
+        let due = dueRows(source, asOf: reference, services: services)
+        return DayProgress(
+            completed: due.filter { $0.state.isDone(for: $0.habit) }.count,
+            total: due.count
+        )
+    }
+
+    /// One rebuild's inputs, all taken in the same main-actor turn: the
+    /// logical day and week start the widget can't resolve itself, the
+    /// store as values, and the ticket that orders its write against
+    /// every other pass.
+    nonisolated fileprivate struct Pass: Sendable {
+        let day: Date
+        let calendar: Calendar
+        let source: Source
+        let ticket: Int
+
+        init(day: Date, calendar: Calendar, source: Source, ticket: Int) {
+            self.day = day
+            self.calendar = calendar
+            self.source = source
+            self.ticket = ticket
+        }
+
+        @MainActor
+        init(context: ModelContext) {
+            // Widgets render a pre-computed snapshot and never ask what
+            // day it is — nor which day a week opens on — so both
+            // preferences have to be resolved here, once. The week
+            // start reaches the streak calculator, whose `.daysPerWeek`
+            // count is bucketed into whole calendar weeks.
+            day = DayStartDefaults.boundary().startOfDay(for: .now)
+            calendar = WeekStartDefaults.calendar()
+            source = Source(context: context)
+            ticket = WidgetSnapshotWriteOrder.shared.ticket()
+        }
+
+        func buildSeries() -> WidgetSnapshotSeries {
+            WidgetSnapshotBuilder.buildSeries(source: source, asOf: day, calendar: calendar)
+        }
+
+        func todayProgress() -> DayProgress {
+            WidgetSnapshotBuilder.dayProgress(source: source, asOf: day, calendar: calendar)
+        }
+
+        func write(_ series: WidgetSnapshotSeries) {
+            WidgetSnapshotWriteOrder.shared.write(series, ticket: ticket)
         }
     }
 
@@ -175,7 +309,7 @@ public enum WidgetSnapshotBuilder {
 
     /// One day's snapshot from an already-read `Source`, with the
     /// per-habit scores handed in so a series can share one walk.
-    private static func build(
+    nonisolated private static func build(
         _ source: Source,
         asOf reference: Date,
         scores: [UUID: Double],
@@ -217,26 +351,7 @@ public enum WidgetSnapshotBuilder {
 
         var todayRows: [WidgetTodayRow] = []
         var completed = 0
-        for habit in source.habits {
-            let completions = source.completions(for: habit)
-            // Without the "or logged today" arm a habit vanishes from
-            // the widget the moment it is completed past a weekly
-            // quota, taking its own tick out of `completedToday`.
-            // Shared with the Today tab so the two can't drift.
-            guard services.frequency.isDueOrLogged(
-                habit: habit,
-                on: reference,
-                completions: completions,
-                calendar: calendar
-            ) else {
-                continue
-            }
-            let state = HabitRowState.resolve(
-                habit: habit,
-                completions: completions,
-                calendar: calendar,
-                asOf: reference
-            )
+        for (habit, state) in dueRows(source, asOf: reference, services: services) {
             let widgetHabit = makeWidgetHabit(from: habit)
             todayRows.append(
                 WidgetTodayRow(
@@ -294,11 +409,43 @@ public enum WidgetSnapshotBuilder {
         )
     }
 
+    /// The habits a day's Today list shows, each with its state. Shared
+    /// by the snapshot's rows and `dayProgress`, so the tally the
+    /// confetti hears is the one the widget shows.
+    nonisolated private static func dueRows(
+        _ source: Source,
+        asOf reference: Date,
+        services: Services
+    ) -> [(habit: Habit, state: HabitRowState)] {
+        source.habits.compactMap { habit in
+            let completions = source.completions(for: habit)
+            // Without the "or logged today" arm a habit vanishes from
+            // the widget the moment it is completed past a weekly
+            // quota, taking its own tick out of `completedToday`.
+            // Shared with the Today tab so the two can't drift.
+            guard services.frequency.isDueOrLogged(
+                habit: habit,
+                on: reference,
+                completions: completions,
+                calendar: services.calendar
+            ) else {
+                return nil
+            }
+            let state = HabitRowState.resolve(
+                habit: habit,
+                completions: completions,
+                calendar: services.calendar,
+                asOf: reference
+            )
+            return (habit, state)
+        }
+    }
+
     // MARK: - Inputs
 
     /// The calculators a build runs on, resolved once per call rather
     /// than per day.
-    private struct Services {
+    nonisolated private struct Services: Sendable {
         let calendar: Calendar
         let score: any HabitScoreCalculating
         let streak: any StreakCalculating
@@ -322,14 +469,18 @@ public enum WidgetSnapshotBuilder {
     /// Everything the builder reads from the store, pulled once — and
     /// once only for a whole series. Faulting every habit's completions
     /// is the one SwiftData cost here, and it does not depend on the
-    /// day being built.
-    private struct Source {
+    /// day being built. Plain values, so the build can take them off
+    /// the main actor.
+    nonisolated public struct Source: Sendable {
         /// Active habits, in the user's order.
-        let habits: [Habit]
+        public let habits: [Habit]
         private let completionsByHabit: [UUID: [Completion]]
-        let allCompletions: [Completion]
+        /// The active habits' completions, in habit order.
+        public let allCompletions: [Completion]
 
-        init(context: ModelContext) {
+        /// Reads on the caller's thread, so `context` must belong to it:
+        /// the main context on the main actor, or a context of its own.
+        public init(context: ModelContext) {
             let descriptor = FetchDescriptor<HabitRecord>(
                 sortBy: [SortDescriptor(\.sortOrder)]
             )
@@ -343,14 +494,14 @@ public enum WidgetSnapshotBuilder {
             allCompletions = habits.flatMap { byHabit[$0.id] ?? [] }
         }
 
-        func completions(for habit: Habit) -> [Completion] {
+        public func completions(for habit: Habit) -> [Completion] {
             completionsByHabit[habit.id] ?? []
         }
     }
 
     // MARK: - Mapping helpers
 
-    private static func mapTypeKind(_ type: HabitType) -> WidgetHabitTypeKind {
+    nonisolated private static func mapTypeKind(_ type: HabitType) -> WidgetHabitTypeKind {
         switch type {
         case .binary: .binary
         case .negative: .negative
@@ -359,7 +510,7 @@ public enum WidgetSnapshotBuilder {
         }
     }
 
-    private static func mapTarget(_ type: HabitType) -> Double? {
+    nonisolated private static func mapTarget(_ type: HabitType) -> Double? {
         switch type {
         case .binary, .negative: nil
         case .counter(let target): target
@@ -367,7 +518,7 @@ public enum WidgetSnapshotBuilder {
         }
     }
 
-    private static func mapStatus(_ status: HabitRowState.Status) -> WidgetStatus {
+    nonisolated private static func mapStatus(_ status: HabitRowState.Status) -> WidgetStatus {
         switch status {
         case .none: .none
         case .partial: .partial
@@ -375,7 +526,7 @@ public enum WidgetSnapshotBuilder {
         }
     }
 
-    private static func mapDayCell(_ cell: DayCell) -> WidgetDayCell {
+    nonisolated private static func mapDayCell(_ cell: DayCell) -> WidgetDayCell {
         switch cell {
         case .future: .future
         // The widget doesn't edit, so it has no use for the distinction.

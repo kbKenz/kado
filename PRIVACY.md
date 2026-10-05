@@ -56,10 +56,11 @@ them. You can additionally revoke the app's Google authorization through
 
 If you turn on **Health on Calendar** in Settings, Kadō asks for
 read-only access to your sleep and workouts. It reads them only to
-draw them on the Calendar, on your device. Kadō never writes to
-Health, and never stores, syncs to iCloud, exports, or sends this
-data anywhere. Turn the setting off, or remove access in
-Settings → Privacy & Security → Health → Kadō, at any time.
+draw them on the Calendar and on the Sleep and Movement cards of
+Insights, on your device. Kadō never writes to Health, and never
+stores, syncs to iCloud, exports, or sends this data anywhere. Turn
+the setting off, or remove access in Settings → Privacy & Security →
+Health → Kadō, at any time.
 
 ## Dictation and text cleanup (optional)
 
@@ -78,6 +79,26 @@ device:
   to the model on your device only. Nothing is stored beyond the text
   you keep in the field.
 
+## Suggestions
+
+While you type the title of a task, habit or goal, Kadō suggests a
+category, a goal and, for a new habit, an icon. Suggestions run only
+on your device. A built-in keyword list always runs; where Apple
+Intelligence is available (iOS 26), Apple's on-device Foundation
+Models can refine its answer. The model sees only the title you are
+typing and the names of your active goals. Nothing is stored or sent
+to the developer or to Apple: only the category, goal or icon you keep
+is saved, with the item, like its other fields.
+
+## Insights
+
+The Insights feed in Overview is computed on your device from the
+habits, tasks, goals and work sessions already stored in Kadō. Nothing
+is sent anywhere to compute it. When you turn on **Health on
+Calendar**, the Sleep and Movement cards also read your sleep and
+workouts from Apple Health, live, each time they are shown. This
+Health data is never stored, synced to iCloud, or exported.
+
 ## Export and import
 
 JSON and CSV backups include your planning records, including imported
@@ -88,14 +109,15 @@ the underlying calendar and task data.
 ## Third-party services
 
 The app adds no developer analytics, advertising, or crash reporting
-services. Dictation and text cleanup use only Apple frameworks running on
-your device. The optional Google Sign-In SDK is used for Google account
-authorization; its own data practices are described above. Local tasks,
-habits, and the internal calendar remain usable without a Google account.
+services. Dictation, text cleanup, suggestions and Insights run on your
+device, with Kadō's own code and Apple frameworks only. The optional
+Google Sign-In SDK is used for Google account authorization; its own
+data practices are described above. Local tasks, habits, and the
+internal calendar remain usable without a Google account.
 
 ## Contact
 
 Questions about this fork can be raised at
 [kbKenz/kado issues](https://github.com/kbKenz/kado/issues).
 
-Last updated: 2026-10-04
+Last updated: 2026-10-05

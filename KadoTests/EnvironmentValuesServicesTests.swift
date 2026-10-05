@@ -45,4 +45,19 @@ struct AssistedInputEnvironmentTests {
             for try await _ in UnavailableSpeechTranscriber().transcribe() {}
         }
     }
+
+    @Test("Default itemSuggester is unavailable")
+    func defaultItemSuggesterUnavailable() {
+        let env = EnvironmentValues()
+        #expect(env.itemSuggester is UnavailableItemSuggester)
+        #expect(!env.itemSuggester.isAvailable)
+    }
+
+    @Test("Unavailable suggester throws .unavailable and never answers")
+    func unavailableSuggesterThrows() async {
+        let request = ItemSuggestionRequest(title: "Read 20 pages", kind: .habit, goals: [])
+        await #expect(throws: ItemSuggestionError.unavailable) {
+            _ = try await UnavailableItemSuggester().suggest(request)
+        }
+    }
 }

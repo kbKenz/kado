@@ -422,4 +422,101 @@ struct NewHabitFormModelTests {
         #expect(original.color == .teal)
         #expect(original.icon == "figure.pool.swim")
     }
+
+    // MARK: - Category and title suggestions
+
+    /// Every V9 model, so a habit can link a goal.
+    private func fullContainer() throws -> ModelContainer {
+        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        return try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+    }
+
+    @Test("save(in:) on a new model stores the suggested category, icon and colour")
+    func newSaveStoresSuggestions() throws {
+        let container = try fullContainer()
+        let model = NewHabitFormModel()
+        model.name = "Morning run"
+        model.suggestions.applyWords(title: model.name, goals: [])
+        #expect(model.category == .fitness)
+
+        let saved = try model.save(in: container.mainContext)
+        #expect(saved.category == .fitness)
+        #expect(saved.icon == "figure.run")
+        #expect(saved.color == .orange)
+    }
+
+    @Test("init(editing:) loads the category as the person's choice; save writes a change")
+    func editingLoadsCategory() throws {
+        let container = try fullContainer()
+        let original = HabitRecord(name: "Read", icon: "book.fill", category: .study)
+        container.mainContext.insert(original)
+        try container.mainContext.save()
+
+        let model = NewHabitFormModel(editing: original)
+        #expect(model.category == .study)
+        #expect(model.suggestions.isEditing)
+        #expect(model.suggestions.categoryOrigin == .user)
+        // An edit form never changes a saved value.
+        model.suggestions.applyWords(title: "Morning run", goals: [])
+        #expect(model.category == .study)
+
+        model.category = .mind
+        _ = try model.save(in: container.mainContext)
+        #expect(original.category == .mind)
+    }
+
+    @Test("Clearing the category saves an empty one")
+    func editingClearsCategory() throws {
+        let container = try fullContainer()
+        let original = HabitRecord(name: "Read", category: .study)
+        container.mainContext.insert(original)
+        try container.mainContext.save()
+
+        let model = NewHabitFormModel(editing: original)
+        model.category = nil
+        _ = try model.save(in: container.mainContext)
+        #expect(original.category == nil)
+        #expect(original.categoryRaw.isEmpty)
+    }
+
+    @Test("init(goalID:) starts on the goal as the person's choice; a title never moves it")
+    func startsOnGoal() throws {
+        let container = try fullContainer()
+        let cambridge = GoalRecord(name: "Get into Cambridge")
+        let reading = GoalRecord(name: "Read more books")
+        container.mainContext.insert(cambridge)
+        container.mainContext.insert(reading)
+        try container.mainContext.save()
+
+        let model = NewHabitFormModel(goalID: cambridge.id)
+        #expect(model.selectedGoalID == cambridge.id)
+        #expect(model.suggestions.goalOrigin == .user)
+        // "Read" is a strong match for the other goal.
+        model.name = "Read 20 pages"
+        model.suggestions.applyWords(title: model.name, goals: [SuggestionGoal(cambridge), SuggestionGoal(reading)])
+        #expect(model.selectedGoalID == cambridge.id)
+
+        let saved = try model.save(in: container.mainContext)
+        #expect(saved.goal?.id == cambridge.id)
+    }
+
+    @Test("Setting a field through the model is the person's choice, even to its default")
+    func settersLockFields() {
+        let model = NewHabitFormModel()
+        model.icon = HabitIcon.default
+        model.color = .blue
+        model.category = nil
+        model.selectedGoalID = nil
+        let origins = [
+            model.suggestions.iconOrigin, model.suggestions.colorOrigin,
+            model.suggestions.categoryOrigin, model.suggestions.goalOrigin
+        ]
+        #expect(origins == [.user, .user, .user, .user])
+
+        model.name = "Morning run"
+        model.suggestions.applyWords(title: model.name, goals: [])
+        #expect(model.icon == HabitIcon.default)
+        #expect(model.color == .blue)
+        #expect(model.category == nil)
+    }
 }

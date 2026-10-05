@@ -136,6 +136,9 @@ enum AccessibilityID {
         static let deleteConfirm = "goalDetail.delete.confirm"
         static let linkTasks = "goalDetail.linkTasks"
         static let linkHabits = "goalDetail.linkHabits"
+        /// New task and new habit, with this goal already chosen.
+        static let addTask = "goalDetail.addTask"
+        static let addHabit = "goalDetail.addHabit"
         static func task(_ id: UUID) -> String { "goalDetail.task.\(id.uuidString)" }
         static func taskCompletion(_ id: UUID) -> String { "goalDetail.completeTask.\(id.uuidString)" }
         static func habit(_ id: UUID) -> String { "goalDetail.habit.\(id.uuidString)" }

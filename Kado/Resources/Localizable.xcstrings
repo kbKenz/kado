@@ -2002,6 +2002,23 @@
         }
       }
     },
+    "Add habit" : {
+      "comment" : "Goal detail: create a new habit already linked to this goal.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add habit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter une habitude"
+          }
+        }
+      }
+    },
     "Add progress" : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",

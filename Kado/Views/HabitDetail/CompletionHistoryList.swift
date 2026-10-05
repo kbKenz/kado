@@ -31,11 +31,10 @@ struct CompletionHistoryList: View {
     @Environment(\.calendar) private var calendar
     @Environment(\.today) private var today
 
-    private var sortedCompletions: [Completion] {
-        completions.sorted { $0.date > $1.date }
-    }
-
     var body: some View {
+        // Sorted once per render; each row used to re-sort the lot.
+        let sortedCompletions = completions.sorted { $0.date > $1.date }
+        let lastID = sortedCompletions.last?.id
         VStack(alignment: .leading, spacing: 8) {
             Text("History")
                 .font(.headline)
@@ -55,7 +54,7 @@ struct CompletionHistoryList: View {
                 LazyVStack(spacing: 0) {
                     ForEach(sortedCompletions) { completion in
                         row(for: completion)
-                        if completion.id != sortedCompletions.last?.id {
+                        if completion.id != lastID {
                             Divider().padding(.leading, 16)
                         }
                     }
@@ -152,19 +151,11 @@ struct CompletionHistoryList: View {
         if days > 0 && days < 7 {
             return String(localized: "\(days) days ago")
         }
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = calendar.locale ?? .current
-        formatter.dateStyle = .medium
-        return formatter.string(from: date)
+        return CachedDateFormatters.string(from: date, .dateStyle(.medium), calendar: calendar)
     }
 
     private func absoluteDate(for date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = calendar.locale ?? .current
-        formatter.dateFormat = "EEE MMM d"
-        return formatter.string(from: date)
+        CachedDateFormatters.string(from: date, .dateFormat("EEE MMM d"), calendar: calendar)
     }
 
     private func valueLabel(for completion: Completion) -> String {

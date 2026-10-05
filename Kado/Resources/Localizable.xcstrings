@@ -8690,6 +8690,23 @@
         }
       }
     },
+    "Sleep and workouts also appear in Insights." : {
+      "comment" : "Footer line under the Health on Calendar toggle; Insights reads the same Health data.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep and workouts also appear in Insights."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ton sommeil et tes entraînements apparaissent aussi dans le Bilan."
+          }
+        }
+      }
+    },
     "Slipped" : {
       "comment" : "Trailing pill label on a negative habit row (whether or not slipped today) and value label in the history list. When the user has slipped today the pill is filled red with a checkmark; otherwise outlined red, ready to record a slip.",
       "localizations" : {

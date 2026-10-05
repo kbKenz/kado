@@ -155,17 +155,30 @@ class KadoUITestCase: XCTestCase {
     }
 
     /// Overview's habits × days matrix. Overview opens on Insights, so
-    /// this taps the Grid segment of its Insights / Grid switch.
+    /// this taps the Grid segment of its Insights / History / Grid
+    /// switch.
     @MainActor
     func openOverviewGrid(in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        openOverviewMode(2, in: app, file: file, line: line)
+    }
+
+    /// Overview's day-by-day History: the middle segment.
+    @MainActor
+    func openOverviewHistory(in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        openOverviewMode(1, in: app, file: file, line: line)
+    }
+
+    /// Segments by position: their labels are translated.
+    @MainActor
+    private func openOverviewMode(_ index: Int, in app: XCUIApplication, file: StaticString, line: UInt) {
         tapTab(.overview, in: app, file: file, line: line)
         let picker = app.segmentedControls[AccessibilityID.Insights.modePicker].firstMatch
         XCTAssertTrue(
             picker.waitForExistence(timeout: 10),
-            "Overview never showed its Insights / Grid switch.",
+            "Overview never showed its Insights / History / Grid switch.",
             file: file, line: line
         )
-        picker.buttons.element(boundBy: 1).tap()
+        picker.buttons.element(boundBy: index).tap()
     }
 
     /// Switches tabs.

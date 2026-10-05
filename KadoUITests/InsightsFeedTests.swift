@@ -53,8 +53,8 @@ final class InsightsFeedTests: KadoUITestCase {
         // The switch above the feed stays on screen, and Grid brings
         // back the matrix.
         let mode = app.segmentedControls[AccessibilityID.Insights.modePicker].firstMatch
-        XCTAssertTrue(mode.exists, "The Insights / Grid switch should stay above the feed.")
-        mode.buttons.element(boundBy: 1).tap()
+        XCTAssertTrue(mode.exists, "The Insights / History / Grid switch should stay above the feed.")
+        mode.buttons.element(boundBy: 2).tap()
         let label = elements(withIdentifierPrefix: "overview.label.", in: app).firstMatch
         XCTAssertTrue(label.waitForExistence(timeout: 10), "The Grid should show the habit labels.")
         capture(app, "insights-grid")

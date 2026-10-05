@@ -52,5 +52,12 @@ public enum HabitIcon {
         "laptopcomputer",
         "phone.fill",
         "house.fill",
+
+        // Category defaults (`ItemCategory.defaultHabitIcon`)
+        "briefcase.fill",
+        "graduationcap.fill",
+        "person.2.fill",
+        "creditcard.fill",
+        "cart.fill",
     ]
 }

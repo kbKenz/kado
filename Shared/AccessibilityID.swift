@@ -305,6 +305,46 @@ enum AccessibilityID {
         static let cellPrefix = "overview.cell."
     }
 
+    /// The Overview tab's Insights feed (`InsightsView`) and its
+    /// Insights / Grid switch.
+    enum Insights {
+        /// The segmented Insights / Grid switch at the top of Overview.
+        static let modePicker = "overview.mode"
+        /// The segmented Week / Month / Year picker.
+        static let periodPicker = "insights.period"
+        /// A card's title text, keyed by the card's stable name
+        /// ("pulse", "highlights", "activity", "focus", "categories",
+        /// "sleep", "movement", "habits", "tasks", "goals", "rhythm",
+        /// "allTime").
+        static func card(_ name: String) -> String { "insights.card.\(name)" }
+        /// The first-run state when there is nothing to summarize.
+        static let empty = "insights.empty"
+        /// The "Connect Apple Health" button on the sleep and movement
+        /// cards.
+        static let connectHealth = "insights.connectHealth"
+        /// One habit row in the Habits card.
+        static func habitRow(_ habitID: UUID) -> String { "insights.habit.\(habitID.uuidString)" }
+        /// One goal row in the Goals card.
+        static func goalRow(_ goalID: UUID) -> String { "insights.goal.\(goalID.uuidString)" }
+        /// A one-tap template button on an empty card, keyed by the
+        /// template's name ("sleep", "workout").
+        static func template(_ name: String) -> String { "insights.template.\(name)" }
+    }
+
+    /// The category row and the title suggestions in the task, habit
+    /// and goal forms.
+    enum Suggestion {
+        /// The category picker in each form.
+        static let taskCategory = "taskForm.category"
+        static let habitCategory = "newHabit.category"
+        static let goalCategory = "goalForm.category"
+        /// The "Suggested" marker beside a value the app filled in from
+        /// the title.
+        static let categoryBadge = "suggestion.category"
+        static let goalBadge = "suggestion.goal"
+        static let iconBadge = "suggestion.icon"
+    }
+
     enum NewHabit {
         /// The habit-name text field — the first row the sheet draws,
         /// so it is what says "the sheet is up".

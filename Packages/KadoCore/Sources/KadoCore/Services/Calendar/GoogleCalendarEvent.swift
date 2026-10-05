@@ -60,12 +60,24 @@ nonisolated public struct GoogleCalendarEvent: Decodable, Sendable, Equatable {
     }
 
     public static func parseTimestamp(_ raw: String) -> Date? {
+        fractionalTimestamp.date(from: raw) ?? wholeSecondTimestamp.date(from: raw)
+    }
+
+    // Built once: a fresh formatter costs about five times the parse,
+    // and an import parses several timestamps per event every minute.
+    // `ISO8601DateFormatter` is documented thread-safe but not marked
+    // `Sendable`; neither is mutated after it is built.
+    nonisolated(unsafe) private static let fractionalTimestamp: ISO8601DateFormatter = {
         let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        if let value = formatter.date(from: raw) { return value }
+        return formatter
+    }()
+
+    nonisolated(unsafe) private static let wholeSecondTimestamp: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
         formatter.formatOptions = [.withInternetDateTime]
-        return formatter.date(from: raw)
-    }
+        return formatter
+    }()
 
     /// All-day end dates are exclusive in Google's API.
     public func schedule(using calendar: Calendar) -> Schedule? {

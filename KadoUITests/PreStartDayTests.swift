@@ -20,7 +20,7 @@ final class PreStartDayTests: KadoUITestCase {
         createHabit(named: "Stretch", in: app)
         let habitID = try XCTUnwrap(createdHabitID(in: app))
 
-        tapTab(.overview, in: app)
+        openOverviewGrid(in: app)
         let toggle = app.buttons[AccessibilityID.DayEdit.toggle]
 
         // Three days back is on screen at the matrix's trailing anchor
@@ -81,7 +81,7 @@ final class PreStartDayTests: KadoUITestCase {
 
         // `DevModeSeed` logs 6 on every odd day back to 29, so day 29
         // is the counter habit's start — the leftmost cell.
-        tapTab(.overview, in: app)
+        openOverviewGrid(in: app)
         let earliest = app.buttons[AccessibilityID.Overview.cell(habitID, daysAgo: 29)]
         scrollMatrixToLeadingEdge(showing: earliest, habitID: habitID, in: app)
         earliest.tap()

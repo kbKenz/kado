@@ -58,6 +58,9 @@ class KadoUITestCase: XCTestCase {
     ///     drive Today's long-press menu to get one there — see
     ///     `UITestSupport.Argument.archiveFirstHabit` for what that
     ///     costs.
+    ///   - insightsFixture: show the rich preview report in the Insights
+    ///     feed instead of the one built from the store, so every card
+    ///     has something to draw.
     @MainActor
     func launchApp(
         devMode: Bool = false,
@@ -75,7 +78,8 @@ class KadoUITestCase: XCTestCase {
         appearanceAnnouncement: Bool = false,
         tipNudgeReady: Bool = false,
         startOnNow: Bool = false,
-        seedNowBlock: Bool = false
+        seedNowBlock: Bool = false,
+        insightsFixture: Bool = false
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-uiTestRun"]
@@ -113,6 +117,9 @@ class KadoUITestCase: XCTestCase {
         if seedNowBlock {
             app.launchArguments.append("-uiTestSeedNowBlock")
         }
+        if insightsFixture {
+            app.launchArguments.append("-uiTestInsightsFixture")
+        }
         if let habitTheme {
             app.launchArguments += ["-uiTestHabitTheme", habitTheme]
         }
@@ -136,6 +143,20 @@ class KadoUITestCase: XCTestCase {
         tapTab(.today, in: app, file: file, line: line)
         let picker = app.segmentedControls[AccessibilityID.Today.modePicker].firstMatch
         XCTAssertTrue(picker.waitForExistence(timeout: 10), file: file, line: line)
+        picker.buttons.element(boundBy: 1).tap()
+    }
+
+    /// Overview's habits × days matrix. Overview opens on Insights, so
+    /// this taps the Grid segment of its Insights / Grid switch.
+    @MainActor
+    func openOverviewGrid(in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        tapTab(.overview, in: app, file: file, line: line)
+        let picker = app.segmentedControls[AccessibilityID.Insights.modePicker].firstMatch
+        XCTAssertTrue(
+            picker.waitForExistence(timeout: 10),
+            "Overview never showed its Insights / Grid switch.",
+            file: file, line: line
+        )
         picker.buttons.element(boundBy: 1).tap()
     }
 

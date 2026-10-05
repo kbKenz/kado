@@ -47,7 +47,7 @@ final class ScreenshotTests: KadoUITestCase {
         app.navigationBars.buttons.firstMatch.tap()
 
         // 4 — the Overview matrix, habits × days.
-        tapTab(.overview, in: app)
+        openOverviewGrid(in: app)
         assertReached(
             app.descendants(matching: .any)
                 .matching(NSPredicate(format: "identifier BEGINSWITH %@", "overview.label."))

@@ -44,8 +44,11 @@ struct CalendarBlockItem: Identifiable {
             task = nil
             title = habit.name
             habitID = habit.id
+            // Only the day's own records are snapshotted: `resolve`
+            // matches nothing else, and keeps the same first match.
+            let onDay = (habit.completions ?? []).filter { calendar.isDate($0.date, inSameDayAs: day) }
             isComplete = HabitRowState.resolve(
-                habit: habit.snapshot, completions: (habit.completions ?? []).compactMap(\.snapshot),
+                habit: habit.snapshot, completions: onDay.compactMap(\.snapshot),
                 calendar: calendar, asOf: day
             ).status == .complete
             glyph = ItemGlyph(habitIcon: habit.icon, color: habit.color)

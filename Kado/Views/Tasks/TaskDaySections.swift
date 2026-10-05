@@ -44,6 +44,30 @@ struct TaskDaySections {
         }
     }
 
+    /// Whether a task can land in any section `make` builds for `day`,
+    /// read from fields that are cheap on a record. Lets Today skip
+    /// building an item for each task completed on another day, which
+    /// is most of them once Google sync has run for a while. A superset:
+    /// `make` still decides, so it gets the same items it would pick
+    /// from the full list, in the same order.
+    static func mayInclude(
+        completedAt: Date?,
+        dueDate: Date?,
+        hasSchedules: () -> Bool,
+        on day: Date,
+        kind: TodayDayKind,
+        calendar: Calendar
+    ) -> Bool {
+        // Open tasks feed due, overdue and the inbox.
+        guard let completedAt else { return true }
+        let start = calendar.startOfDay(for: day)
+        if calendar.isDate(completedAt, inSameDayAs: start) { return true }
+        // A future day also lists tasks done early, on their due or
+        // planned day.
+        guard kind == .future else { return false }
+        return dueDate.map { calendar.isDate($0, inSameDayAs: start) } == true || hasSchedules()
+    }
+
     /// Due day, then start time, then title — the order Today always used.
     /// With `day` (past and future views) a multi-day task orders by its
     /// block on that day; today passes nil and keeps the first block.

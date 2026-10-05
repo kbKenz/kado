@@ -109,6 +109,10 @@ nonisolated enum UITestSupport {
         /// current at launch (ten minutes ago to fifty from now), so
         /// Now suggests it with a Start button.
         static let seedNowBlock = "-uiTestSeedNowBlock"
+        /// Show `InsightsPreviewData.rich` in the Insights feed instead
+        /// of the report built from the store, so a test sees every
+        /// card filled whatever the seed holds.
+        static let insightsFixture = "-uiTestInsightsFixture"
     }
 
     /// UI runs open on Today, where the suite has always started;
@@ -135,6 +139,12 @@ nonisolated enum UITestSupport {
     static var suppressesNameAutoFocus: Bool {
         isRunningUITests
             && ProcessInfo.processInfo.arguments.contains(Argument.suppressNameAutoFocus)
+    }
+
+    /// Whether the Insights feed should show the rich preview fixture.
+    static var showsInsightsFixture: Bool {
+        isRunningUITests
+            && ProcessInfo.processInfo.arguments.contains(Argument.insightsFixture)
     }
 
     /// Whether the app is being driven by the UI suite.
@@ -192,6 +202,10 @@ nonisolated enum UITestSupport {
         // Today's List / Calendar choice persists, so a run that picked
         // Calendar would start every later run in it.
         UserDefaults.standard.removeObject(forKey: TodayModeDefaults.key)
+        // Overview's Insights / Grid choice and the Insights period
+        // persist the same way: every run starts on Insights, Month.
+        UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.key)
+        UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.insightsPeriodKey)
         applyTipNudgeState(arguments)
         applyAppearanceAnnouncementState(arguments)
     }
@@ -388,6 +402,7 @@ import SwiftData
 nonisolated enum UITestSupport {
     static var suppressesNameAutoFocus: Bool { false }
     static var showsWidgetGallery: Bool { false }
+    static var showsInsightsFixture: Bool { false }
     static var initialTab: AppTab { .now }
     /// `DevModeController` calls this after seeding the dev store, in
     /// every configuration; a no-op here keeps its call site free of

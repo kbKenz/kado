@@ -1087,6 +1087,23 @@
         }
       }
     },
+    "%@ and %lld more" : {
+      "comment" : "Now tab: the last runs of today, then how many earlier ones are not shown.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ and %lld more"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ et %2$lld de plus"
+          }
+        }
+      }
+    },
     "%@ consistent" : {
       "comment" : "Insights: share of due habit-days done. The value is a percent.",
       "localizations" : {
@@ -1233,6 +1250,23 @@
         }
       }
     },
+    "%@ left" : {
+      "comment" : "Now tab: time left before the target or planned length, e.g. '1 hr, 20 min left'.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ left"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Encore %@"
+          }
+        }
+      }
+    },
     "%@ less than before" : {
       "comment" : "Insights: a total time fell against the previous period. The value is a duration such as 2h 10m.",
       "localizations" : {
@@ -1279,6 +1313,23 @@
         }
       }
     },
+    "%@ of %@" : {
+      "comment" : "Now tab: a timer habit's time today against its target, e.g. '2 hr of 4 hr'.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ of %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ sur %2$@"
+          }
+        }
+      }
+    },
     "%@ of focus" : {
       "comment" : "Insights: total session time. The value is a duration such as 12h 40m.",
       "localizations" : {
@@ -1292,6 +1343,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "%@ de concentration"
+          }
+        }
+      }
+    },
+    "%@ over" : {
+      "comment" : "Now tab: time worked past the target or planned length, e.g. '15 min over'.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ over"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ de dépassement"
           }
         }
       }
@@ -1350,6 +1418,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Les tâches « %@ » restent le plus souvent non faites (%lld sur %lld)"
+          }
+        }
+      }
+    },
+    "%@ today" : {
+      "comment" : "Now tab: a paused item's worked time today, e.g. '45 min today'.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ today"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%@ aujourd’hui"
           }
         }
       }
@@ -1425,6 +1510,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%@ · stopped %@" : {
+      "comment" : "Now tab: paused row summary, then the time work last stopped.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · stopped %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ · arrêté à %2$@"
           }
         }
       }
@@ -4847,6 +4949,40 @@
         }
       }
     },
+    "Continue" : {
+      "comment" : "Now tab: menu item that starts a paused item again.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Continuer"
+          }
+        }
+      }
+    },
+    "Continue %@" : {
+      "comment" : "VoiceOver label: start a paused item again.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continue %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Continuer %@"
+          }
+        }
+      }
+    },
     "Continues across days" : {
       "comment" : "Mark a timed calendar block that extends beyond this day.",
       "extractionState" : "manual",
@@ -5638,6 +5774,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Chaque tâche terminée actuellement liée compte une fois. Rouvrir ou délier une tâche recalcule la progression."
+          }
+        }
+      }
+    },
+    "Earlier today: %@" : {
+      "comment" : "Now tab: the running item's earlier runs today, e.g. '9:00 – 11:00 AM'.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Earlier today: %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plus tôt aujourd’hui : %@"
           }
         }
       }
@@ -10098,6 +10251,23 @@
         }
       }
     },
+    "Open" : {
+      "comment" : "Now tab: menu item that opens a paused item's details.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvrir"
+          }
+        }
+      }
+    },
     "Open a habit for its full completion history. Swipe an item to unlink it." : {
       "comment" : "Linked habits footer explains habit navigation and swipe-to-unlink behavior.",
       "extractionState" : "manual",
@@ -10287,6 +10457,23 @@
         }
       }
     },
+    "Opens the details." : {
+      "comment" : "VoiceOver hint on a paused item's title in the Now tab.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the details."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ouvre les détails."
+          }
+        }
+      }
+    },
     "Opens the goal." : {
       "comment" : "Insights Goals, VoiceOver hint on a goal row.",
       "localizations" : {
@@ -10439,6 +10626,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "En pause"
+          }
+        }
+      }
+    },
+    "PAUSED TODAY" : {
+      "comment" : "Now tab: header above the items started today and paused, not done.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAUSED TODAY"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "EN PAUSE AUJOURD’HUI"
           }
         }
       }
@@ -12433,6 +12637,23 @@
         }
       }
     },
+    "Switch to %@" : {
+      "comment" : "VoiceOver label: continue a paused item, which pauses the running one.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Switch to %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Passer à %@"
+          }
+        }
+      }
+    },
     "Sync now" : {
       "comment" : "Manually fetch and import the connected primary Google calendar.",
       "extractionState" : "manual",
@@ -13692,6 +13913,23 @@
         }
       }
     },
+    "today" : {
+      "comment" : "Now tab: after the running clock when it counts all of today's time.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "today"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "aujourd’hui"
+          }
+        }
+      }
+    },
     "Today's progress for one habit as a ring." : {
       "comment" : "Circular lock widget description.",
       "extractionState" : "stale",
@@ -13764,6 +14002,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Touch and hold a row for more." : {
+      "comment" : "Now tab: footer under the paused list; a long press opens a menu.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touch and hold a row for more."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Touche longuement une ligne pour plus d’options."
           }
         }
       }

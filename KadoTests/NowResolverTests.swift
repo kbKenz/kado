@@ -68,7 +68,7 @@ struct NowResolverTests {
         #expect(resolve(now: at(11, 1), blocks: [open]).state == .empty)
     }
 
-    @Test("An open session wins over any plan and keeps its block's range")
+    @Test("A running session wins over any plan and keeps its block's range")
     func openSessionWins() {
         let research = block("Research", at(10), at(12))
         let outreach = block("Outreach", at(14), at(15))
@@ -76,10 +76,6 @@ struct NowResolverTests {
         let screen = resolve(now: at(13), blocks: [research, outreach], open: running)
         #expect(screen.state == .running(running, plannedRange: research.range))
         #expect(screen.upNext == outreach)
-
-        var paused = running
-        paused.session.pausedAt = at(11)
-        #expect(resolve(now: at(13), blocks: [research], open: paused).state == .paused(paused, plannedRange: research.range))
     }
 
     @Test("A session without a block has no planned range")
@@ -120,13 +116,6 @@ struct NowResolverTests {
         let yesterday = block("Yesterday", at(10, day: 12), at(12, day: 12))
         let running = OpenSession(id: UUID(), item: yesterday.item, session: WorkSession(startedAt: at(9)), blockID: yesterday.id)
         #expect(resolve(now: at(9, 30), blocks: [yesterday], open: running).state == .running(running, plannedRange: nil))
-    }
-
-    @Test("A paused session without a block has no planned range")
-    func pausedWithoutBlock() {
-        let item = NowItem.task(id: UUID(), title: "Ad hoc")
-        let paused = OpenSession(id: UUID(), item: item, session: WorkSession(startedAt: at(9), pausedAt: at(9, 20)), blockID: nil)
-        #expect(resolve(now: at(9, 30), blocks: [], open: paused).state == .paused(paused, plannedRange: nil))
     }
 
     @Test("An ad-hoc session hides the planned block covering now")

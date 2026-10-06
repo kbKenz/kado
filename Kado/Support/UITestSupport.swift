@@ -343,7 +343,8 @@ nonisolated enum UITestSupport {
         }
     }
 
-    /// Inserts the task and current block `-uiTestSeedNowBlock` asks for.
+    /// Inserts the task and current block `-uiTestSeedNowBlock` asks for,
+    /// and a second task without a block, to switch to.
     /// On the mounted container's context, for the reason
     /// `seedProductionIfRequested` gives.
     @MainActor
@@ -363,6 +364,7 @@ nonisolated enum UITestSupport {
             endAt: .now.addingTimeInterval(50 * 60),
             task: task
         ))
+        context.insert(TaskRecord(title: "Outreach"))
         try? context.save()
     }
 

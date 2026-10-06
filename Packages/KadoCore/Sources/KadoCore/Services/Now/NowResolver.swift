@@ -9,11 +9,12 @@ nonisolated public struct NowResolver: Sendable {
         self.boundary = boundary
     }
 
-    /// Precedence: open session > current block > next block > empty.
+    /// Precedence: running session > current block > next block > empty.
+    /// Paused work is not a state here: the caller lists it apart.
     ///
     /// - `blocks` may span several days; only the logical day of `now`
     ///   is used. A block crossing the rollover belongs to the day it starts on.
-    /// - An open session wins even without a block: a planned block
+    /// - A running session wins even without a block: a planned block
     ///   covering now is then hidden, because the session is what you
     ///   are working on. Its block is looked up in today's blocks only.
     /// - `upNext` is the first block starting after the shown block's
@@ -31,10 +32,7 @@ nonisolated public struct NowResolver: Sendable {
             let range = block?.range
             let threshold = max(block?.start ?? now, now)
             let next = today.first { $0.start > threshold }
-            let state: NowState = openSession.session.isPaused
-                ? .paused(openSession, plannedRange: range)
-                : .running(openSession, plannedRange: range)
-            return NowScreen(state: state, upNext: next)
+            return NowScreen(state: .running(openSession, plannedRange: range), upNext: next)
         }
 
         if let current = today.first(where: { $0.isCurrent(at: now) }) {

@@ -13,9 +13,14 @@ struct NowInputBuilder {
         /// Most recent activity first: a Now session, a habit log, or an edit.
         var startCandidates: [NowItem]
         /// The icon beside each title on the cards, by item id: the
-        /// task's category or the habit's own icon. Only the block and
-        /// session items are filled, which is what the cards show.
+        /// task's category or the habit's own icon. Only the block,
+        /// session and paused items are filled, which is what the cards show.
         var glyphs: [UUID: ItemGlyph] = [:]
+        /// The running item's time today before its current run.
+        var runningProgress: NowProgress?
+        /// Items worked on today, paused and not done: the last
+        /// stopped first. Never the running item.
+        var paused: [NowProgress] = []
     }
 
     let boundary: DayBoundary
@@ -60,17 +65,125 @@ struct NowInputBuilder {
             return NowBlock(id: block.id, item: item, start: start, end: block.endAt, createdAt: block.createdAt)
         }
 
+        // A session an earlier version paused is still open: it is shown
+        // as paused work, and ends where it paused on the next action.
         let open = try WorkSessionTracker.openSession(in: context).flatMap { record -> OpenSession? in
-            guard let item = item(task: record.task, habit: record.habit) else { return nil }
+            guard record.pausedAt == nil, let item = item(task: record.task, habit: record.habit) else { return nil }
             glyphs[item.id] = Self.glyph(for: item, task: record.task, habit: record.habit)
             return OpenSession(id: record.id, item: item, session: record.snapshot, blockID: record.scheduleBlock?.id)
         }
+
+        let progress = try todaysProgress(
+            from: dayStart, to: dayEnd, day: day,
+            taskIDs: taskIDs, habitIDs: habitIDs, in: context
+        )
+        let runningProgress = open.map { open in
+            progress.byItem[open.item.id] ?? emptyProgress(for: open.item, in: context, day: day)
+        }
+        for entry in progress.ordered where entry.item.id != open?.item.id {
+            glyphs[entry.item.id] = progress.glyphs[entry.item.id]
+        }
+        let paused = progress.ordered.filter { $0.item.id != open?.item.id }
 
         // The sorts above settle ties, because `sorted` is stable.
         let recentTasks = workableTasks.map { (item: NowItem.task(id: $0.id, title: $0.title), last: Self.lastActivity(of: $0)) }
         let recentHabits = workableHabits.map { (item: NowItem.habit(id: $0.id, name: $0.name), last: Self.lastActivity(of: $0)) }
         let candidates = (recentTasks + recentHabits).sorted { $0.last > $1.last }.map(\.item)
-        return Input(blocks: blocks, openSession: open, startCandidates: candidates, glyphs: glyphs)
+        return Input(
+            blocks: blocks, openSession: open, startCandidates: candidates, glyphs: glyphs,
+            runningProgress: runningProgress, paused: paused
+        )
+    }
+
+    private struct TodaysRuns {
+        var byItem: [UUID: NowProgress] = [:]
+        /// Last stopped first.
+        var ordered: [NowProgress] = []
+        var glyphs: [UUID: ItemGlyph] = [:]
+    }
+
+    /// Every workable item not done for the day with a finished run
+    /// that started in the logical day `[dayStart, dayEnd)`, with that
+    /// day's runs.
+    private func todaysProgress(
+        from dayStart: Date, to dayEnd: Date, day: Date,
+        taskIDs: Set<UUID>, habitIDs: Set<UUID>, in context: ModelContext
+    ) throws -> TodaysRuns {
+        let inDay = #Predicate<WorkSessionRecord> { $0.startedAt >= dayStart && $0.startedAt < dayEnd }
+        let records = try context.fetch(FetchDescriptor<WorkSessionRecord>(
+            predicate: inDay, sortBy: [SortDescriptor(\.startedAt)]
+        ))
+        var runs: [UUID: [DateInterval]] = [:]
+        var worked: [UUID: TimeInterval] = [:]
+        var owners: [UUID: (task: TaskRecord?, habit: HabitRecord?)] = [:]
+        for record in records {
+            // A running session is the card's; a paused one from an
+            // earlier version counts up to its pause.
+            guard let stop = record.endedAt ?? record.pausedAt else { continue }
+            let id: UUID
+            if let task = record.task {
+                guard taskIDs.contains(task.id) else { continue }
+                id = task.id
+                owners[id] = (task, nil)
+            } else if let habit = record.habit {
+                guard habitIDs.contains(habit.id) else { continue }
+                id = habit.id
+                owners[id] = (nil, habit)
+            } else {
+                continue
+            }
+            runs[id, default: []].append(DateInterval(start: record.startedAt, end: max(stop, record.startedAt)))
+            worked[id, default: 0] += record.snapshot.elapsed(at: stop)
+        }
+
+        var result = TodaysRuns()
+        for (id, itemRuns) in runs {
+            guard let owner = owners[id] else { continue }
+            let progress: NowProgress
+            if let task = owner.task {
+                progress = NowProgress(item: .task(id: id, title: task.title), runs: itemRuns, countedSeconds: worked[id] ?? 0)
+                result.glyphs[id] = Self.glyph(for: progress.item, task: task, habit: nil)
+            } else if let habit = owner.habit {
+                // Done for the day (a timer at its target too): nothing left to continue.
+                let snapshot = habit.snapshot
+                let state = HabitRowState.resolve(
+                    habit: snapshot, completions: (habit.completions ?? []).compactMap(\.snapshot),
+                    calendar: boundary.calendar, asOf: day
+                )
+                if state.isDone(for: snapshot) { continue }
+                progress = habitProgress(habit, runs: itemRuns, worked: worked[id] ?? 0, day: day)
+                result.glyphs[id] = Self.glyph(for: progress.item, task: nil, habit: habit)
+            } else {
+                continue
+            }
+            result.byItem[id] = progress
+        }
+        result.ordered = result.byItem.values.sorted {
+            ($0.lastStoppedAt ?? .distantPast, $0.id.uuidString) > ($1.lastStoppedAt ?? .distantPast, $1.id.uuidString)
+        }
+        return result
+    }
+
+    /// A timer habit counts what is logged for the day (manual logs
+    /// too) against its target; other habits count their runs.
+    private func habitProgress(_ habit: HabitRecord, runs: [DateInterval], worked: TimeInterval, day: Date) -> NowProgress {
+        let item = NowItem.habit(id: habit.id, name: habit.name)
+        guard case .timer(let target) = habit.type else {
+            return NowProgress(item: item, runs: runs, countedSeconds: worked)
+        }
+        // Completions are stamped on the civil day equal to the logical day.
+        let logged = (habit.completions ?? [])
+            .filter { boundary.calendar.isDate($0.date, inSameDayAs: day) }
+            .reduce(0) { $0 + $1.value }
+        return NowProgress(item: item, runs: runs, countedSeconds: logged, targetSeconds: target, canMarkDone: false)
+    }
+
+    /// The running item's progress when it has no finished run today.
+    private func emptyProgress(for item: NowItem, in context: ModelContext, day: Date) -> NowProgress {
+        guard case .habit(let id, _) = item,
+              let habit = try? context.fetch(FetchDescriptor<HabitRecord>(predicate: #Predicate { $0.id == id })).first
+        else { return NowProgress(item: item, runs: [], countedSeconds: 0) }
+        return habitProgress(habit, runs: [], worked: 0, day: day)
     }
 
     /// A task's category, resolved as Insights does, or a habit's own

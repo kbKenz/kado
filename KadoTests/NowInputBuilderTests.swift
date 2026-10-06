@@ -211,4 +211,126 @@ struct NowInputBuilderTests {
         let input = try builder.build(now: now, in: context)
         #expect(input.glyphs[task.id] == ItemGlyph(category: .money))
     }
+
+    // MARK: - Paused today
+
+    @Test("Items worked on today and paused are listed, last stopped first, with their runs")
+    func pausedToday() throws {
+        let context = try context()
+        let ielts = TaskRecord(title: "IELTS prep")
+        let report = TaskRecord(title: "Report")
+        [ielts, report].forEach(context.insert)
+        let morning = TestCalendar.instant(calendar, 2026, 4, 13, 6)
+        context.insert(WorkSessionRecord(startedAt: morning, endedAt: morning.addingTimeInterval(3600), task: ielts))
+        context.insert(WorkSessionRecord(startedAt: morning.addingTimeInterval(3600), endedAt: morning.addingTimeInterval(5400), task: report))
+        context.insert(WorkSessionRecord(startedAt: morning.addingTimeInterval(5400), endedAt: morning.addingTimeInterval(7200), task: ielts))
+        try context.save()
+
+        let input = try builder.build(now: now, in: context)
+        #expect(input.openSession == nil)
+        #expect(input.paused.map(\.item.title) == ["IELTS prep", "Report"])
+        let first = try #require(input.paused.first)
+        #expect(first.countedSeconds == 5400.0)
+        #expect(first.runs == [
+            DateInterval(start: morning, duration: 3600),
+            DateInterval(start: morning.addingTimeInterval(5400), duration: 1800),
+        ])
+        #expect(first.canMarkDone)
+        #expect(input.glyphs[ielts.id] != nil)
+    }
+
+    @Test("The running item is not in the paused list; its earlier time is its progress")
+    func runningItemProgress() throws {
+        let context = try context()
+        let ielts = TaskRecord(title: "IELTS prep")
+        let report = TaskRecord(title: "Report")
+        [ielts, report].forEach(context.insert)
+        let morning = TestCalendar.instant(calendar, 2026, 4, 13, 6)
+        context.insert(WorkSessionRecord(startedAt: morning, endedAt: morning.addingTimeInterval(3600), task: ielts))
+        context.insert(WorkSessionRecord(startedAt: morning.addingTimeInterval(3600), endedAt: morning.addingTimeInterval(4200), task: report))
+        context.insert(WorkSessionRecord(startedAt: morning.addingTimeInterval(7200), task: ielts))
+        try context.save()
+
+        let input = try builder.build(now: now, in: context)
+        #expect(input.openSession?.item.id == ielts.id)
+        #expect(input.runningProgress?.countedSeconds == 3600.0)
+        #expect(input.paused.map(\.item.title) == ["Report"])
+    }
+
+    @Test("Done tasks, other days' runs and running-only items are not paused")
+    func pausedSkips() throws {
+        let context = try context()
+        let done = TaskRecord(title: "Done", completedAt: now)
+        let yesterday = TaskRecord(title: "Yesterday")
+        [done, yesterday].forEach(context.insert)
+        let morning = TestCalendar.instant(calendar, 2026, 4, 13, 6)
+        context.insert(WorkSessionRecord(startedAt: morning, endedAt: morning.addingTimeInterval(600), task: done))
+        let dayBefore = TestCalendar.instant(calendar, 2026, 4, 12, 20)
+        context.insert(WorkSessionRecord(startedAt: dayBefore, endedAt: dayBefore.addingTimeInterval(600), task: yesterday))
+        try context.save()
+
+        let input = try builder.build(now: now, in: context)
+        #expect(input.paused.isEmpty)
+    }
+
+    @Test("A timer habit counts its logged time against its target and cannot be marked done")
+    func timerHabitProgress() throws {
+        let context = try context()
+        let habit = HabitRecord(name: "IELTS", type: .timer(targetSeconds: 14_400), createdAt: now.addingTimeInterval(-86_400 * 3))
+        context.insert(habit)
+        let morning = TestCalendar.instant(calendar, 2026, 4, 13, 6)
+        context.insert(WorkSessionRecord(startedAt: morning, endedAt: morning.addingTimeInterval(3600), habit: habit))
+        // Logged by the run, plus 20 minutes logged by hand.
+        context.insert(CompletionRecord(date: morning, value: 4800, habit: habit))
+        try context.save()
+
+        let input = try builder.build(now: now, in: context)
+        let progress = try #require(input.paused.first)
+        #expect(progress.countedSeconds == 4800.0)
+        #expect(progress.targetSeconds == 14_400.0)
+        #expect(!progress.canMarkDone)
+    }
+
+    @Test("A timer habit that reached its target leaves the paused list")
+    func timerHabitReached() throws {
+        let context = try context()
+        let habit = HabitRecord(name: "IELTS", type: .timer(targetSeconds: 3600), createdAt: now.addingTimeInterval(-86_400 * 3))
+        context.insert(habit)
+        let morning = TestCalendar.instant(calendar, 2026, 4, 13, 6)
+        context.insert(WorkSessionRecord(startedAt: morning, endedAt: morning.addingTimeInterval(3600), habit: habit))
+        context.insert(CompletionRecord(date: morning, value: 3600, habit: habit))
+        try context.save()
+
+        #expect(try builder.build(now: now, in: context).paused.isEmpty)
+    }
+
+    @Test("A habit done today leaves the paused list")
+    func doneHabitLeaves() throws {
+        let context = try context()
+        let habit = HabitRecord(name: "Read", type: .binary, createdAt: now.addingTimeInterval(-86_400 * 3))
+        context.insert(habit)
+        let morning = TestCalendar.instant(calendar, 2026, 4, 13, 6)
+        context.insert(WorkSessionRecord(startedAt: morning, endedAt: morning.addingTimeInterval(600), habit: habit))
+        try context.save()
+        #expect(try builder.build(now: now, in: context).paused.map(\.item.id) == [habit.id])
+
+        context.insert(CompletionRecord(date: morning, value: 1, habit: habit))
+        try context.save()
+        #expect(try builder.build(now: now, in: context).paused.isEmpty)
+    }
+
+    @Test("A session an earlier version paused shows as paused, counted up to its pause")
+    func legacyPausedSession() throws {
+        let context = try context()
+        let task = TaskRecord(title: "Report")
+        context.insert(task)
+        let morning = TestCalendar.instant(calendar, 2026, 4, 13, 6)
+        context.insert(WorkSessionRecord(startedAt: morning, pausedAt: morning.addingTimeInterval(1800), pausedSeconds: 600, task: task))
+        try context.save()
+
+        let input = try builder.build(now: now, in: context)
+        #expect(input.openSession == nil)
+        #expect(input.paused.first?.countedSeconds == 1200.0)
+        #expect(input.paused.first?.runs == [DateInterval(start: morning, duration: 1800)])
+    }
 }

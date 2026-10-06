@@ -460,10 +460,12 @@ enum AccessibilityID {
         static let title = "now.title"
         static let start = "now.start"
         static let pause = "now.pause"
-        static let resume = "now.resume"
-        static let finish = "now.finish"
-        static let finishDone = "now.finish.done"
-        static let finishNotYet = "now.finish.notYet"
+        static let done = "now.done"
+        /// The "Paused today" header.
+        static let paused = "now.paused"
+        static let markDone = "now.paused.markDone"
+        static func pausedRow(_ id: UUID) -> String { "now.paused.row.\(id.uuidString)" }
+        static func continueItem(_ id: UUID) -> String { "now.paused.continue.\(id.uuidString)" }
         static let elapsed = "now.elapsed"
         static let upNext = "now.upNext"
         static let startSomething = "now.startSomething"

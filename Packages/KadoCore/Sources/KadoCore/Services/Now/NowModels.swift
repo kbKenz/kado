@@ -54,7 +54,40 @@ nonisolated public struct NowBlock: Hashable, Sendable {
     }
 }
 
-/// The open session, if any, with what it is about.
+/// One item's tracked time on a logical day: what the running card
+/// adds its clock to, and what a row of the paused list shows.
+///
+/// Every start-to-pause stretch is its own `WorkSessionRecord`, so
+/// `runs` is the automatic log of when work started and stopped.
+nonisolated public struct NowProgress: Hashable, Identifiable, Sendable {
+    public var item: NowItem
+    /// Finished runs that started on the day, oldest first.
+    public var runs: [DateInterval]
+    /// Time already counted for the day, without a running session: a
+    /// timer habit's logged value (manual logs included), else the
+    /// worked time of `runs`.
+    public var countedSeconds: TimeInterval
+    /// A timer habit's daily target; nil for tasks and other habits.
+    public var targetSeconds: TimeInterval?
+    /// False for timer habits: they are done when the time is reached.
+    public var canMarkDone: Bool
+
+    public var id: UUID { item.id }
+
+    public init(item: NowItem, runs: [DateInterval], countedSeconds: TimeInterval,
+                targetSeconds: TimeInterval? = nil, canMarkDone: Bool = true) {
+        self.item = item
+        self.runs = runs
+        self.countedSeconds = countedSeconds
+        self.targetSeconds = targetSeconds
+        self.canMarkDone = canMarkDone
+    }
+
+    /// When the last run stopped, for ordering and display.
+    public var lastStoppedAt: Date? { runs.last?.end }
+}
+
+/// The running session, if any, with what it is about.
 nonisolated public struct OpenSession: Hashable, Sendable {
     public var id: UUID
     public var item: NowItem
@@ -72,13 +105,11 @@ nonisolated public struct OpenSession: Hashable, Sendable {
 nonisolated public enum NowState: Equatable, Sendable {
     /// A session is running. `plannedRange` is its block's range, nil without a block today.
     case running(OpenSession, plannedRange: ClosedRange<Date>?)
-    /// A session is open and paused. `plannedRange` as for `running`.
-    case paused(OpenSession, plannedRange: ClosedRange<Date>?)
     /// No session; this block's range holds now.
     case suggestedCurrent(NowBlock)
     /// No session and nothing current; this is the next block later today.
     case suggestedNext(NowBlock)
-    /// Nothing open, current or left today.
+    /// Nothing running, current or left today.
     case empty
 }
 

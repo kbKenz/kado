@@ -30,12 +30,19 @@ struct ArchivedHabitsView: View {
     /// dialog can't hold a record across a container swap.
     @State private var confirmingDeleteOf: UUID?
 
+    /// The habit whose detail is pushed. See `row(_:)` for why this is
+    /// state and not a link per row.
+    @State private var openedHabit: HabitRoute?
+
     private var rows: [ArchivedHabitRow] {
         ArchivedHabitRow.rows(from: archivedHabits)
     }
 
     var body: some View {
         content
+            .navigationDestination(item: $openedHabit) { route in
+                HabitDetailLoader(habitID: route.id)
+            }
             .scrollContentBackground(.hidden)
             .background(Color.kadoBackground.ignoresSafeArea())
             .navigationTitle(Text("Archived habits"))
@@ -79,23 +86,35 @@ struct ArchivedHabitsView: View {
         }
     }
 
-    /// A closure-form link, not `NavigationLink(value: HabitRoute(…))`
-    /// as on Today. This screen is itself pushed by a closure-form
-    /// link (`ArchivedSection`), and a value-typed push from inside a
-    /// closure-pushed screen misbehaves on this toolchain: with the
-    /// `HabitRoute` destination declared here it registered twice
-    /// ("declared earlier on the stack") and the tap pushed nothing;
-    /// declared at the stack's root instead, the detail pushed and was
-    /// covered a beat later by a fresh push of this list. Settings'
-    /// stack is closure-form throughout (Tip Jar too), and a nested
-    /// closure link just works. The loader still takes an id, so the
-    /// row holds no record (issue #63).
+    /// A button that sets `openedHabit`, pushed by
+    /// `navigationDestination(item:)`, not a link per row. A
+    /// closure-form `NavigationLink { HabitDetailLoader(…) }` here
+    /// rebuilt its destination with every pass of this list, and the
+    /// loader's `@Query` invalidated the list again, so opening an
+    /// archived habit spun the main thread in SwiftUI updates for good
+    /// (the UI suite saw "main thread busy for 30.0s"). A value-typed
+    /// `NavigationLink(value: HabitRoute(…))` is no way out either:
+    /// this screen is itself pushed by a closure-form link
+    /// (`ArchivedSection`), and the `HabitRoute` destination then
+    /// registered twice ("declared earlier on the stack") and the tap
+    /// pushed nothing. The item-bound destination is tied to this
+    /// screen's state, not to a type on the stack. The loader still
+    /// takes an id, so the row holds no record (issue #63).
     private func row(_ item: ArchivedHabitRow) -> some View {
-        NavigationLink {
-            HabitDetailLoader(habitID: item.id)
+        Button {
+            openedHabit = HabitRoute(id: item.id)
         } label: {
-            ArchivedHabitRowView(row: item, archivedOn: archivedOnLabel(for: item))
+            HStack {
+                ArchivedHabitRowView(row: item, archivedOn: archivedOnLabel(for: item))
+                Spacer(minLength: 8)
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
+            }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .listRowBackground(Color.kadoBackgroundSecondary)
         // Unarchive is reversible, so a full swipe may fire it; Delete
         // confirms first, so it takes a tap.

@@ -15,6 +15,7 @@ struct ReflectionCheckInView: View {
     @Environment(\.calendar) private var calendar
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     @State private var steps: [ReflectionStep] = []
     @State private var index = 0
@@ -121,7 +122,13 @@ struct ReflectionCheckInView: View {
         HStack(spacing: 12) {
             if index > 0 {
                 Button { go(to: index - 1) } label: {
-                    Label("Back", systemImage: "chevron.left")
+                    // The word would wrap at accessibility sizes; the
+                    // label still reads "Back" to VoiceOver.
+                    if dynamicTypeSize.isAccessibilitySize {
+                        Label("Back", systemImage: "chevron.left").labelStyle(.iconOnly)
+                    } else {
+                        Label("Back", systemImage: "chevron.left")
+                    }
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.large)
@@ -150,6 +157,10 @@ struct ReflectionCheckInView: View {
                 }
             }
         }
+        // One line each: a word broken over two lines in a pill reads worse
+        // than slightly smaller text.
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
         .padding()
         .background(Color.kadoBackground)
     }

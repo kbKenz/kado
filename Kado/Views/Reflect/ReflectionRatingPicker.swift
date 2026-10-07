@@ -6,14 +6,20 @@ import KadoCore
 struct ReflectionRatingPicker: View {
     let question: ReflectionQuestion
     @Binding var value: Double?
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .firstTextBaseline) {
+            // Side by side; stacked at accessibility sizes, where the
+            // value would squeeze the prompt to a word per line.
+            let header = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+                : AnyLayout(HStackLayout(alignment: .firstTextBaseline))
+            header {
                 Text(verbatim: question.prompt)
                     .font(.headline)
                     .foregroundStyle(Color.kadoForeground)
-                Spacer()
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 Group {
                     if let value { Text("\(Int(value)) / 10") } else { Text("Not rated") }
                 }

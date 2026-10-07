@@ -1,12 +1,13 @@
 import Foundation
 
 /// What the Overview tab shows: the Insights feed, the day-by-day
-/// History, or the habits × days grid. Stored by raw value, so the
-/// cases keep their names.
+/// History, the habits × days grid, or the monthly reflections. Stored
+/// by raw value, so the cases keep their names.
 enum OverviewMode: String {
     case insights
     case history
     case grid
+    case reflect
 }
 
 /// Where Overview remembers its Insights / History / Grid switch, the

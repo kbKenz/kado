@@ -216,6 +216,11 @@ nonisolated enum UITestSupport {
         UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.historyKindKey)
         UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.historyDayOrderKey)
         UserDefaults.standard.removeObject(forKey: OverviewModeDefaults.historyItemOrderKey)
+        // Reflect starts on Months, unlocked, with its reminder on.
+        for key in [ReflectionDefaults.archiveModeKey, ReflectionDefaults.lockKey,
+                    ReflectionDefaults.remindersKey, ReflectionDefaults.dismissedCardKey] {
+            UserDefaults.standard.removeObject(forKey: key)
+        }
         applyTipNudgeState(arguments)
         applyAppearanceAnnouncementState(arguments)
     }
@@ -417,6 +422,7 @@ import SwiftData
 /// keeps the view unconditional and the answer constant in release.
 nonisolated enum UITestSupport {
     static var suppressesNameAutoFocus: Bool { false }
+    static var isRunningUITests: Bool { false }
     static var showsWidgetGallery: Bool { false }
     static var showsInsightsFixture: Bool { false }
     static var initialTab: AppTab { .now }

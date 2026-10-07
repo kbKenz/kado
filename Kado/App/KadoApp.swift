@@ -231,6 +231,9 @@ struct KadoApp: App {
             // the app was suspended.
             guard newPhase == .active else { return }
             reconcileAppIcon()
+            // Months finished on another device drop their reminder,
+            // and the window of months ahead moves on.
+            ReflectionReminders.sync(using: container.mainContext)
             guard !boundary.isDate(clockMark, inSameDayAs: .now) else {
                 // Tasks use civil days even when habits roll over later.
                 // A foreground return after midnight must refresh both

@@ -223,11 +223,15 @@ struct KadoSchemaTests {
         do {
             let schema = Schema(versionedSchema: KadoSchemaV9.self)
             let store = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url))
+            // Not `mainContext`: its autosave timer can fire after the
+            // container is gone, which traps the whole test host.
+            let setup = ModelContext(store)
+            setup.autosaveEnabled = false
             let habit = KadoSchemaV9.HabitRecord(id: habitID, name: "Read")
-            store.mainContext.insert(habit)
-            store.mainContext.insert(KadoSchemaV9.CompletionRecord(value: 1, habit: habit))
-            store.mainContext.insert(KadoSchemaV9.TaskRecord(id: taskID, title: "Apply"))
-            try store.mainContext.save()
+            setup.insert(habit)
+            setup.insert(KadoSchemaV9.CompletionRecord(value: 1, habit: habit))
+            setup.insert(KadoSchemaV9.TaskRecord(id: taskID, title: "Apply"))
+            try setup.save()
         }
         let schema = Schema(versionedSchema: KadoSchemaV10.self)
         let store = try ModelContainer(
@@ -235,7 +239,8 @@ struct KadoSchemaTests {
             migrationPlan: KadoMigrationPlan.self,
             configurations: ModelConfiguration(schema: schema, url: url)
         )
-        let context = store.mainContext
+        let context = ModelContext(store)
+        context.autosaveEnabled = false
         let habit = try #require(context.fetch(FetchDescriptor<KadoSchemaV10.HabitRecord>()).first)
         #expect(habit.id == habitID)
         #expect(habit.completions?.count == 1)

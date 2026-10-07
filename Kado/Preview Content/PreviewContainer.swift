@@ -13,6 +13,7 @@ enum PreviewContainer {
         do {
             let container = try ModelContainer(
                 for: HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self,
+                ReflectionRecord.self, ReflectionAnswerRecord.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             DevModeSeed.seed(into: container.mainContext)
@@ -38,6 +39,7 @@ enum PreviewContainer {
         do {
             let container = try ModelContainer(
                 for: HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self,
+                ReflectionRecord.self, ReflectionAnswerRecord.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             let context = container.mainContext
@@ -61,6 +63,7 @@ enum PreviewContainer {
         do {
             return try ModelContainer(
                 for: HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self,
+                ReflectionRecord.self, ReflectionAnswerRecord.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
         } catch {
@@ -75,6 +78,7 @@ enum PreviewContainer {
         do {
             let container = try ModelContainer(
                 for: HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self,
+                ReflectionRecord.self, ReflectionAnswerRecord.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             let calendar = Calendar.current

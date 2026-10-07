@@ -456,6 +456,30 @@ enum AccessibilityID {
     }
 
     /// The Now tab (`NowView`).
+    enum Reflect {
+        static let checkInButton = "reflect.checkIn"
+        static let close = "reflect.close"
+        static let next = "reflect.next"
+        static let back = "reflect.back"
+        static let finish = "reflect.finish"
+        static let empty = "reflect.empty"
+        static let archivePicker = "reflect.archivePicker"
+        static let settingsMenu = "reflect.settings"
+        static let reminderToggle = "reflect.settings.reminder"
+        static let lockToggle = "reflect.settings.lock"
+        static let unlock = "reflect.unlock"
+        static let yearAgo = "reflect.yearAgo"
+        static let edit = "reflect.edit"
+        static let todayCard = "reflect.todayCard"
+        static let todayCardStart = "reflect.todayCard.start"
+        static let todayCardHide = "reflect.todayCard.hide"
+        static func ratingValue(_ questionID: String, _ value: Int) -> String { "reflect.rating.\(questionID).\(value)" }
+        static func answer(_ questionID: String) -> String { "reflect.answer.\(questionID)" }
+        static func status(_ raw: String) -> String { "reflect.status.\(raw)" }
+        static func monthRow(_ id: Int) -> String { "reflect.month.\(id)" }
+        static func questionRow(_ id: String) -> String { "reflect.question.\(id)" }
+    }
+
     enum Now {
         static let title = "now.title"
         static let start = "now.start"

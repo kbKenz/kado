@@ -68,6 +68,8 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
 
     enum Decision: Equatable {
         case complete(UUID)
+        /// The monthly check-in reminder was tapped.
+        case openReflection(ReflectionMonth)
         case skip
         case openApp
         case unknown
@@ -83,6 +85,11 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
         actionIdentifier: String,
         userInfo: [AnyHashable: Any]
     ) -> Decision {
+        if actionIdentifier == UNNotificationDefaultActionIdentifier,
+           let key = userInfo[ReflectionReminderScheduler.monthUserInfoKey] as? String,
+           let month = ReflectionReminderScheduler.month(fromKey: key) {
+            return .openReflection(month)
+        }
         let idString = userInfo["habitID"] as? String ?? ""
         let habitID = UUID(uuidString: idString)
 
@@ -131,6 +138,8 @@ final class NotificationManager: NSObject, UNUserNotificationCenterDelegate {
             switch decision {
             case .complete(let habitID):
                 await self.handleComplete(habitID: habitID)
+            case .openReflection(let month):
+                AppRouter.shared.openCheckIn(for: month)
             case .skip, .openApp, .unknown:
                 break
             }

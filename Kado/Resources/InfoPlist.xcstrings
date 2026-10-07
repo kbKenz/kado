@@ -71,6 +71,24 @@
         }
       }
     },
+    "NSFaceIDUsageDescription" : {
+      "comment" : "System permission prompt the first time the Reflect lock asks for Face ID.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kadō uses Face ID only to unlock your monthly reflections, when you turn on the lock."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Kadō utilise Face ID uniquement pour déverrouiller tes réflexions mensuelles, quand tu actives le verrou."
+          }
+        }
+      }
+    },
     "NSHealthShareUsageDescription" : {
       "comment" : "Health permission prompt: why Kadō reads sleep and workouts.",
       "extractionState" : "manual",

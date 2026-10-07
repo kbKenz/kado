@@ -1,6 +1,7 @@
 import Testing
 import Foundation
 @testable import Kado
+import KadoCore
 
 /// Today has one card slot and two cards that want it. The rule under
 /// test: never both, the announcement first, and the tip nudge not on
@@ -77,5 +78,14 @@ struct TodayCardTests {
             calendar: havana
         )
         #expect(card == .tipNudge)
+    }
+
+    @Test("The open monthly check-in takes the slot over both other cards")
+    func checkInFirst() {
+        let month = ReflectionMonth(year: 2026, month: 10)
+        let card = TodayCard.resolve(
+            announcementRetiredAt: nil, tipNudgeDue: true, now: .now, calendar: calendar, reflectionCheckIn: month
+        )
+        #expect(card == .reflectionCheckIn(month))
     }
 }

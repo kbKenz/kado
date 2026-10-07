@@ -1,4 +1,5 @@
 import Foundation
+import KadoCore
 
 /// The one card the bottom of Today has room for.
 ///
@@ -9,18 +10,24 @@ import Foundation
 nonisolated enum TodayCard: Equatable {
     case appearanceAnnouncement
     case tipNudge
+    /// The monthly check-in, in the days it is open.
+    case reflectionCheckIn(ReflectionMonth)
 
     /// - The announcement wins while it is due. It is time-bound (it
     ///   announces a release); the tip nudge keeps.
     /// - The tip nudge waits until the calendar day after the
     ///   announcement was put away, so dismissing one card never
     ///   uncovers the other on the spot.
+    /// - The check-in wins over both while it is open: it lasts a few
+    ///   days a month, the other two keep.
     static func resolve(
         announcementRetiredAt: Date?,
         tipNudgeDue: Bool,
         now: Date,
-        calendar: Calendar
+        calendar: Calendar,
+        reflectionCheckIn: ReflectionMonth? = nil
     ) -> TodayCard? {
+        if let reflectionCheckIn { return .reflectionCheckIn(reflectionCheckIn) }
         guard let retiredAt = announcementRetiredAt else { return .appearanceAnnouncement }
         guard tipNudgeDue else { return nil }
         // Through `Calendar`, so a day is the calendar's day — never a

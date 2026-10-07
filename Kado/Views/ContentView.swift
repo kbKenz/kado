@@ -8,6 +8,7 @@ import KadoCore
 /// calendar view of the same day; Overview keeps the habit matrix.
 struct ContentView: View {
     @State private var selection: AppTab = UITestSupport.initialTab
+    private var router: AppRouter { AppRouter.shared }
 
     var body: some View {
         // Deliberately no `.accessibilityIdentifier` on these tabs: one
@@ -31,6 +32,13 @@ struct ContentView: View {
             Tab("Settings", systemImage: "gearshape", value: AppTab.settings) {
                 SettingsView()
             }
+        }
+        // The monthly reminder opens Overview's Reflect section, which
+        // then takes the request and opens the check-in.
+        .onChange(of: router.checkInRequest) { _, month in
+            guard month != nil else { return }
+            UserDefaults.standard.set(OverviewMode.reflect.rawValue, forKey: OverviewModeDefaults.key)
+            selection = .overview
         }
         .kadoTheme()
         .reviewPromptOnForeground()

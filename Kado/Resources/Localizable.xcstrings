@@ -1105,6 +1105,23 @@
         }
       }
     },
+    "%@ by %@" : {
+      "comment" : "Reflect question history: what became of a problem and in which month, e.g. 'Better by November'.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ by %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ en %2$@"
+          }
+        }
+      }
+    },
     "%@ consistent" : {
       "comment" : "Insights: share of due habit-days done. The value is a percent.",
       "localizations" : {
@@ -1866,6 +1883,23 @@
         }
       }
     },
+    "%lld / 10" : {
+      "comment" : "A 1-10 reflection rating, e.g. '7 / 10'.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld / 10"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld / 10"
+          }
+        }
+      }
+    },
     "%lld / best %lld" : {
       "comment" : "Streak metric card value. First arg: current streak length in days. Second arg: best-ever streak length in days.",
       "localizations" : {
@@ -2234,6 +2268,47 @@
         }
       }
     },
+    "%lld months" : {
+      "comment" : "Reflect questions list: how many months answered a question.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld month"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld months"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld mois"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "%lld mois"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld of %lld" : {
       "comment" : "VoiceOver progress fragment for a counter Today row. First arg: current value. Second arg: target.",
       "localizations" : {
@@ -2572,6 +2647,23 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld of 10" : {
+      "comment" : "VoiceOver value of a 1-10 reflection rating.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld of 10"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%lld sur 10"
           }
         }
       }
@@ -3164,6 +3256,57 @@
         }
       }
     },
+    "A YEAR AGO · %@" : {
+      "comment" : "Reflect: header of the card showing the same month a year before.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A YEAR AGO · %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "IL Y A UN AN · %@"
+          }
+        }
+      }
+    },
+    "About 15 minutes. Skip any question. Your answers save as you go, so you can finish later." : {
+      "comment" : "First screen of the monthly check-in.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About 15 minutes. Skip any question. Your answers save as you go, so you can finish later."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Environ 15 minutes. Passe les questions que tu veux. Tes réponses s’enregistrent au fur et à mesure, tu peux finir plus tard."
+          }
+        }
+      }
+    },
+    "About 15 minutes: ratings, a few honest questions, and one deep question." : {
+      "comment" : "Reflect check-in card before starting.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "About 15 minutes: ratings, a few honest questions, and one deep question."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Environ 15 minutes : des notes, quelques questions honnêtes et une question profonde."
+          }
+        }
+      }
+    },
     "About this score" : {
       "comment" : "Navigation title of the sheet that explains how the habit score is calculated, opened by tapping the Score card on habit detail.",
       "localizations" : {
@@ -3298,6 +3441,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ajouter 5 minutes"
+          }
+        }
+      }
+    },
+    "Add a note (optional)" : {
+      "comment" : "Reflect follow-up: placeholder of the optional note.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add a note (optional)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ajouter une note (facultatif)"
           }
         }
       }
@@ -3438,6 +3598,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Ajoute la configuration Google OAuth de l’app pour activer la connexion au compte."
+          }
+        }
+      }
+    },
+    "Advice from 80-year-old me" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advice from 80-year-old me"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Conseil de moi à 80 ans"
           }
         }
       }
@@ -3996,6 +4173,40 @@
         }
       }
     },
+    "Avoided" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avoided"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Évité"
+          }
+        }
+      }
+    },
+    "Back" : {
+      "comment" : "Reflect check-in: go to the previous question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Back"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour"
+          }
+        }
+      }
+    },
     "Baseline" : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",
@@ -4096,6 +4307,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "avant le début du suivi"
+          }
+        }
+      }
+    },
+    "Begin" : {
+      "comment" : "Reflect check-in: start after the first screen.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Begin"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Commencer"
           }
         }
       }
@@ -4246,6 +4474,57 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "Better" : {
+      "comment" : "Reflection follow-up: last month's problem got better.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Better"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mieux"
+          }
+        }
+      }
+    },
+    "Biggest problem" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biggest problem"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plus gros problème"
+          }
+        }
+      }
+    },
+    "Biggest problem then" : {
+      "comment" : "Reflect, a year ago card: the biggest problem written then.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biggest problem then"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Plus gros problème à l’époque"
           }
         }
       }
@@ -5072,6 +5351,23 @@
         }
       }
     },
+    "Couldn't save your answers" : {
+      "comment" : "Reflect check-in: alert title when saving fails.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn't save your answers"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Impossible d’enregistrer tes réponses"
+          }
+        }
+      }
+    },
     "Counter" : {
       "comment" : "Habit type picker option — habits measured by an incrementing count (e.g. glasses of water).",
       "localizations" : {
@@ -5399,6 +5695,23 @@
         }
       }
     },
+    "Deep questions" : {
+      "comment" : "Reflect questions list: section of the rotating deep questions.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deep questions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Questions profondes"
+          }
+        }
+      }
+    },
     "Delete" : {
       "comment" : "Destructive action label: removes a completion (History row menu) or permanently deletes an archived habit (row actions, detail toolbar, confirmation dialog).",
       "localizations" : {
@@ -5539,6 +5852,40 @@
         }
       }
     },
+    "Delete this month" : {
+      "comment" : "Reflect month menu: delete the month's reflection.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this month"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer ce mois"
+          }
+        }
+      }
+    },
+    "Delete this month's reflection?" : {
+      "comment" : "Reflect: confirmation title before deleting a month.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete this month's reflection?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Supprimer les réflexions de ce mois ?"
+          }
+        }
+      }
+    },
     "Delete this progress entry?" : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",
@@ -5553,6 +5900,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Supprimer cette saisie de progression ?"
+          }
+        }
+      }
+    },
+    "Describe this month in one word." : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Describe this month in one word."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Décris ce mois en un mot."
           }
         }
       }
@@ -5595,6 +5959,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Développeur"
+          }
+        }
+      }
+    },
+    "Did it" : {
+      "comment" : "Reflection follow-up: last month's intention was done.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Did it"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fait"
+          }
+        }
+      }
+    },
+    "Did you do it?" : {
+      "comment" : "Reflection follow-up about last month's intention.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Did you do it?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "L’as-tu fait ?"
+          }
+        }
+      }
+    },
+    "Didn't" : {
+      "comment" : "Reflection follow-up: last month's intention was not done.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Didn't"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pas fait"
           }
         }
       }
@@ -5687,6 +6102,23 @@
         }
       }
     },
+    "Done. You can still add to it." : {
+      "comment" : "Reflect check-in card when the month is done.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Done. You can still add to it."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Terminé. Tu peux encore le compléter."
+          }
+        }
+      }
+    },
     "Double-tap to edit this day." : {
       "comment" : "VoiceOver hint on past/today cells in the habit detail calendar; announces that activating the cell opens an editor for that day.",
       "localizations" : {
@@ -5745,6 +6177,74 @@
         }
       }
     },
+    "Draft" : {
+      "comment" : "Reflect months list: a month not finished yet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draft"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brouillon"
+          }
+        }
+      }
+    },
+    "Draft: not finished yet" : {
+      "comment" : "Reflect month: the check-in is not finished.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Draft: not finished yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Brouillon : pas encore terminé"
+          }
+        }
+      }
+    },
+    "Dreams" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dreams"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rêves"
+          }
+        }
+      }
+    },
+    "Dreams then" : {
+      "comment" : "Reflect, a year ago card: the dreams written then.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dreams then"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rêves à l’époque"
+          }
+        }
+      }
+    },
     "Due" : {
       "comment" : "Header of the Today task section listing open tasks due on a past day picked in the day strip.",
       "localizations" : {
@@ -5780,6 +6280,23 @@
         }
       }
     },
+    "Each month, answer the same few questions about your life. Months from now, read them back and see what changed." : {
+      "comment" : "Reflect empty state.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Each month, answer the same few questions about your life. Months from now, read them back and see what changed."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chaque mois, réponds aux mêmes questions sur ta vie. Dans quelques mois, relis-les et vois ce qui a changé."
+          }
+        }
+      }
+    },
     "Earlier today: %@" : {
       "comment" : "Now tab: the running item's earlier runs today, e.g. '9:00 – 11:00 AM'.",
       "localizations" : {
@@ -5810,6 +6327,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Modifier"
+          }
+        }
+      }
+    },
+    "Edit answers" : {
+      "comment" : "Reflect month menu: open the check-in to edit.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit answers"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Modifier les réponses"
           }
         }
       }
@@ -6027,6 +6561,57 @@
         }
       }
     },
+    "Energy" : {
+      "comment" : "Reflection rating label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Énergie"
+          }
+        }
+      }
+    },
+    "Energy and drain" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energy and drain"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Énergie et fatigue"
+          }
+        }
+      }
+    },
+    "Energy and health" : {
+      "comment" : "Reflection rating question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Energy and health"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Énergie et santé"
+          }
+        }
+      }
+    },
     "Enter a finite amount greater than zero." : {
       "comment" : "Measurable goal progress: configuration, contribution history, or totals.",
       "extractionState" : "manual",
@@ -6215,6 +6800,23 @@
         }
       }
     },
+    "Every answer for this month is removed. This cannot be undone." : {
+      "comment" : "Reflect: confirmation message before deleting a month.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every answer for this month is removed. This cannot be undone."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Toutes les réponses de ce mois sont supprimées. C’est irréversible."
+          }
+        }
+      }
+    },
     "every day" : {
       "comment" : "Frequency phrase used in 'Fires on every day'.",
       "localizations" : {
@@ -6239,6 +6841,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chaque jour"
+          }
+        }
+      }
+    },
+    "Every month" : {
+      "comment" : "Reflect questions list: section of the questions asked every month.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Every month"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Chaque mois"
           }
         }
       }
@@ -6307,6 +6926,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Des thèmes de couleurs supplémentaires pour tes habitudes, en plus des thèmes gratuits Kadō et Classique."
+          }
+        }
+      }
+    },
+    "Fears and worries" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fears and worries"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Peurs et soucis"
           }
         }
       }
@@ -6478,6 +7114,23 @@
         }
       }
     },
+    "Focus time" : {
+      "comment" : "Reflect stats tile: time tracked in work sessions.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Focus time"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Temps de concentration"
+          }
+        }
+      }
+    },
     "Focus time %@" : {
       "comment" : "Insights Focus, VoiceOver: total session time in the period. The value is a duration.",
       "localizations" : {
@@ -6542,6 +7195,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fréquence"
+          }
+        }
+      }
+    },
+    "From 1 (very bad) to 10 (excellent). Tap again to clear." : {
+      "comment" : "Reflect check-in: how the ratings work.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "From 1 (very bad) to 10 (excellent). Tap again to clear."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "De 1 (très mauvais) à 10 (excellent). Touche à nouveau pour effacer."
           }
         }
       }
@@ -7029,6 +7699,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Habitude"
+          }
+        }
+      }
+    },
+    "Habit check-ins" : {
+      "comment" : "Reflect stats tile: habit logs in the month.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habit check-ins"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Habitudes cochées"
           }
         }
       }
@@ -7570,6 +8257,40 @@
         }
       }
     },
+    "How do I feel, honestly?" : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How do I feel, honestly?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comment je me sens, honnêtement ?"
+          }
+        }
+      }
+    },
+    "How I feel" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How I feel"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Comment je me sens"
+          }
+        }
+      }
+    },
     "How is it measured?" : {
       "comment" : "Picker label in the new-habit form introducing the habit type (binary, counter, timer, avoid).",
       "localizations" : {
@@ -7682,6 +8403,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les icônes avec un cadenas font partie du pack de soutien."
+          }
+        }
+      }
+    },
+    "If I could not fail" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "If I could not fail"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Si je ne pouvais pas échouer"
           }
         }
       }
@@ -7825,6 +8563,74 @@
         }
       }
     },
+    "In %@, my biggest problem was “%@”. Now it is…" : {
+      "comment" : "Reflect follow-up as stored: month, last problem.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@, my biggest problem was “%@”. Now it is…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En %1$@, mon plus gros problème était « %2$@ ». Maintenant, il est…"
+          }
+        }
+      }
+    },
+    "In %@, my intention was “%@”. Did I do it?" : {
+      "comment" : "Reflect follow-up as stored: month, last intention.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@, my intention was “%@”. Did I do it?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En %1$@, mon intention était « %2$@ ». L’ai-je fait ?"
+          }
+        }
+      }
+    },
+    "In %@, your biggest problem was:" : {
+      "comment" : "Reflect follow-up screen, before the quoted problem.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@, your biggest problem was:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En %@, ton plus gros problème était :"
+          }
+        }
+      }
+    },
+    "In %@, your intention was:" : {
+      "comment" : "Reflect follow-up screen, before the quoted intention.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In %@, your intention was:"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En %@, ton intention était :"
+          }
+        }
+      }
+    },
     "In progress today" : {
       "comment" : "Linked positive habit caption when today’s progress is below the completion target.",
       "extractionState" : "manual",
@@ -7839,6 +8645,47 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "En cours aujourd’hui"
+          }
+        }
+      }
+    },
+    "In progress: %lld answers so far." : {
+      "comment" : "Reflect check-in card while started.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "In progress: %lld answer so far."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "In progress: %lld answers so far."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "En cours : %lld réponse pour l’instant."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "En cours : %lld réponses pour l’instant."
+                }
+              }
+            }
           }
         }
       }
@@ -7895,6 +8742,40 @@
         }
       }
     },
+    "Intention" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intention"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Intention"
+          }
+        }
+      }
+    },
+    "Intention follow-up" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Intention follow-up"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suivi de l’intention"
+          }
+        }
+      }
+    },
     "It reflects your habit's strength over time, not a streak." : {
       "comment" : "First bullet in the score explanation sheet; plain-English statement that the score is not a streak.",
       "localizations" : {
@@ -7925,6 +8806,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Il commence à 0 % et grimpe lentement. Une habitude récente peut rester basse même sans aucune erreur — c'est voulu."
+          }
+        }
+      }
+    },
+    "It's time to look back at %@. About 15 minutes, just for you." : {
+      "comment" : "Today card: the monthly check-in is open. Argument: the month.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "It's time to look back at %@. About 15 minutes, just for you."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "C’est le moment de faire le point sur %@. Environ 15 minutes, rien que pour toi."
           }
         }
       }
@@ -8160,6 +9058,23 @@
         }
       }
     },
+    "Learned" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Learned"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Appris"
+          }
+        }
+      }
+    },
     "Leave a %@ tip, %@" : {
       "comment" : "VoiceOver label for a tip tier button. %@ is the tier name, then the price.",
       "localizations" : {
@@ -8276,6 +9191,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Non faites"
+          }
+        }
+      }
+    },
+    "Limiting belief" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limiting belief"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Croyance limitante"
           }
         }
       }
@@ -8418,6 +9350,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chargement des pourboires"
+          }
+        }
+      }
+    },
+    "Lock with Face ID" : {
+      "comment" : "Reflect settings: require Face ID to read reflections.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lock with Face ID"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Verrouiller avec Face ID"
           }
         }
       }
@@ -8601,6 +9550,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La plus longue : %@"
+          }
+        }
+      }
+    },
+    "Look back at %@" : {
+      "comment" : "First screen of the monthly check-in. Argument: the month.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Look back at %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Retour sur %@"
           }
         }
       }
@@ -8924,6 +9890,74 @@
         }
       }
     },
+    "Monthly check-in" : {
+      "comment" : "Notification title: time for the monthly reflection.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly check-in"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Point du mois"
+          }
+        }
+      }
+    },
+    "MONTHLY CHECK-IN" : {
+      "comment" : "Reflect: header of the check-in card.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MONTHLY CHECK-IN"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "POINT DU MOIS"
+          }
+        }
+      }
+    },
+    "Monthly reminder" : {
+      "comment" : "Reflect settings: the monthly check-in notification.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monthly reminder"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rappel mensuel"
+          }
+        }
+      }
+    },
+    "Months" : {
+      "comment" : "Reflect archive segment: by month.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Months"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mois"
+          }
+        }
+      }
+    },
     "More" : {
       "comment" : "Insights Activity legend: the strongest shade, more habits done that day.",
       "localizations" : {
@@ -9219,6 +10253,23 @@
         }
       }
     },
+    "Next" : {
+      "comment" : "Reflect check-in: go to the next question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Next"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suivant"
+          }
+        }
+      }
+    },
     "Next month" : {
       "comment" : "Accessibility label for the forward chevron in the month navigator.",
       "localizations" : {
@@ -9267,6 +10318,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Nuit"
+          }
+        }
+      }
+    },
+    "No answers yet" : {
+      "comment" : "Reflect question history: nothing answered.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No answers yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pas encore de réponse"
           }
         }
       }
@@ -9726,6 +10794,23 @@
         }
       }
     },
+    "Not rated" : {
+      "comment" : "Reflect rating with no value.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not rated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Non noté"
+          }
+        }
+      }
+    },
     "not scheduled" : {
       "comment" : "VoiceOver state for a past day in the monthly calendar grid where the habit was not due per its frequency.",
       "localizations" : {
@@ -9998,6 +11083,23 @@
         }
       }
     },
+    "Nothing written for this month" : {
+      "comment" : "Reflect month: no answers.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nothing written for this month"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rien d’écrit pour ce mois"
+          }
+        }
+      }
+    },
     "Nothing you've done matches these filters." : {
       "comment" : "History: text when the search or the filters hide every item.",
       "localizations" : {
@@ -10139,6 +11241,23 @@
         }
       }
     },
+    "On my mind" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "On my mind"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans ma tête"
+          }
+        }
+      }
+    },
     "On plan" : {
       "comment" : "Insights Focus: sessions lasted about as long as their planned blocks.",
       "localizations" : {
@@ -10203,6 +11322,57 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Dans les temps"
+          }
+        }
+      }
+    },
+    "One free year" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One free year"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Une année libre"
+          }
+        }
+      }
+    },
+    "One intention for next month." : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One intention for next month."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Une intention pour le mois prochain."
+          }
+        }
+      }
+    },
+    "One word" : {
+      "comment" : "Reflection answer placeholder.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "One word"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Un mot"
           }
         }
       }
@@ -10569,6 +11739,57 @@
         }
       }
     },
+    "Overall" : {
+      "comment" : "Reflection rating label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overall"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Global"
+          }
+        }
+      }
+    },
+    "Overall %lld / 10" : {
+      "comment" : "Reflect: a month's overall rating.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overall %lld / 10"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Global %lld / 10"
+          }
+        }
+      }
+    },
+    "Overall, how was this month?" : {
+      "comment" : "Reflection rating question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overall, how was this month?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Dans l’ensemble, comment s’est passé ce mois ?"
+          }
+        }
+      }
+    },
     "Overdue · %@" : {
       "comment" : "Show an overdue task; the argument is its formatted civil date.",
       "extractionState" : "manual",
@@ -10621,6 +11842,23 @@
         }
       }
     },
+    "Partly" : {
+      "comment" : "Reflection follow-up: last month's intention was partly done.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partly"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "En partie"
+          }
+        }
+      }
+    },
     "Paused" : {
       "comment" : "Goal status: the user has paused work toward the goal.",
       "extractionState" : "manual",
@@ -10656,6 +11894,40 @@
         }
       }
     },
+    "Peace" : {
+      "comment" : "Reflection rating label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peace"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sérénité"
+          }
+        }
+      }
+    },
+    "Peace of mind" : {
+      "comment" : "Reflection rating question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peace of mind"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tranquillité d’esprit"
+          }
+        }
+      }
+    },
     "People" : {
       "comment" : "Category name: family, friends, calls, messages.",
       "extractionState" : "stale",
@@ -10687,6 +11959,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Jours parfaits"
+          }
+        }
+      }
+    },
+    "Perfect ordinary day" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Perfect ordinary day"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Journée ordinaire parfaite"
           }
         }
       }
@@ -10832,6 +12121,23 @@
         }
       }
     },
+    "Pretending not to know" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pretending not to know"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ce que je fais semblant d’ignorer"
+          }
+        }
+      }
+    },
     "Previous month" : {
       "comment" : "Accessibility label for the backward chevron in the month navigator.",
       "localizations" : {
@@ -10881,6 +12187,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Calendrier Google principal"
+          }
+        }
+      }
+    },
+    "Problem follow-up" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problem follow-up"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Suivi du problème"
           }
         }
       }
@@ -11046,6 +12369,23 @@
         }
       }
     },
+    "Proud of" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proud of"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Fier de"
+          }
+        }
+      }
+    },
     "Pulse" : {
       "comment" : "Insights: title of the card with the three rings at the top.",
       "localizations" : {
@@ -11097,6 +12437,23 @@
         }
       }
     },
+    "Putting up with" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Putting up with"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ce que je tolère"
+          }
+        }
+      }
+    },
     "Quarter" : {
       "comment" : "Insights period picker: the last 90 days.",
       "localizations" : {
@@ -11110,6 +12467,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Trimestre"
+          }
+        }
+      }
+    },
+    "Questions" : {
+      "comment" : "Reflect archive segment: by question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Questions"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Questions"
           }
         }
       }
@@ -11145,6 +12519,74 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Noter Kadō sur l’App Store"
+          }
+        }
+      }
+    },
+    "Rate your month" : {
+      "comment" : "Reflect check-in: title of the ratings screen.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rate your month"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Note ton mois"
+          }
+        }
+      }
+    },
+    "Ratings" : {
+      "comment" : "Reflect questions list: section of the 1-10 ratings.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ratings"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Notes"
+          }
+        }
+      }
+    },
+    "RATINGS" : {
+      "comment" : "Reflect trends: header above the ratings chart.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RATINGS"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "NOTES"
+          }
+        }
+      }
+    },
+    "Read or edit" : {
+      "comment" : "Reflect check-in card: open a finished month.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Read or edit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Lire ou modifier"
           }
         }
       }
@@ -11232,6 +12674,91 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Reconnecte Google Calendar pour renouveler l’accès."
+          }
+        }
+      }
+    },
+    "Reflect" : {
+      "comment" : "Overview segment: the monthly reflections.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reflect"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réflexions"
+          }
+        }
+      }
+    },
+    "Reflection settings" : {
+      "comment" : "Reflect: label of the settings menu button.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reflection settings"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réglages des réflexions"
+          }
+        }
+      }
+    },
+    "Reflections are locked" : {
+      "comment" : "Reflect locked state title.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reflections are locked"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Les réflexions sont verrouillées"
+          }
+        }
+      }
+    },
+    "Relationship to tend" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relationship to tend"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relation à soigner"
+          }
+        }
+      }
+    },
+    "Relationships" : {
+      "comment" : "Reflection rating question and label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relationships"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Relations"
           }
         }
       }
@@ -11522,6 +13049,23 @@
         }
       }
     },
+    "Same" : {
+      "comment" : "Reflection follow-up: last month's problem is the same.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Same"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pareil"
+          }
+        }
+      }
+    },
     "Same as before" : {
       "comment" : "Insights: a figure did not change against the previous period.",
       "localizations" : {
@@ -11760,6 +13304,23 @@
         }
       }
     },
+    "Search reflections" : {
+      "comment" : "Reflect: search field prompt.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Search reflections"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Rechercher dans les réflexions"
+          }
+        }
+      }
+    },
     "Seed habit not found" : {
       "comment" : "Developer-only fallback shown in SwiftUI previews when the seeded habit is missing. Not user-facing in production; safe to leave untranslated if that simplifies review.",
       "localizations" : {
@@ -11904,6 +13465,23 @@
         }
       }
     },
+    "Set a passcode to lock reflections" : {
+      "comment" : "Reflect: alert when the device has no passcode.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set a passcode to lock reflections"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Définis un code pour verrouiller les réflexions"
+          }
+        }
+      }
+    },
     "Set category to %@" : {
       "comment" : "Suggestion chip button: sets the form's category.",
       "localizations" : {
@@ -11951,6 +13529,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réglages"
+          }
+        }
+      }
+    },
+    "Show" : {
+      "comment" : "Reflect: label of the Months / Questions / Trends picker.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Afficher"
           }
         }
       }
@@ -12182,6 +13777,23 @@
         }
       }
     },
+    "Solved" : {
+      "comment" : "Reflection follow-up: last month's problem is solved.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Solved"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Résolu"
+          }
+        }
+      }
+    },
     "Sort" : {
       "comment" : "History: toolbar menu that orders the days and the items.",
       "localizations" : {
@@ -12295,6 +13907,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Le début et la fin sont facultatifs. Une tâche sans horaires apparaît sous « À tout moment » dans Calendrier. Le temps prévu ne valide pas la tâche."
+          }
+        }
+      }
+    },
+    "Start check-in" : {
+      "comment" : "Button that opens the monthly check-in.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start check-in"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Faire le point"
           }
         }
       }
@@ -12761,6 +14390,23 @@
         }
       }
     },
+    "Take 15 minutes to look back at %@." : {
+      "comment" : "Notification body for the monthly reflection. Argument: the month's name.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Take 15 minutes to look back at %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Prends 15 minutes pour faire le point sur %@."
+          }
+        }
+      }
+    },
     "Tap a block to open it. Long-press for completion and other actions." : {
       "comment" : "Explain timeline block gestures below the day calendar.",
       "extractionState" : "manual",
@@ -13184,6 +14830,40 @@
         }
       }
     },
+    "That problem is now…" : {
+      "comment" : "Reflection follow-up about last month's biggest problem.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That problem is now…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ce problème est maintenant…"
+          }
+        }
+      }
+    },
+    "That's %@." : {
+      "comment" : "Last screen of the monthly check-in. Argument: the month.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That's %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Voilà pour %@."
+          }
+        }
+      }
+    },
     "That's about %lld films' worth of focus" : {
       "comment" : "Insights All time: a light comparison of all focus time with two-hour films.",
       "localizations" : {
@@ -13360,6 +15040,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "La tâche importée et son historique de validation seront archivés. L’événement reste dans Google Calendar."
+          }
+        }
+      }
+    },
+    "The lock uses Face ID, Touch ID or your device passcode. Set one in the Settings app first." : {
+      "comment" : "Reflect: alert when the device has no passcode.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The lock uses Face ID, Touch ID or your device passcode. Set one in the Settings app first."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Le verrou utilise Face ID, Touch ID ou le code de l’appareil. Définis-en un dans l’app Réglages d’abord."
           }
         }
       }
@@ -13629,6 +15326,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "L’objectif de cet élément a changé. Sélectionne-le à nouveau pour le déplacer."
+          }
+        }
+      }
+    },
+    "This month's deep question" : {
+      "comment" : "Reflect check-in: badge above the rotating deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This month's deep question"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "La question profonde du mois"
           }
         }
       }
@@ -14068,6 +15782,40 @@
         }
       }
     },
+    "Trends" : {
+      "comment" : "Reflect archive segment: charts.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trends"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tendances"
+          }
+        }
+      }
+    },
+    "Truly happy" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Truly happy"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Vraiment heureux"
+          }
+        }
+      }
+    },
     "Try again" : {
       "comment" : "Button to retry loading the tip or Supporter pack products after a failure.",
       "localizations" : {
@@ -14440,6 +16188,57 @@
         }
       }
     },
+    "Unlock" : {
+      "comment" : "Reflect: unlock button.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déverrouiller"
+          }
+        }
+      }
+    },
+    "Unlock with Face ID or your passcode to read them." : {
+      "comment" : "Reflect locked state description.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock with Face ID or your passcode to read them."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déverrouille avec Face ID ou ton code pour les lire."
+          }
+        }
+      }
+    },
+    "Unlock your reflections." : {
+      "comment" : "Face ID prompt reason for the Reflect section.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Unlock your reflections."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Déverrouille tes réflexions."
+          }
+        }
+      }
+    },
     "Unmarked %@." : {
       "comment" : "Siri dialog after un-completing a binary or negative habit.",
       "extractionState" : "stale",
@@ -14776,6 +16575,363 @@
         }
       }
     },
+    "What am I afraid of or worried about?" : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What am I afraid of or worried about?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "De quoi ai-je peur, qu’est-ce qui m’inquiète ?"
+          }
+        }
+      }
+    },
+    "What am I pretending not to know?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What am I pretending not to know?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qu’est-ce que je fais semblant de ne pas savoir ?"
+          }
+        }
+      }
+    },
+    "What am I proud of this month?" : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What am I proud of this month?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "De quoi suis-je fier ce mois-ci ?"
+          }
+        }
+      }
+    },
+    "What am I putting up with that I should not?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What am I putting up with that I should not?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qu’est-ce que je tolère alors que je ne devrais pas ?"
+          }
+        }
+      }
+    },
+    "What belief about myself holds me back?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What belief about myself holds me back?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quelle croyance sur moi-même me freine ?"
+          }
+        }
+      }
+    },
+    "What did I avoid or keep postponing?" : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What did I avoid or keep postponing?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qu’est-ce que j’ai évité ou sans cesse repoussé ?"
+          }
+        }
+      }
+    },
+    "What did I learn or change my mind about?" : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What did I learn or change my mind about?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qu’ai-je appris, sur quoi ai-je changé d’avis ?"
+          }
+        }
+      }
+    },
+    "What do I dream about or want most?" : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What do I dream about or want most?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "De quoi je rêve, qu’est-ce que je veux le plus ?"
+          }
+        }
+      }
+    },
+    "What do I think about most these days?" : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What do I think about most these days?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "À quoi je pense le plus ces temps-ci ?"
+          }
+        }
+      }
+    },
+    "What does a perfect ordinary day look like?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What does a perfect ordinary day look like?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "À quoi ressemble une journée ordinaire parfaite ?"
+          }
+        }
+      }
+    },
+    "What gives me energy, and what drains it?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What gives me energy, and what drains it?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qu’est-ce qui me donne de l’énergie, et qu’est-ce qui m’en prend ?"
+          }
+        }
+      }
+    },
+    "What is my biggest problem right now?" : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What is my biggest problem right now?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quel est mon plus gros problème en ce moment ?"
+          }
+        }
+      }
+    },
+    "What made me truly happy this year?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What made me truly happy this year?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qu’est-ce qui m’a rendu vraiment heureux cette année ?"
+          }
+        }
+      }
+    },
+    "What would 80-year-old me tell me now?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What would 80-year-old me tell me now?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Que me dirait la personne que je serai à 80 ans ?"
+          }
+        }
+      }
+    },
+    "What would I do if I knew I could not fail?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What would I do if I knew I could not fail?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Que ferais-je si je savais que je ne pouvais pas échouer ?"
+          }
+        }
+      }
+    },
+    "What would I do with one free year?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What would I do with one free year?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Que ferais-je d’une année libre ?"
+          }
+        }
+      }
+    },
+    "What would I stop doing if nobody judged me?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What would I stop doing if nobody judged me?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qu’arrêterais-je de faire si personne ne me jugeait ?"
+          }
+        }
+      }
+    },
+    "Which relationship needs my attention?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which relationship needs my attention?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quelle relation a besoin de mon attention ?"
+          }
+        }
+      }
+    },
+    "Who do I want to become in five years?" : {
+      "comment" : "Reflection deep question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who do I want to become in five years?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qui est-ce que je veux devenir dans cinq ans ?"
+          }
+        }
+      }
+    },
+    "Who I want to become" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who I want to become"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qui je veux devenir"
+          }
+        }
+      }
+    },
+    "Who mattered most this month?" : {
+      "comment" : "Reflection question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Who mattered most this month?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qui a le plus compté ce mois-ci ?"
+          }
+        }
+      }
+    },
     "Why this matters (optional)" : {
       "comment" : "Placeholder of optional goal notes describing why the goal matters.",
       "extractionState" : "manual",
@@ -14847,6 +17003,57 @@
         }
       }
     },
+    "Without judgment" : {
+      "comment" : "Reflection deep question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without judgment"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Sans jugement"
+          }
+        }
+      }
+    },
+    "Word of the month" : {
+      "comment" : "Reflection question label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Word of the month"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Mot du mois"
+          }
+        }
+      }
+    },
+    "WORDS OF THE MONTHS" : {
+      "comment" : "Reflect trends: header above each month's word.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "WORDS OF THE MONTHS"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "MOTS DES MOIS"
+          }
+        }
+      }
+    },
     "Work" : {
       "comment" : "Category name: jobs, meetings, projects.",
       "extractionState" : "stale",
@@ -14861,6 +17068,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Travail"
+          }
+        }
+      }
+    },
+    "Work or study" : {
+      "comment" : "Reflection rating question.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Work or study"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Travail ou études"
           }
         }
       }
@@ -14913,6 +17137,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Entraînement"
+          }
+        }
+      }
+    },
+    "Worse" : {
+      "comment" : "Reflection follow-up: last month's problem got worse.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Worse"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Pire"
+          }
+        }
+      }
+    },
+    "Write freely. Nobody else reads this." : {
+      "comment" : "Reflect check-in: placeholder of an answer.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Write freely. Nobody else reads this."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Écris librement. Personne d’autre ne lit ceci."
+          }
+        }
+      }
+    },
+    "Written %@" : {
+      "comment" : "Reflect month: when the check-in was finished. Argument: a date.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Written %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Écrit le %@"
           }
         }
       }
@@ -14983,6 +17258,47 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Yoga"
+          }
+        }
+      }
+    },
+    "You answered %lld questions. Finish to save this month to your reflections. You can come back and edit it any time." : {
+      "comment" : "Last screen of the monthly check-in.",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You answered %lld question. Finish to save this month to your reflections. You can come back and edit it any time."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "You answered %lld questions. Finish to save this month to your reflections. You can come back and edit it any time."
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Tu as répondu à %lld question. Termine pour ajouter ce mois à tes réflexions. Tu pourras revenir le modifier quand tu veux."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "needs_review",
+                  "value" : "Tu as répondu à %lld questions. Termine pour ajouter ce mois à tes réflexions. Tu pourras revenir le modifier quand tu veux."
+                }
+              }
+            }
           }
         }
       }
@@ -15253,6 +17569,40 @@
         }
       }
     },
+    "Your intention for next month" : {
+      "comment" : "Reflect check-in last screen: the intention just written.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your intention for next month"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Ton intention pour le mois prochain"
+          }
+        }
+      }
+    },
+    "YOUR MONTH IN KADŌ" : {
+      "comment" : "Reflect: header above the month's numbers.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "YOUR MONTH IN KADŌ"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "TON MOIS DANS KADŌ"
+          }
+        }
+      }
+    },
     "Your purchase is waiting for approval. The pack unlocks as soon as it's approved." : {
       "comment" : "Alert message when a Supporter pack purchase awaits approval (Ask to Buy).",
       "localizations" : {
@@ -15278,6 +17628,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tes vraies habitudes sont en sécurité dans iCloud. Désactive le mode développeur pour reprendre la synchronisation."
+          }
+        }
+      }
+    },
+    "Your reflections will be here" : {
+      "comment" : "Reflect empty state title.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your reflections will be here"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Tes réflexions seront ici"
           }
         }
       }

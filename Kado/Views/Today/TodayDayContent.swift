@@ -325,6 +325,15 @@ struct TodayDayContent: View, Equatable {
                 )
                 .todayNoticeCardRow()
             }
+        case .reflectionCheckIn(let month):
+            Section {
+                ReflectionCheckInBanner(
+                    month: month,
+                    onStart: { actions.present(.reflectionCheckIn(month)) },
+                    onHide: { hideReflectionCheckIn(month) }
+                )
+                .todayNoticeCardRow()
+            }
         case nil:
             EmptyView()
         }
@@ -600,6 +609,15 @@ struct TodayDayContent: View, Equatable {
 
     private func hideTipNudge() {
         tipNudge.hide()
+        withAnimation(reduceMotion ? nil : KadoMotion.base) {
+            actions.setCard(nil)
+        }
+    }
+
+    /// Hides the check-in card until next month; the check-in itself
+    /// stays in Overview › Reflect.
+    private func hideReflectionCheckIn(_ month: ReflectionMonth) {
+        UserDefaults.standard.set(ReflectionReminderScheduler.key(for: month), forKey: ReflectionDefaults.dismissedCardKey)
         withAnimation(reduceMotion ? nil : KadoMotion.base) {
             actions.setCard(nil)
         }

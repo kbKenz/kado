@@ -5,7 +5,8 @@ import KadoCore
 /// The Overview tab. Owns the navigation stack and the title, and
 /// switches between the Insights feed (`InsightsScreen`), the
 /// day-by-day record of what was done (`HistoryScreen`) and the
-/// habits × days matrix (`OverviewGridView`), like Today's List /
+/// habits × days matrix (`OverviewGridView`) and the monthly
+/// reflections (`ReflectScreen`), like Today's List /
 /// Calendar switch. The choice is remembered across launches.
 struct OverviewView: View {
     @AppStorage(OverviewModeDefaults.key) private var mode: OverviewMode = .insights
@@ -21,6 +22,7 @@ struct OverviewView: View {
                 case .insights: InsightsScreen(path: $path, cache: cache)
                 case .history: HistoryScreen(path: $path, cache: cache)
                 case .grid: OverviewGridView()
+                case .reflect: ReflectScreen(path: $path)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -33,7 +35,7 @@ struct OverviewView: View {
     }
 }
 
-/// The Insights / History / Grid switch under the title.
+/// The Insights / History / Grid / Reflect switch under the title.
 private struct OverviewModePicker: View {
     @Binding var mode: OverviewMode
 
@@ -42,6 +44,7 @@ private struct OverviewModePicker: View {
             Text("Insights").tag(OverviewMode.insights)
             Text("History").tag(OverviewMode.history)
             Text("Grid").tag(OverviewMode.grid)
+            Text("Reflect").tag(OverviewMode.reflect)
         }
         .pickerStyle(.segmented)
         // Capped so it doesn't stretch across an iPad.

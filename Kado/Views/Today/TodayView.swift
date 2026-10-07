@@ -78,6 +78,8 @@ struct TodayView: View {
         /// Settings › Appearance, reached from the announcement card.
         /// A sheet for the same reason as the Tip Jar.
         case appearance
+        /// The monthly check-in, from its card.
+        case reflectionCheckIn(ReflectionMonth)
 
         var id: String {
             switch self {
@@ -89,6 +91,7 @@ struct TodayView: View {
             case .logTimer(let habitID, let day): "timer-\(habitID)-\(day.timeIntervalSinceReferenceDate)"
             case .tipJar: "tip-jar"
             case .appearance: "appearance"
+            case .reflectionCheckIn(let month): "reflection-\(month.id)"
             }
         }
     }
@@ -234,6 +237,8 @@ struct TodayView: View {
             } else {
                 HabitUnavailableView()
             }
+        case .reflectionCheckIn(let month):
+            ReflectionCheckInView(month: month)
         case .tipJar:
             NavigationStack {
                 TipJarView()
@@ -333,8 +338,23 @@ struct TodayView: View {
             announcementRetiredAt: appearanceAnnouncement.retiredAt(),
             tipNudgeDue: tipNudge.shouldShow(),
             now: .now,
-            calendar: calendar
+            calendar: calendar,
+            reflectionCheckIn: dueCheckIn()
         )
+    }
+
+    /// The month whose check-in is open and not done, unless its card
+    /// was put away.
+    private func dueCheckIn() -> ReflectionMonth? {
+        // The card depends on the date; UI runs keep the slot for the
+        // cards their tests set up.
+        guard !UITestSupport.isRunningUITests else { return nil }
+        let entries = (try? ReflectionStore(context: modelContext).entries()) ?? []
+        let planner = ReflectionPlanner(calendar: calendar)
+        guard planner.isDue(now: .now, entries: entries) else { return nil }
+        let month = planner.checkInMonth(now: .now, entries: entries)
+        let hidden = UserDefaults.standard.string(forKey: ReflectionDefaults.dismissedCardKey)
+        return hidden == ReflectionReminderScheduler.key(for: month) ? nil : month
     }
 }
 

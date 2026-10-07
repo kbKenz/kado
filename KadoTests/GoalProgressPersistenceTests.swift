@@ -6,7 +6,7 @@ import KadoCore
 @Suite("Goal progress persistence") @MainActor
 struct GoalProgressPersistenceTests {
     func container() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         return try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
     }
     @Test func portableRoundTripAndLegacyMerge() throws {
@@ -118,7 +118,7 @@ struct GoalProgressPersistenceTests {
             store.mainContext.insert(KadoSchemaV6.TaskRecord(title: "Linked", goal: goal))
             try store.mainContext.save()
         }
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         let store = try ModelContainer(for: schema, migrationPlan: KadoMigrationPlan.self, configurations: ModelConfiguration(schema: schema, url: url))
         let goal = try #require(store.mainContext.fetch(FetchDescriptor<GoalRecord>()).first)
         #expect(goal.id == goalID)

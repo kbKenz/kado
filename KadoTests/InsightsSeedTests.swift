@@ -23,7 +23,7 @@ struct InsightsSeedTests {
     }
 
     private static func seededContainer(calendar: Calendar, now: Date) throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         let container = try ModelContainer(
             for: schema,
             configurations: ModelConfiguration(UUID().uuidString, schema: schema, isStoredInMemoryOnly: true)

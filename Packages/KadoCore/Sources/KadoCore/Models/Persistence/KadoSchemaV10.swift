@@ -1,18 +1,19 @@
 import Foundation
 import SwiftData
 
-/// Version 9 adds a category to tasks, habits and goals
-/// (`categoryRaw`, empty when not set). Every other model is the same
-/// as in V8. Additive, so V8 stores migrate lightweight.
-public enum KadoSchemaV9: VersionedSchema {
-    public static let versionIdentifier = Schema.Version(9, 0, 0)
+/// Version 10 adds the monthly reflection: `ReflectionRecord`, one per
+/// calendar month, and its `ReflectionAnswerRecord`s. Every other
+/// model is the same as in V9. Additive, so V9 stores migrate lightweight.
+public enum KadoSchemaV10: VersionedSchema {
+    public static let versionIdentifier = Schema.Version(10, 0, 0)
 
     public static var models: [any PersistentModel.Type] {
-        [HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self, GoalProgressEntryRecord.self, WorkSessionRecord.self]
+        [HabitRecord.self, CompletionRecord.self, TaskRecord.self, ScheduleBlockRecord.self, GoalRecord.self, GoalProgressEntryRecord.self, WorkSessionRecord.self,
+         ReflectionRecord.self, ReflectionAnswerRecord.self]
     }
 }
 
-public extension KadoSchemaV9 {
+public extension KadoSchemaV10 {
     /// A goal groups ongoing habits and one-off tasks. Deleting it
     /// removes their links while preserving those items and history.
     @Model
@@ -434,3 +435,91 @@ public extension KadoSchemaV9 {
         }
     }
 }
+
+public extension KadoSchemaV10 {
+    /// What the user wrote about one calendar month. `year` and `month`
+    /// name it as numbers rather than as an instant, so the entry for
+    /// October stays October in every time zone.
+    @Model
+    public final class ReflectionRecord {
+        public var id: UUID = UUID()
+        public var year: Int = 0
+        /// 1 to 12.
+        public var month: Int = 0
+        public var createdAt: Date = Date()
+        public var updatedAt: Date = Date()
+        /// Set when the user finishes the check-in. An entry without it
+        /// is a draft the user can continue.
+        public var completedAt: Date?
+
+        @Relationship(deleteRule: .cascade, inverse: \ReflectionAnswerRecord.reflection)
+        public var answers: [ReflectionAnswerRecord]? = []
+
+        public init(
+            id: UUID = UUID(),
+            year: Int,
+            month: Int,
+            createdAt: Date = .now,
+            updatedAt: Date = .now,
+            completedAt: Date? = nil
+        ) {
+            self.id = id
+            self.year = year
+            self.month = month
+            self.createdAt = createdAt
+            self.updatedAt = updatedAt
+            self.completedAt = completedAt
+        }
+    }
+
+    /// One answer in a monthly reflection. `questionID` is the stable
+    /// key the question catalog uses; `prompt` keeps the words as asked,
+    /// so a reworded or retired question still reads back as it was.
+    @Model
+    public final class ReflectionAnswerRecord {
+        public var id: UUID = UUID()
+        public var questionID: String = ""
+        public var prompt: String = ""
+        public var text: String = ""
+        /// 1 to 10 for a rating question; nil otherwise.
+        public var rating: Double?
+        /// A follow-up's choice (a `ReflectionFollowUpStatus` raw
+        /// value), empty when there is none.
+        public var statusRaw: String = ""
+        public var createdAt: Date = Date()
+        public var updatedAt: Date = Date()
+        public var reflection: ReflectionRecord?
+
+        public init(
+            id: UUID = UUID(),
+            questionID: String,
+            prompt: String = "",
+            text: String = "",
+            rating: Double? = nil,
+            statusRaw: String = "",
+            createdAt: Date = .now,
+            updatedAt: Date = .now,
+            reflection: ReflectionRecord? = nil
+        ) {
+            self.id = id
+            self.questionID = questionID
+            self.prompt = prompt
+            self.text = text
+            self.rating = rating
+            self.statusRaw = statusRaw
+            self.createdAt = createdAt
+            self.updatedAt = updatedAt
+            self.reflection = reflection
+        }
+    }
+}
+
+public typealias HabitRecord = KadoSchemaV10.HabitRecord
+public typealias CompletionRecord = KadoSchemaV10.CompletionRecord
+public typealias TaskRecord = KadoSchemaV10.TaskRecord
+public typealias ScheduleBlockRecord = KadoSchemaV10.ScheduleBlockRecord
+public typealias GoalRecord = KadoSchemaV10.GoalRecord
+public typealias GoalProgressEntryRecord = KadoSchemaV10.GoalProgressEntryRecord
+public typealias WorkSessionRecord = KadoSchemaV10.WorkSessionRecord
+public typealias ReflectionRecord = KadoSchemaV10.ReflectionRecord
+public typealias ReflectionAnswerRecord = KadoSchemaV10.ReflectionAnswerRecord

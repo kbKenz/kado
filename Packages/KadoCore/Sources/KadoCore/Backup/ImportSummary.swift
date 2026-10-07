@@ -24,6 +24,9 @@ public struct ImportSummary: Hashable, Sendable {
     public var totalWorkSessions: Int
     public var newWorkSessions: Int
     public var updatedWorkSessions: Int
+    public var totalReflections: Int = 0
+    public var newReflections: Int = 0
+    public var updatedReflections: Int = 0
 
     public init(
         totalHabits: Int = 0,

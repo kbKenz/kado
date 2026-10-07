@@ -69,7 +69,10 @@ public struct DefaultBackupExporter: BackupExporting {
             scheduleBlocks: blocks,
             goals: goals,
             goalProgressEntries: try context.fetch(FetchDescriptor<GoalProgressEntryRecord>(sortBy: [SortDescriptor(\.date)])).compactMap(\.snapshot),
-            workSessions: sessions
+            workSessions: sessions,
+            reflections: (context.stores(ReflectionRecord.self) ? try context.fetch(FetchDescriptor<ReflectionRecord>()) : [])
+                .sorted { ($0.year, $0.month, $0.createdAt, $0.id.uuidString) < ($1.year, $1.month, $1.createdAt, $1.id.uuidString) }
+                .map(Self.backup(from:))
         )
     }
 
@@ -139,6 +142,21 @@ public struct DefaultBackupExporter: BackupExporting {
             startAt: record.startAt, endAt: record.endAt,
             createdAt: record.createdAt, updatedAt: record.updatedAt,
             taskID: record.task?.id, habitID: record.habit?.id
+        )
+    }
+
+    private static func backup(from record: ReflectionRecord) -> ReflectionBackup {
+        ReflectionBackup(
+            id: record.id, year: record.year, month: record.month,
+            createdAt: record.createdAt, updatedAt: record.updatedAt, completedAt: record.completedAt,
+            answers: (record.answers ?? [])
+                .sorted { ($0.createdAt, $0.questionID, $0.id.uuidString) < ($1.createdAt, $1.questionID, $1.id.uuidString) }
+                .map {
+                    ReflectionAnswerBackup(
+                        id: $0.id, questionID: $0.questionID, prompt: $0.prompt, text: $0.text, rating: $0.rating,
+                        status: $0.statusRaw, createdAt: $0.createdAt, updatedAt: $0.updatedAt
+                    )
+                }
         )
     }
 

@@ -12,7 +12,8 @@ public struct BackupDocument: Hashable, Codable, Sendable {
     /// with a higher value than they understand.
     ///
     /// Version 6 adds `category` to habits, tasks and goals.
-    public static let currentFormatVersion = 6
+    /// Version 7 adds the monthly `reflections`.
+    public static let currentFormatVersion = 7
 
     public var formatVersion: Int
     public var exportedAt: Date
@@ -23,6 +24,7 @@ public struct BackupDocument: Hashable, Codable, Sendable {
     public var goals: [GoalBackup]
     public var goalProgressEntries: [GoalProgressEntry]
     public var workSessions: [WorkSessionBackup]
+    public var reflections: [ReflectionBackup]
 
     public init(
         formatVersion: Int = BackupDocument.currentFormatVersion,
@@ -33,7 +35,8 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         scheduleBlocks: [ScheduleBlockBackup] = [],
         goals: [GoalBackup] = [],
         goalProgressEntries: [GoalProgressEntry] = [],
-        workSessions: [WorkSessionBackup] = []
+        workSessions: [WorkSessionBackup] = [],
+        reflections: [ReflectionBackup] = []
     ) {
         self.formatVersion = formatVersion
         self.exportedAt = exportedAt
@@ -44,10 +47,11 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         self.goals = goals
         self.goalProgressEntries = goalProgressEntries
         self.workSessions = workSessions
+        self.reflections = reflections
     }
 
     private enum CodingKeys: String, CodingKey {
-        case formatVersion, exportedAt, appVersion, habits, tasks, scheduleBlocks, goals, goalProgressEntries, workSessions
+        case formatVersion, exportedAt, appVersion, habits, tasks, scheduleBlocks, goals, goalProgressEntries, workSessions, reflections
     }
 
     public init(from decoder: Decoder) throws {
@@ -65,5 +69,7 @@ public struct BackupDocument: Hashable, Codable, Sendable {
         goalProgressEntries = try values.decodeIfPresent([GoalProgressEntry].self, forKey: .goalProgressEntries) ?? []
         // Versions 1 to 4 predate tracked work sessions.
         workSessions = try values.decodeIfPresent([WorkSessionBackup].self, forKey: .workSessions) ?? []
+        // Versions 1 to 6 predate reflections.
+        reflections = try values.decodeIfPresent([ReflectionBackup].self, forKey: .reflections) ?? []
     }
 }

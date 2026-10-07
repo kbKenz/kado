@@ -8,8 +8,8 @@ import Foundation
 /// still emits a single row with the four completion columns empty, so
 /// it survives the round-trip.
 ///
-/// **What "lossless" covers here**: goals, habits, completions, tasks, planned blocks, work sessions
-/// and the categories of habits, tasks and goals. The
+/// **What "lossless" covers here**: goals, habits, completions, tasks, planned blocks, work sessions,
+/// the categories of habits, tasks and goals, and the monthly reflections. The
 /// envelope fields `exportedAt` and `appVersion` are provenance rather
 /// than user data and are not carried — a decoded document stamps
 /// `exportedAt` from the injected clock and leaves `appVersion` empty.
@@ -73,9 +73,17 @@ nonisolated public struct CSVBackupCoder: Sendable {
     ]
 
     /// Format 6 appends the category of habit, task and goal rows (the
-    /// raw `ItemCategory` value, empty when not set). This is the header
-    /// the encoder writes.
-    public static let columns = sessionColumns + ["category"]
+    /// raw `ItemCategory` value, empty when not set).
+    public static let categoryColumns = sessionColumns + ["category"]
+
+    /// Format 7 appends the monthly reflections: a `reflection` row per
+    /// month and a `reflection_answer` row per answer, linked by
+    /// `reflection_id`. Both reuse `created_at`, `updated_at` and
+    /// `completed_at`. This is the header the encoder writes.
+    public static let columns = categoryColumns + [
+        "reflection_id", "reflection_year", "reflection_month",
+        "reflection_answer_id", "question_id", "prompt", "answer_text", "rating", "follow_up_status"
+    ]
 
     private let now: @Sendable () -> Date
 
@@ -187,6 +195,24 @@ nonisolated public struct CSVBackupCoder: Sendable {
                 "linked_schedule_block_id": session.scheduleBlockID?.uuidString ?? ""
             ]))
         }
+        for reflection in document.reflections {
+            rows.append(Self.row([
+                "format_version": formatVersion, "entity_type": "reflection",
+                "reflection_id": reflection.id.uuidString,
+                "reflection_year": String(reflection.year), "reflection_month": String(reflection.month),
+                "created_at": Self.encode(date: reflection.createdAt), "updated_at": Self.encode(date: reflection.updatedAt),
+                "completed_at": reflection.completedAt.map(Self.encode(date:)) ?? ""
+            ]))
+            for answer in reflection.answers {
+                rows.append(Self.row([
+                    "format_version": formatVersion, "entity_type": "reflection_answer",
+                    "reflection_id": reflection.id.uuidString, "reflection_answer_id": answer.id.uuidString,
+                    "question_id": answer.questionID, "prompt": answer.prompt, "answer_text": answer.text,
+                    "rating": answer.rating.map { String($0) } ?? "", "follow_up_status": answer.status,
+                    "created_at": Self.encode(date: answer.createdAt), "updated_at": Self.encode(date: answer.updatedAt)
+                ]))
+            }
+        }
         return Data(CSVWriter.write(rows).utf8)
     }
 
@@ -210,7 +236,7 @@ nonisolated public struct CSVBackupCoder: Sendable {
         // the format version it represents.
         let headers = [
             Self.legacyColumns, Self.planningColumns, Self.goalColumns,
-            Self.progressColumns, Self.sessionColumns, Self.columns
+            Self.progressColumns, Self.sessionColumns, Self.categoryColumns, Self.columns
         ]
         guard let header = rows.first, let headerIndex = headers.firstIndex(of: header) else {
             throw BackupError.invalidCSV
@@ -227,6 +253,11 @@ nonisolated public struct CSVBackupCoder: Sendable {
         var seenBlockIDs: Set<UUID> = []
         var sessions: [WorkSessionBackup] = []
         var seenSessionIDs: Set<UUID> = []
+        var reflections: [ReflectionBackup] = []
+        var reflectionIndex: [UUID: Int] = [:]
+        // Answers may come before their reflection's row in a hand-edited file.
+        var pendingAnswers: [(reflectionID: UUID, answer: ReflectionAnswerBackup)] = []
+        var seenAnswerIDs: Set<UUID> = []
         var seenGoalIDs: Set<UUID> = []
         var order: [UUID] = []
         var habits: [UUID: HabitBackup] = [:]
@@ -329,6 +360,35 @@ nonisolated public struct CSVBackupCoder: Sendable {
                         scheduleBlockID: try Self.decodeOptionalUUID(field("linked_schedule_block_id"))
                     ))
                     continue
+                case "reflection":
+                    guard version >= 7, let id = UUID(uuidString: field("reflection_id")),
+                          let year = Int(field("reflection_year")), let month = Int(field("reflection_month")) else {
+                        throw BackupError.invalidCSV
+                    }
+                    guard reflectionIndex[id] == nil else { continue }
+                    reflectionIndex[id] = reflections.count
+                    reflections.append(ReflectionBackup(
+                        id: id, year: year, month: month,
+                        createdAt: try Self.decodeDate(field("created_at")), updatedAt: try Self.decodeDate(field("updated_at")),
+                        completedAt: try Self.decodeOptionalDate(field("completed_at")), answers: []
+                    ))
+                    continue
+                case "reflection_answer":
+                    guard version >= 7, let reflectionID = UUID(uuidString: field("reflection_id")),
+                          let id = UUID(uuidString: field("reflection_answer_id")) else { throw BackupError.invalidCSV }
+                    guard seenAnswerIDs.insert(id).inserted else { continue }
+                    let ratingText = field("rating")
+                    var rating: Double?
+                    if !ratingText.isEmpty {
+                        guard let value = Double(ratingText), value.isFinite else { throw BackupError.invalidCSV }
+                        rating = value
+                    }
+                    pendingAnswers.append((reflectionID, ReflectionAnswerBackup(
+                        id: id, questionID: field("question_id"), prompt: field("prompt"), text: field("answer_text"),
+                        rating: rating, status: field("follow_up_status"),
+                        createdAt: try Self.decodeDate(field("created_at")), updatedAt: try Self.decodeDate(field("updated_at"))
+                    )))
+                    continue
                 case "habit":
                     break
                 default:
@@ -394,6 +454,12 @@ nonisolated public struct CSVBackupCoder: Sendable {
             )
         }
 
+        for pending in pendingAnswers {
+            // An answer must belong to a reflection in the file.
+            guard let index = reflectionIndex[pending.reflectionID] else { throw BackupError.invalidCSV }
+            reflections[index].answers.append(pending.answer)
+        }
+
         return BackupDocument(
             formatVersion: formatVersion,
             exportedAt: now(),
@@ -402,7 +468,8 @@ nonisolated public struct CSVBackupCoder: Sendable {
             tasks: tasks,
             scheduleBlocks: blocks,
             goals: goals, goalProgressEntries: entries,
-            workSessions: sessions
+            workSessions: sessions,
+            reflections: reflections
         )
     }
 

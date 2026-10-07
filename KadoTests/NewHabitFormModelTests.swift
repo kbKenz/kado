@@ -427,7 +427,7 @@ struct NewHabitFormModelTests {
 
     /// Every V9 model, so a habit can link a goal.
     private func fullContainer() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         return try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
     }
 

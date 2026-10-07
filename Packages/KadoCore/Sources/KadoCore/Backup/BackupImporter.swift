@@ -113,6 +113,11 @@ public struct DefaultBackupImporter: BackupImporting {
                 else { summary.updatedGoalProgressEntries += 1 }
             }
         }
+        let reflections = try existingReflections(in: context)
+        for reflection in document.reflections {
+            summary.totalReflections += 1
+            if reflections[reflection.id] == nil { summary.newReflections += 1 } else { summary.updatedReflections += 1 }
+        }
         return summary
     }
 
@@ -294,6 +299,7 @@ public struct DefaultBackupImporter: BackupImporting {
                 record.note = entry.note; record.createdAt = entry.createdAt; record.updatedAt = entry.updatedAt
             }
         }
+        applyReflections(document.reflections, to: context, summary: &summary)
         do {
             try context.save()
         } catch {
@@ -322,6 +328,58 @@ public struct DefaultBackupImporter: BackupImporting {
         return Dictionary(records.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
+    private func existingReflections(in context: ModelContext) throws -> [UUID: ReflectionRecord] {
+        guard context.stores(ReflectionRecord.self) else { return [:] }
+        let records = try context.fetch(FetchDescriptor<ReflectionRecord>())
+        return Dictionary(records.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    /// Upserts by id: a reflection already here takes the file's fields
+    /// and its answers, matched by id too. Answers only on this device stay.
+    private func applyReflections(_ backups: [ReflectionBackup], to context: ModelContext, summary: inout ImportSummary) {
+        guard !backups.isEmpty, context.stores(ReflectionRecord.self) else { return }
+        var reflections = (try? existingReflections(in: context)) ?? [:]
+        let answerRecords = (try? context.fetch(FetchDescriptor<ReflectionAnswerRecord>())) ?? []
+        var answers = Dictionary(answerRecords.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        for backup in backups {
+            summary.totalReflections += 1
+            let record: ReflectionRecord
+            if let found = reflections[backup.id] {
+                record = found
+                summary.updatedReflections += 1
+            } else {
+                record = ReflectionRecord(id: backup.id, year: backup.year, month: backup.month)
+                context.insert(record)
+                reflections[backup.id] = record
+                summary.newReflections += 1
+            }
+            record.year = backup.year
+            record.month = backup.month
+            record.createdAt = backup.createdAt
+            record.updatedAt = backup.updatedAt
+            record.completedAt = backup.completedAt
+            for answerBackup in backup.answers {
+                let answer: ReflectionAnswerRecord
+                if let found = answers[answerBackup.id] {
+                    answer = found
+                } else {
+                    // No relationship at construction, as for sessions.
+                    answer = ReflectionAnswerRecord(id: answerBackup.id, questionID: answerBackup.questionID)
+                    context.insert(answer)
+                    answers[answerBackup.id] = answer
+                }
+                answer.questionID = answerBackup.questionID
+                answer.prompt = answerBackup.prompt
+                answer.text = answerBackup.text
+                answer.rating = answerBackup.rating
+                answer.statusRaw = answerBackup.status
+                answer.createdAt = answerBackup.createdAt
+                answer.updatedAt = answerBackup.updatedAt
+                answer.reflection = record
+            }
+        }
+    }
+
     private func existingSessions(in context: ModelContext) throws -> [UUID: WorkSessionRecord] {
         let records = try context.fetch(FetchDescriptor<WorkSessionRecord>())
         return Dictionary(records.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
@@ -345,6 +403,7 @@ public struct DefaultBackupImporter: BackupImporting {
         guard (1...BackupDocument.currentFormatVersion).contains(document.formatVersion) else {
             throw BackupError.unsupportedVersion(document.formatVersion)
         }
+        try Self.validateReflections(document.reflections)
         let habitIDs = Set(habits.keys).union(document.habits.map(\.id))
         let taskIDs = Set(tasks.keys).union(document.tasks.map(\.id))
         let incomingGoalIDs = Set(document.goals.map(\.id))
@@ -399,6 +458,21 @@ public struct DefaultBackupImporter: BackupImporting {
             if let blockID = session.scheduleBlockID, !blockIDs.contains(blockID) { throw BackupError.invalidJSON }
             if session.taskID != nil && session.habitID != nil { throw BackupError.invalidJSON }
             if let end = session.endedAt, end < session.startedAt { throw BackupError.invalidJSON }
+        }
+    }
+
+    /// Reflection ids are unique, months are real and ratings in range.
+    private static func validateReflections(_ reflections: [ReflectionBackup]) throws {
+        guard Set(reflections.map(\.id)).count == reflections.count else { throw BackupError.invalidJSON }
+        let answers = reflections.flatMap(\.answers)
+        guard Set(answers.map(\.id)).count == answers.count else { throw BackupError.invalidJSON }
+        for reflection in reflections {
+            guard (1...12).contains(reflection.month), (1...9999).contains(reflection.year) else { throw BackupError.invalidJSON }
+            for answer in reflection.answers {
+                guard !answer.questionID.isEmpty else { throw BackupError.invalidJSON }
+                if let rating = answer.rating, !(rating.isFinite && (1...10).contains(rating)) { throw BackupError.invalidJSON }
+                if !answer.status.isEmpty, ReflectionFollowUpStatus(rawValue: answer.status) == nil { throw BackupError.invalidJSON }
+            }
         }
     }
 

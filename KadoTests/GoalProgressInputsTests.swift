@@ -21,7 +21,7 @@ struct GoalProgressInputsTests {
     }
 
     private func container() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         return try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
     }
 

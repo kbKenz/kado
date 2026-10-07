@@ -15,7 +15,7 @@ struct LogicalDaySurfacesTests {
     private var calendar: Calendar { TestCalendar.utc }
 
     private func makeContainer() throws -> ModelContainer {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         return try ModelContainer(
             for: schema,
             migrationPlan: KadoMigrationPlan.self,

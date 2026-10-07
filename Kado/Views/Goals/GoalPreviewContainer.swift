@@ -11,7 +11,7 @@ enum GoalPreviewContainer {
 
     static let shared: ModelContainer = {
         do {
-            let schema = Schema(versionedSchema: KadoSchemaV9.self)
+            let schema = Schema(versionedSchema: KadoSchemaV10.self)
             let container = try ModelContainer(
                 for: schema, migrationPlan: KadoMigrationPlan.self,
                 configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)

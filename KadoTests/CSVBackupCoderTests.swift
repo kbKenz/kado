@@ -167,7 +167,7 @@ struct CSVBackupCoderTests {
     @Test("format_version higher than current throws unsupportedVersion")
     func unsupportedVersion() throws {
         let csv = String(decoding: coder.encode(document([habit()])), as: UTF8.self)
-        let bumped = csv.replacingOccurrences(of: "\n6,", with: "\n99,")
+        let bumped = csv.replacingOccurrences(of: "\n7,", with: "\n99,")
         #expect(throws: BackupError.unsupportedVersion(99)) {
             try coder.decode(Data(bumped.utf8))
         }
@@ -271,7 +271,8 @@ struct CSVBackupCoderTests {
         let csv = String(decoding: coder.encode(document([])), as: UTF8.self)
         #expect(csv == CSVBackupCoder.columns.joined(separator: ",") + "\n")
         #expect(Array(CSVBackupCoder.columns.prefix(16)) == CSVBackupCoder.legacyColumns)
-        #expect(CSVBackupCoder.columns == CSVBackupCoder.sessionColumns + ["category"])
+        #expect(CSVBackupCoder.categoryColumns == CSVBackupCoder.sessionColumns + ["category"])
+        #expect(Array(CSVBackupCoder.columns.prefix(CSVBackupCoder.categoryColumns.count)) == CSVBackupCoder.categoryColumns)
     }
 
     // MARK: - Categories
@@ -293,7 +294,7 @@ struct CSVBackupCoderTests {
         original.goals = [goal]
 
         let decoded = try coder.decode(coder.encode(original))
-        #expect(decoded.formatVersion == 6)
+        #expect(decoded.formatVersion == 7)
         #expect(decoded.habits == original.habits)
         #expect(decoded.habits.map(\.category) == ["mind", ""])
         #expect(decoded.tasks == [task])
@@ -346,8 +347,9 @@ struct CSVBackupCoderTests {
         ])), as: UTF8.self)
 
         let header = CSVBackupCoder.columns.joined(separator: ",")
-        let legacy = "6,AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,Meditate,specific_days:2|4|6,timer:600.0,2023-11-14T22:13:20Z,,blue,leaf,true,7,30,BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,2023-11-15T22:13:20Z,1.0,felt good"
+        let legacy = "7,AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,Meditate,specific_days:2|4|6,timer:600.0,2023-11-14T22:13:20Z,,blue,leaf,true,7,30,BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,2023-11-15T22:13:20Z,1.0,felt good"
         let suffix = ["habit"] + Array(repeating: "", count: 18) + ["0"] + Array(repeating: "", count: 23) + ["mind"]
+            + Array(repeating: "", count: 9)
         #expect(csv == header + "\n" + legacy + "," + suffix.joined(separator: ",") + "\n")
     }
 }

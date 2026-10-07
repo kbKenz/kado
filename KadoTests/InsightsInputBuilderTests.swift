@@ -14,7 +14,7 @@ struct InsightsInputBuilderTests {
     private let container: ModelContainer
 
     init() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         container = try ModelContainer(for: schema, configurations: ModelConfiguration(UUID().uuidString, schema: schema, isStoredInMemoryOnly: true))
     }
 

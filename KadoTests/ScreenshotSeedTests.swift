@@ -29,7 +29,7 @@ struct ScreenshotSeedTests {
         calendar: Calendar = TestCalendar.utc,
         _ body: ([HabitRecord]) throws -> T
     ) throws -> T {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         let container = try ModelContainer(
             for: schema,
             migrationPlan: KadoMigrationPlan.self,

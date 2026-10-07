@@ -66,7 +66,7 @@ struct CoalescingTaskTests {
 
     @Test("A reload whose store is gone by the time it runs is skipped, not a trap")
     func reloadForAReleasedStoreIsSkipped() async throws {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         do {
             let container = try ModelContainer(
                 for: schema,

@@ -45,6 +45,28 @@ struct KadoSchemaTests {
         #expect(KadoSchemaV9.models.contains { $0 == KadoSchemaV9.WorkSessionRecord.self })
     }
 
+    @Test("V10 version identifier is 10.0.0 and adds the two reflection models")
+    func v10Version() {
+        #expect(KadoSchemaV10.versionIdentifier == Schema.Version(10, 0, 0))
+        #expect(KadoSchemaV10.models.count == KadoSchemaV9.models.count + 2)
+        #expect(KadoSchemaV10.models.contains { $0 == KadoSchemaV10.ReflectionRecord.self })
+        #expect(KadoSchemaV10.models.contains { $0 == KadoSchemaV10.ReflectionAnswerRecord.self })
+    }
+
+    @Test("Deleting a reflection removes its answers")
+    func reflectionCascade() throws {
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
+        let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true))
+        let context = ModelContext(container)
+        let reflection = ReflectionRecord(year: 2026, month: 10)
+        context.insert(reflection)
+        context.insert(ReflectionAnswerRecord(questionID: "core.word", text: "Steady", reflection: reflection))
+        try context.save()
+        context.delete(reflection)
+        try context.save()
+        #expect(try context.fetchCount(FetchDescriptor<ReflectionAnswerRecord>()) == 0)
+    }
+
     @Test("Deleting a block keeps its sessions; deleting a task removes them")
     func sessionDeleteRules() throws {
         let schema = Schema(versionedSchema: KadoSchemaV8.self)
@@ -187,15 +209,55 @@ struct KadoSchemaTests {
         #expect(refetchedHabit.categoryRaw == "mind")
     }
 
-    @Test("Migration plan declares a lightweight stage for each version through V9")
-    func migrationPlanShape() {
-        #expect(KadoMigrationPlan.schemas.count == 9)
-        #expect(KadoMigrationPlan.stages.count == 8)
+    @Test("A V9 store migrates to V10 with its data and no reflections")
+    func v9ToV10Migration() throws {
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("reflect-migration-\(UUID().uuidString).store")
+        defer {
+            for suffix in ["", "-wal", "-shm"] {
+                try? FileManager.default.removeItem(atPath: url.path + suffix)
+            }
+        }
+        let habitID = UUID()
+        let taskID = UUID()
+        do {
+            let schema = Schema(versionedSchema: KadoSchemaV9.self)
+            let store = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url))
+            let habit = KadoSchemaV9.HabitRecord(id: habitID, name: "Read")
+            store.mainContext.insert(habit)
+            store.mainContext.insert(KadoSchemaV9.CompletionRecord(value: 1, habit: habit))
+            store.mainContext.insert(KadoSchemaV9.TaskRecord(id: taskID, title: "Apply"))
+            try store.mainContext.save()
+        }
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
+        let store = try ModelContainer(
+            for: schema,
+            migrationPlan: KadoMigrationPlan.self,
+            configurations: ModelConfiguration(schema: schema, url: url)
+        )
+        let context = store.mainContext
+        let habit = try #require(context.fetch(FetchDescriptor<KadoSchemaV10.HabitRecord>()).first)
+        #expect(habit.id == habitID)
+        #expect(habit.completions?.count == 1)
+        #expect(try context.fetch(FetchDescriptor<KadoSchemaV10.TaskRecord>()).first?.id == taskID)
+        #expect(try context.fetchCount(FetchDescriptor<KadoSchemaV10.ReflectionRecord>()) == 0)
+
+        let reflection = KadoSchemaV10.ReflectionRecord(year: 2026, month: 10)
+        context.insert(reflection)
+        context.insert(KadoSchemaV10.ReflectionAnswerRecord(questionID: "core.word", text: "Steady", reflection: reflection))
+        try context.save()
+        #expect(try context.fetch(FetchDescriptor<KadoSchemaV10.ReflectionRecord>()).first?.answers?.first?.text == "Steady")
     }
 
-    @Test("In-memory ModelContainer constructs from the current (V9) schema")
+    @Test("Migration plan declares a lightweight stage for each version through V10")
+    func migrationPlanShape() {
+        #expect(KadoMigrationPlan.schemas.count == 10)
+        #expect(KadoMigrationPlan.stages.count == 9)
+    }
+
+    @Test("In-memory ModelContainer constructs from the current (V10) schema")
     func containerBuildsFromPlan() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         let container = try ModelContainer(
             for: schema,
             migrationPlan: KadoMigrationPlan.self,

@@ -11,7 +11,7 @@ struct TaskPlanningViewSnapshotTests {
 
     @Test("Snapshots survive destruction of their managed records")
     func snapshotsAreValues() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         let container = try ModelContainer(
             for: schema, migrationPlan: KadoMigrationPlan.self,
             configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
@@ -42,7 +42,7 @@ struct TaskPlanningViewSnapshotTests {
 
     @Test("Task and goal list items carry the stored category, or nil")
     func listItemsCarryCategory() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         let container = try ModelContainer(
             for: schema,
             configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
@@ -65,7 +65,7 @@ struct TaskPlanningViewSnapshotTests {
 
     @Test("A task row resolves its category as Insights does: stored, then the goal's, then the title")
     func taskResolvesCategory() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         let container = try ModelContainer(
             for: schema,
             configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
@@ -92,7 +92,7 @@ struct TaskPlanningViewSnapshotTests {
 
     @Test("A calendar block carries its task's category glyph, or its habit's own icon, as a value")
     func calendarBlockGlyphs() throws {
-        let schema = Schema(versionedSchema: KadoSchemaV9.self)
+        let schema = Schema(versionedSchema: KadoSchemaV10.self)
         let container = try ModelContainer(
             for: schema,
             configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)

@@ -7,6 +7,15 @@ import KadoCore
 @Suite("NotificationManager.route")
 @MainActor
 struct NotificationManagerRoutingTests {
+    @Test("Tapping the monthly check-in reminder routes to its month")
+    func reflectionReminder() {
+        let decision = NotificationManager.route(
+            actionIdentifier: UNNotificationDefaultActionIdentifier,
+            userInfo: [ReflectionReminderScheduler.monthUserInfoKey: "2026-10"]
+        )
+        #expect(decision == .openReflection(ReflectionMonth(year: 2026, month: 10)))
+    }
+
     @Test("Complete identifier with a valid habit UUID routes to .complete")
     func completeWithValidID() {
         let id = UUID()

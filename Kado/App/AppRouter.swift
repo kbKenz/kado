@@ -3,8 +3,7 @@ import Observation
 import KadoCore
 
 /// Requests to show a place in the app from outside the view tree: a
-/// notification tap. `ContentView` switches tabs; the screen that owns
-/// the destination takes the request and clears it.
+/// notification tap. `ContentView` takes the request and presents it.
 @MainActor
 @Observable
 final class AppRouter {

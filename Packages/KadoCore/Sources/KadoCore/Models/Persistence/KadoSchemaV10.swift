@@ -486,6 +486,9 @@ public extension KadoSchemaV10 {
         /// A follow-up's choice (a `ReflectionFollowUpStatus` raw
         /// value), empty when there is none.
         public var statusRaw: String = ""
+        /// For a follow-up, the month (`yyyy-MM`) of the answer it
+        /// quoted; empty otherwise.
+        public var sourceMonth: String = ""
         public var createdAt: Date = Date()
         public var updatedAt: Date = Date()
         public var reflection: ReflectionRecord?
@@ -497,6 +500,7 @@ public extension KadoSchemaV10 {
             text: String = "",
             rating: Double? = nil,
             statusRaw: String = "",
+            sourceMonth: String = "",
             createdAt: Date = .now,
             updatedAt: Date = .now,
             reflection: ReflectionRecord? = nil
@@ -507,6 +511,7 @@ public extension KadoSchemaV10 {
             self.text = text
             self.rating = rating
             self.statusRaw = statusRaw
+            self.sourceMonth = sourceMonth
             self.createdAt = createdAt
             self.updatedAt = updatedAt
             self.reflection = reflection

@@ -45,18 +45,22 @@ struct ReflectionMonthView: View {
             .frame(maxWidth: .infinity)
         }
         .background(Color.kadoBackground.ignoresSafeArea())
+        .reflectionLockGate()
         .navigationTitle(month.title(in: calendar))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Menu {
-                    Button { editing = true } label: { Label("Edit answers", systemImage: "pencil") }
-                        .accessibilityIdentifier(AccessibilityID.Reflect.edit)
-                    Button(role: .destructive) { confirmingDelete = true } label: {
-                        Label("Delete this month", systemImage: "trash")
+            // No edit or delete while locked.
+            if !ReflectionLockState.shared.isLocked {
+                ToolbarItem(placement: .primaryAction) {
+                    Menu {
+                        Button { editing = true } label: { Label("Edit answers", systemImage: "pencil") }
+                            .accessibilityIdentifier(AccessibilityID.Reflect.edit)
+                        Button(role: .destructive) { confirmingDelete = true } label: {
+                            Label("Delete this month", systemImage: "trash")
+                        }
+                    } label: {
+                        Label("More", systemImage: "ellipsis.circle")
                     }
-                } label: {
-                    Label("More", systemImage: "ellipsis.circle")
                 }
             }
         }

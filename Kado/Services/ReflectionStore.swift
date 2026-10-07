@@ -42,12 +42,14 @@ struct ReflectionStore {
             context.insert(target)
             target.reflection = record
         }
+        let source = answer.sourceMonth?.key ?? ""
         guard target.prompt != answer.prompt || target.text != answer.text || target.rating != answer.rating
-                || target.statusRaw != (answer.status?.rawValue ?? "") else { return }
+                || target.statusRaw != (answer.status?.rawValue ?? "") || target.sourceMonth != source else { return }
         target.prompt = answer.prompt
         target.text = answer.text
         target.rating = answer.rating
         target.statusRaw = answer.status?.rawValue ?? ""
+        target.sourceMonth = source
         target.updatedAt = now
         record.updatedAt = now
         try commit()

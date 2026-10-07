@@ -16,6 +16,7 @@ struct ReflectionCheckInView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @Environment(\.notificationScheduler) private var notificationScheduler
 
     @State private var steps: [ReflectionStep] = []
     @State private var index = 0
@@ -64,6 +65,9 @@ struct ReflectionCheckInView: View {
                 Text("Try again in a moment.")
             }
         }
+        // However it was opened (Reflect, the Today card, a reminder),
+        // a check-in shows past answers, so it is behind the lock too.
+        .reflectionLockGate()
         .interactiveDismissDisabled()
         .task { load() }
         .onChange(of: scenePhase) { _, phase in
@@ -89,7 +93,7 @@ struct ReflectionCheckInView: View {
             ReflectionFollowUpStep(
                 question: question, quoted: quoted, sourceMonth: source.monthName(in: calendar), options: options,
                 status: statusBinding(question, quoted: quoted, source: source),
-                note: textBinding(question, prompt: followUpPrompt(question, quoted: quoted, source: source))
+                note: textBinding(question, prompt: followUpPrompt(question, quoted: quoted, source: source), source: source)
             )
         case .question(let question):
             ReflectionQuestionStep(
@@ -194,12 +198,13 @@ struct ReflectionCheckInView: View {
         )
     }
 
-    private func textBinding(_ question: ReflectionQuestion, prompt: String) -> Binding<String> {
+    private func textBinding(_ question: ReflectionQuestion, prompt: String, source: ReflectionMonth? = nil) -> Binding<String> {
         Binding(
             get: { drafts[question.id]?.text ?? "" },
             set: { text in
                 var answer = drafts[question.id] ?? ReflectionAnswer(questionID: question.id)
                 answer.prompt = prompt
+                answer.sourceMonth = source
                 answer.text = text
                 drafts[question.id] = answer
             }
@@ -214,6 +219,7 @@ struct ReflectionCheckInView: View {
             set: { status in
                 var answer = drafts[question.id] ?? ReflectionAnswer(questionID: question.id)
                 answer.prompt = followUpPrompt(question, quoted: quoted, source: source)
+                answer.sourceMonth = source
                 answer.status = status
                 drafts[question.id] = answer
             }
@@ -253,29 +259,34 @@ struct ReflectionCheckInView: View {
         return false
     }
 
-    /// Writes every draft that changed since the last save.
-    private func saveAll() {
+    /// Writes every draft that changed since the last save. False, with
+    /// the alert up, when a save failed: the drafts stay in memory.
+    @discardableResult
+    private func saveAll() -> Bool {
         let store = ReflectionStore(context: modelContext)
         do {
             for (id, draft) in drafts where saved[id] != draft {
                 try store.save(draft, for: month)
                 saved[id] = draft
             }
+            return true
         } catch {
             let nsError = error as NSError
             Self.logger.error("Reflection save failed: \(nsError.domain, privacy: .public) \(nsError.code, privacy: .public)")
             showingError = true
+            return false
         }
     }
 
+    /// Stays open when the answers could not be saved, so they are not lost.
     private func close() {
-        saveAll()
+        guard saveAll() else { return }
         ReflectionReminders.sync(using: modelContext)
         dismiss()
     }
 
     private func finish() {
-        saveAll()
+        guard saveAll() else { return }
         do {
             try ReflectionStore(context: modelContext).complete(month)
         } catch {
@@ -285,6 +296,13 @@ struct ReflectionCheckInView: View {
             return
         }
         ReflectionReminders.sync(using: modelContext)
+        // The reminder is on by default; the first finished check-in is
+        // the moment to ask for the permission it needs (asked once).
+        // UI runs skip it: a system alert would cover the app.
+        if ReflectionDefaults.remindersEnabled && !UITestSupport.isRunningUITests {
+            let scheduler = notificationScheduler
+            Task { _ = await scheduler.requestAuthorizationIfNeeded() }
+        }
         onFinished()
         dismiss()
     }

@@ -43,6 +43,7 @@ struct ReflectionQuestionHistoryView: View {
             .frame(maxWidth: .infinity)
         }
         .background(Color.kadoBackground.ignoresSafeArea())
+        .reflectionLockGate()
         .navigationTitle(question?.title ?? "")
         .navigationBarTitleDisplayMode(.inline)
     }

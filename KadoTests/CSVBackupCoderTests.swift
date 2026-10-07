@@ -349,7 +349,7 @@ struct CSVBackupCoderTests {
         let header = CSVBackupCoder.columns.joined(separator: ",")
         let legacy = "7,AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA,Meditate,specific_days:2|4|6,timer:600.0,2023-11-14T22:13:20Z,,blue,leaf,true,7,30,BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB,2023-11-15T22:13:20Z,1.0,felt good"
         let suffix = ["habit"] + Array(repeating: "", count: 18) + ["0"] + Array(repeating: "", count: 23) + ["mind"]
-            + Array(repeating: "", count: 9)
+            + Array(repeating: "", count: 10)
         #expect(csv == header + "\n" + legacy + "," + suffix.joined(separator: ",") + "\n")
     }
 }

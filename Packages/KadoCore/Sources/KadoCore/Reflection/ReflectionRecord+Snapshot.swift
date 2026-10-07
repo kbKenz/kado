@@ -23,7 +23,8 @@ public extension ReflectionAnswerRecord {
     var snapshot: ReflectionAnswer {
         ReflectionAnswer(
             questionID: questionID, prompt: prompt, text: text, rating: rating,
-            status: ReflectionFollowUpStatus(rawValue: statusRaw), updatedAt: updatedAt
+            status: ReflectionFollowUpStatus(rawValue: statusRaw),
+            sourceMonth: ReflectionMonth(key: sourceMonth), updatedAt: updatedAt
         )
     }
 }

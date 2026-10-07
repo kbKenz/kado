@@ -154,7 +154,7 @@ public struct DefaultBackupExporter: BackupExporting {
                 .map {
                     ReflectionAnswerBackup(
                         id: $0.id, questionID: $0.questionID, prompt: $0.prompt, text: $0.text, rating: $0.rating,
-                        status: $0.statusRaw, createdAt: $0.createdAt, updatedAt: $0.updatedAt
+                        status: $0.statusRaw, sourceMonth: $0.sourceMonth, createdAt: $0.createdAt, updatedAt: $0.updatedAt
                     )
                 }
         )

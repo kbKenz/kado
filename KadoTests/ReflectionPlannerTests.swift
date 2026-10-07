@@ -177,6 +177,22 @@ struct ReflectionArchiveTests {
         #expect(items.map(\.outcomeMonth) == [month(10), month(8)])
     }
 
+    @Test("A stored source keeps the outcome on the quoted month when an older month is filled in later")
+    func storedSource() {
+        let problem = ReflectionCatalog.problemID
+        var followUp = status(ReflectionCatalog.followUpProblemID, .solved)
+        followUp.sourceMonth = month(8)
+        let entries = [
+            entry(month(8), [text(problem, "Money")]),
+            // September's problem was written after October's follow-up.
+            entry(month(9), [text(problem, "Sleep")]),
+            entry(month(10), [followUp]),
+        ]
+        let items = ReflectionArchive.history(of: problem, in: entries)
+        #expect(items.map(\.answer.text) == ["Sleep", "Money"])
+        #expect(items.map(\.outcome) == [nil, .solved])
+    }
+
     @Test("Ratings form a series, oldest first")
     func series() {
         let entries = [

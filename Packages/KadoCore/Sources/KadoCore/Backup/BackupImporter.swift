@@ -334,8 +334,10 @@ public struct DefaultBackupImporter: BackupImporting {
         return Dictionary(records.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 
-    /// Upserts by id: a reflection already here takes the file's fields
-    /// and its answers, matched by id too. Answers only on this device stay.
+    /// Merges by id, never going back in time: an answer takes the
+    /// file's copy only when that copy is newer (or new here), and a
+    /// month finished on this device stays finished. Answers only on
+    /// this device stay.
     private func applyReflections(_ backups: [ReflectionBackup], to context: ModelContext, summary: inout ImportSummary) {
         guard !backups.isEmpty, context.stores(ReflectionRecord.self) else { return }
         var reflections = (try? existingReflections(in: context)) ?? [:]
@@ -348,19 +350,25 @@ public struct DefaultBackupImporter: BackupImporting {
                 record = found
                 summary.updatedReflections += 1
             } else {
-                record = ReflectionRecord(id: backup.id, year: backup.year, month: backup.month)
+                record = ReflectionRecord(
+                    id: backup.id, year: backup.year, month: backup.month,
+                    createdAt: backup.createdAt, updatedAt: backup.updatedAt, completedAt: backup.completedAt
+                )
                 context.insert(record)
                 reflections[backup.id] = record
                 summary.newReflections += 1
             }
             record.year = backup.year
             record.month = backup.month
-            record.createdAt = backup.createdAt
-            record.updatedAt = backup.updatedAt
-            record.completedAt = backup.completedAt
+            record.createdAt = min(record.createdAt, backup.createdAt)
+            record.updatedAt = max(record.updatedAt, backup.updatedAt)
+            // The earliest finish wins; a draft in the file never reopens a finished month.
+            record.completedAt = [record.completedAt, backup.completedAt].compactMap { $0 }.min()
             for answerBackup in backup.answers {
                 let answer: ReflectionAnswerRecord
                 if let found = answers[answerBackup.id] {
+                    // This device's edit is newer: keep it.
+                    if found.updatedAt > answerBackup.updatedAt { continue }
                     answer = found
                 } else {
                     // No relationship at construction, as for sessions.
@@ -373,6 +381,7 @@ public struct DefaultBackupImporter: BackupImporting {
                 answer.text = answerBackup.text
                 answer.rating = answerBackup.rating
                 answer.statusRaw = answerBackup.status
+                answer.sourceMonth = answerBackup.sourceMonth
                 answer.createdAt = answerBackup.createdAt
                 answer.updatedAt = answerBackup.updatedAt
                 answer.reflection = record
@@ -470,6 +479,7 @@ public struct DefaultBackupImporter: BackupImporting {
             guard (1...12).contains(reflection.month), (1...9999).contains(reflection.year) else { throw BackupError.invalidJSON }
             for answer in reflection.answers {
                 guard !answer.questionID.isEmpty else { throw BackupError.invalidJSON }
+                if !answer.sourceMonth.isEmpty, ReflectionMonth(key: answer.sourceMonth) == nil { throw BackupError.invalidJSON }
                 if let rating = answer.rating, !(rating.isFinite && (1...10).contains(rating)) { throw BackupError.invalidJSON }
                 if !answer.status.isEmpty, ReflectionFollowUpStatus(rawValue: answer.status) == nil { throw BackupError.invalidJSON }
             }

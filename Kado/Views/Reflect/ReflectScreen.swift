@@ -15,15 +15,12 @@ struct ReflectScreen: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.calendar) private var calendar
-    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.notificationScheduler) private var notificationScheduler
 
     @Query private var records: [ReflectionRecord]
     @AppStorage(ReflectionDefaults.archiveModeKey) private var archiveMode: ReflectArchiveMode = .months
-    @AppStorage(ReflectionDefaults.lockKey) private var lockEnabled = false
     @AppStorage(ReflectionDefaults.remindersKey) private var remindersEnabled = true
 
-    @State private var unlocked = false
     @State private var checkIn: CheckInSheet?
     @State private var search = ""
     @State private var lockUnavailable = false
@@ -33,24 +30,22 @@ struct ReflectScreen: View {
         var id: Int { month.id }
     }
 
-    private var router: AppRouter { AppRouter.shared }
+    private var lock: ReflectionLockState { .shared }
 
     var body: some View {
-        Group {
-            if lockEnabled && !unlocked && !UITestSupport.isRunningUITests {
-                ReflectionLockedView(onUnlock: unlock)
-            } else {
-                content
-            }
-        }
-        .navigationDestination(for: ReflectionRoute.self) { route in
+        content
+            .reflectionLockGate()
+            .navigationDestination(for: ReflectionRoute.self) { route in
             switch route {
             case .month(let month): ReflectionMonthView(month: month, path: $path)
             case .question(let id): ReflectionQuestionHistoryView(questionID: id)
             }
         }
         .toolbar {
-            ToolbarItem(placement: .primaryAction) { settingsMenu }
+            // Hidden while locked: the menu turns the lock off.
+            if !lock.isLocked {
+                ToolbarItem(placement: .primaryAction) { settingsMenu }
+            }
         }
         .fullScreenCover(item: $checkIn) { sheet in
             ReflectionCheckInView(month: sheet.month)
@@ -60,12 +55,6 @@ struct ReflectScreen: View {
         } message: {
             Text("The lock uses Face ID, Touch ID or your device passcode. Set one in the Settings app first.")
         }
-        .onChange(of: scenePhase) { _, phase in
-            // Leaving the app locks again.
-            if phase == .background { unlocked = false }
-        }
-        .onAppear(perform: takeRouterRequest)
-        .onChange(of: router.checkInRequest) { _, _ in takeRouterRequest() }
     }
 
     private var entries: [ReflectionEntry] { records.mergedEntries }
@@ -140,7 +129,7 @@ struct ReflectScreen: View {
                 Label("Monthly reminder", systemImage: "bell")
             }
             .accessibilityIdentifier(AccessibilityID.Reflect.reminderToggle)
-            Toggle(isOn: Binding(get: { lockEnabled }, set: setLock)) {
+            Toggle(isOn: Binding(get: { lock.isEnabled }, set: setLock)) {
                 Label("Lock with Face ID", systemImage: "faceid")
             }
             .accessibilityIdentifier(AccessibilityID.Reflect.lockToggle)
@@ -152,32 +141,14 @@ struct ReflectScreen: View {
 
     // MARK: - Actions
 
-    private func takeRouterRequest() {
-        guard let month = router.checkInRequest else { return }
-        router.checkInRequest = nil
-        checkIn = CheckInSheet(month: month)
-    }
-
-    private func unlock() {
-        Task {
-            if await ReflectionLock.authenticate() { unlocked = true }
-        }
-    }
-
+    /// Both ways ask for Face ID: on, to prove the user can open it
+    /// again; off, so only the owner can remove it.
     private func setLock(_ on: Bool) {
-        guard on else {
-            lockEnabled = false
-            return
-        }
-        guard ReflectionLock.isAvailable else {
-            lockUnavailable = true
-            return
-        }
-        // Turning the lock on proves the user can open it again.
         Task {
-            if await ReflectionLock.authenticate() {
-                lockEnabled = true
-                unlocked = true
+            if on {
+                if await !lock.enable() { lockUnavailable = true }
+            } else {
+                await lock.disable()
             }
         }
     }

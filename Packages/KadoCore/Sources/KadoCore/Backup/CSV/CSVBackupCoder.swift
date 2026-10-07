@@ -82,7 +82,7 @@ nonisolated public struct CSVBackupCoder: Sendable {
     /// `completed_at`. This is the header the encoder writes.
     public static let columns = categoryColumns + [
         "reflection_id", "reflection_year", "reflection_month",
-        "reflection_answer_id", "question_id", "prompt", "answer_text", "rating", "follow_up_status"
+        "reflection_answer_id", "question_id", "prompt", "answer_text", "rating", "follow_up_status", "source_month"
     ]
 
     private let now: @Sendable () -> Date
@@ -209,6 +209,7 @@ nonisolated public struct CSVBackupCoder: Sendable {
                     "reflection_id": reflection.id.uuidString, "reflection_answer_id": answer.id.uuidString,
                     "question_id": answer.questionID, "prompt": answer.prompt, "answer_text": answer.text,
                     "rating": answer.rating.map { String($0) } ?? "", "follow_up_status": answer.status,
+                    "source_month": answer.sourceMonth,
                     "created_at": Self.encode(date: answer.createdAt), "updated_at": Self.encode(date: answer.updatedAt)
                 ]))
             }
@@ -385,7 +386,7 @@ nonisolated public struct CSVBackupCoder: Sendable {
                     }
                     pendingAnswers.append((reflectionID, ReflectionAnswerBackup(
                         id: id, questionID: field("question_id"), prompt: field("prompt"), text: field("answer_text"),
-                        rating: rating, status: field("follow_up_status"),
+                        rating: rating, status: field("follow_up_status"), sourceMonth: field("source_month"),
                         createdAt: try Self.decodeDate(field("created_at")), updatedAt: try Self.decodeDate(field("updated_at"))
                     )))
                     continue

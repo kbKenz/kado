@@ -34,15 +34,21 @@ nonisolated public enum ReflectionArchive {
         }
     }
 
-    /// The follow-up that quoted the answer of `month`: in the first
-    /// later month with that follow-up, provided no answer in between
-    /// replaced the quoted one.
+    /// The follow-up that quoted the answer of `month`: the first later
+    /// follow-up that names `month` as its source. A follow-up saved
+    /// without a source counts when it is the first after `month` and no
+    /// answer in between replaced the quoted one.
     private static func outcome(
         of questionID: String, from month: ReflectionMonth, followUpID: String, in entries: [ReflectionEntry]
     ) -> (month: ReflectionMonth, status: ReflectionFollowUpStatus)? {
-        for entry in entries.filter({ $0.month > month }).sorted(by: { $0.month < $1.month }) {
-            if let status = entry.answer(followUpID)?.status {
-                // That follow-up quoted the latest answer before its month.
+        let later = entries.filter { $0.month > month }.sorted { $0.month < $1.month }
+        for entry in later {
+            if let followUp = entry.answer(followUpID), let status = followUp.status, followUp.sourceMonth == month {
+                return (entry.month, status)
+            }
+        }
+        for entry in later {
+            if let followUp = entry.answer(followUpID), let status = followUp.status, followUp.sourceMonth == nil {
                 guard ReflectionPlanner.latest(questionID, before: entry.month, in: entries)?.month == month else { return nil }
                 return (entry.month, status)
             }

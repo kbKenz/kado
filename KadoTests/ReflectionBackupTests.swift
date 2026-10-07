@@ -22,7 +22,7 @@ struct ReflectionBackupTests {
         context.insert(ReflectionAnswerRecord(questionID: "rating.overall", prompt: "Overall", rating: 7,
                                               createdAt: created, updatedAt: created, reflection: reflection))
         context.insert(ReflectionAnswerRecord(questionID: "followup.problem", prompt: "Money → now", statusRaw: "better",
-                                              createdAt: created, updatedAt: created, reflection: reflection))
+                                              sourceMonth: "2026-08", createdAt: created, updatedAt: created, reflection: reflection))
         try context.save()
         return reflection
     }
@@ -73,6 +73,31 @@ struct ReflectionBackupTests {
         let targetContext = ModelContext(target)
         try DefaultBackupImporter().apply(decoded, to: targetContext)
         #expect(try entries(targetContext) == entries(sourceContext))
+    }
+
+    @Test("Import keeps a newer local answer and never reopens a finished month")
+    func importNeverGoesBack() throws {
+        let source = try container()
+        let sourceContext = ModelContext(source)
+        let seeded = try seed(sourceContext)
+        let document = try DefaultBackupExporter(now: { self.created }, appVersion: "t").export(from: sourceContext)
+
+        let target = try container()
+        let context = ModelContext(target)
+        try DefaultBackupImporter().apply(document, to: context)
+        // Edit here after the backup was made, then leave the month as a draft in the file.
+        let word = try #require(try context.fetch(FetchDescriptor<ReflectionAnswerRecord>()).first { $0.questionID == "core.word" })
+        word.text = "Newer"
+        word.updatedAt = created.addingTimeInterval(86_400)
+        try context.save()
+        var draft = document
+        draft.reflections[0].completedAt = nil
+        try DefaultBackupImporter().apply(draft, to: context)
+
+        let entry = try #require(try entries(context).first)
+        #expect(entry.word == "Newer")
+        #expect(entry.completedAt == seeded.completedAt)
+        #expect(entry.answer("followup.problem")?.sourceMonth == ReflectionMonth(year: 2026, month: 8))
     }
 
     @Test("An older file without reflections still imports")

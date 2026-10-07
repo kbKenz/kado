@@ -21,6 +21,15 @@ nonisolated public struct ReflectionMonth: Hashable, Comparable, Codable, Identi
         self.init(year: parts.year ?? 1970, month: parts.month ?? 1)
     }
 
+    /// "2026-10": how the month is stored in text.
+    public var key: String { String(format: "%04d-%02d", year, month) }
+
+    public init?(key: String) {
+        let parts = key.split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 2, (1...12).contains(parts[1]) else { return nil }
+        self.init(year: parts[0], month: parts[1])
+    }
+
     /// 202610 for October 2026: sorts like the month does.
     public var id: Int { year * 100 + month }
 

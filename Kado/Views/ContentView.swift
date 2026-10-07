@@ -8,7 +8,15 @@ import KadoCore
 /// calendar view of the same day; Overview keeps the habit matrix.
 struct ContentView: View {
     @State private var selection: AppTab = UITestSupport.initialTab
+    /// The check-in a reminder tap asked for, presented over any tab.
+    @State private var routedCheckIn: RoutedCheckIn?
+    @Environment(\.scenePhase) private var scenePhase
     private var router: AppRouter { AppRouter.shared }
+
+    private struct RoutedCheckIn: Identifiable {
+        let month: ReflectionMonth
+        var id: Int { month.id }
+    }
 
     var body: some View {
         // Deliberately no `.accessibilityIdentifier` on these tabs: one
@@ -33,16 +41,30 @@ struct ContentView: View {
                 SettingsView()
             }
         }
-        // The monthly reminder opens Overview's Reflect section, which
-        // then takes the request and opens the check-in.
-        .onChange(of: router.checkInRequest) { _, month in
-            guard month != nil else { return }
-            UserDefaults.standard.set(OverviewMode.reflect.rawValue, forKey: OverviewModeDefaults.key)
-            selection = .overview
+        // The monthly reminder opens its check-in where the user is. A
+        // tap that launched the app set the request before this view
+        // watched it, so it is also taken on appear.
+        .onChange(of: router.checkInRequest) { _, _ in takeCheckInRequest() }
+        .onAppear(perform: takeCheckInRequest)
+        .fullScreenCover(item: $routedCheckIn) { routed in
+            ReflectionCheckInView(month: routed.month)
+        }
+        // Leaving the app, even for the app switcher, locks reflections
+        // again on every screen that shows them.
+        .onChange(of: scenePhase) { _, phase in
+            if phase != .active { ReflectionLockState.shared.relock() }
         }
         .kadoTheme()
         .reviewPromptOnForeground()
         .dayCompletionCelebration()
+    }
+}
+
+extension ContentView {
+    private func takeCheckInRequest() {
+        guard let month = router.checkInRequest, routedCheckIn == nil else { return }
+        router.checkInRequest = nil
+        routedCheckIn = RoutedCheckIn(month: month)
     }
 }
 

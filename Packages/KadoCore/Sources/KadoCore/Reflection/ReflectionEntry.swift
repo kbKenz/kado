@@ -8,15 +8,19 @@ nonisolated public struct ReflectionAnswer: Hashable, Sendable {
     public var text: String
     public var rating: Double?
     public var status: ReflectionFollowUpStatus?
+    /// For a follow-up, the month of the answer it quoted.
+    public var sourceMonth: ReflectionMonth?
     public var updatedAt: Date
 
     public init(questionID: String, prompt: String = "", text: String = "", rating: Double? = nil,
-                status: ReflectionFollowUpStatus? = nil, updatedAt: Date = .distantPast) {
+                status: ReflectionFollowUpStatus? = nil, sourceMonth: ReflectionMonth? = nil,
+                updatedAt: Date = .distantPast) {
         self.questionID = questionID
         self.prompt = prompt
         self.text = text
         self.rating = rating
         self.status = status
+        self.sourceMonth = sourceMonth
         self.updatedAt = updatedAt
     }
 

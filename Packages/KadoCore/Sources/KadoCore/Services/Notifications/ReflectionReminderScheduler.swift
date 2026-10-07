@@ -50,15 +50,9 @@ nonisolated public struct ReflectionReminderScheduler: Sendable {
         calendar.date(bySettingHour: Self.hour, minute: 0, second: 0, of: month.lastDay(in: calendar))
     }
 
-    public static func key(for month: ReflectionMonth) -> String {
-        String(format: "%04d-%02d", month.year, month.month)
-    }
+    public static func key(for month: ReflectionMonth) -> String { month.key }
 
-    public static func month(fromKey key: String) -> ReflectionMonth? {
-        let parts = key.split(separator: "-").compactMap { Int($0) }
-        guard parts.count == 2, (1...12).contains(parts[1]) else { return nil }
-        return ReflectionMonth(year: parts[0], month: parts[1])
-    }
+    public static func month(fromKey key: String) -> ReflectionMonth? { ReflectionMonth(key: key) }
 
     private func request(for month: ReflectionMonth, at date: Date) -> UNNotificationRequest {
         let content = UNMutableNotificationContent()

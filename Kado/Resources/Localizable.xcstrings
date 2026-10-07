@@ -8169,6 +8169,23 @@
         }
       }
     },
+    "Habits: %lld (%lld new, %lld updated)\nCompletions: %lld (%lld new, %lld updated)\nTasks: %lld\nPlanned blocks: %lld\nGoals: %lld\nProgress entries: %lld\nWork sessions: %lld\nReflections: %lld" : {
+      "comment" : "Backup import result including reflections. Preserve all twelve integer placeholders.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Habits: %lld (%lld new, %lld updated)\nCompletions: %lld (%lld new, %lld updated)\nTasks: %lld\nPlanned blocks: %lld\nGoals: %lld\nProgress entries: %lld\nWork sessions: %lld\nReflections: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Habitudes : %lld (%lld nouvelles, %lld mises à jour)\nRéalisation : %lld (%lld nouvelles, %lld mises à jour)\nTâches : %lld\nCréneaux planifiés : %lld\nObjectifs : %lld\nSaisies de progression : %lld\nSéances de travail : %lld\nRéflexions : %lld"
+          }
+        }
+      }
+    },
     "Highlights" : {
       "comment" : "Insights: title of the card with up to four plain facts.",
       "localizations" : {
@@ -12708,6 +12725,23 @@
           "stringUnit" : {
             "state" : "needs_review",
             "value" : "Réglages des réflexions"
+          }
+        }
+      }
+    },
+    "Reflections" : {
+      "comment" : "Label monthly reflection counts in the backup import preview.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reflections"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Réflexions"
           }
         }
       }

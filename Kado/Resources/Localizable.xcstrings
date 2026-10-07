@@ -394,6 +394,7 @@
     },
     "Finish the running session first." : {
       "comment" : "Alert message when a quick start is refused because a work session is already running.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1181,7 +1182,7 @@
       }
     },
     "%@ is on a %lld-day streak" : {
-      "comment" : "Insights highlight: the longest current streak across habits. The values are the habit name and the days.",
+      "comment" : "Insights highlight: the longest current streak across habits. The values are the habit name and the streak in days.",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -1365,7 +1366,7 @@
       }
     },
     "%@ reached %lld times" : {
-      "comment" : "Insights highlight: a habit passed a round number of days done. The values are the habit name and that number.",
+      "comment" : "Insights highlight: a habit passed a round number of days done in this period. The values are the habit name and that number.",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -1406,7 +1407,7 @@
       }
     },
     "%@ tasks are most often left undone (%lld of %lld)" : {
-      "comment" : "Insights highlight: the category whose tasks are most often not done by their day. Then undone of all.",
+      "comment" : "Insights highlight: the category whose tasks were most often not done by their day. The values are the category name, then tasks left undone out of all its tasks.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -1709,7 +1710,7 @@
       }
     },
     "%@: %lld of %lld left undone" : {
-      "comment" : "Insights Tasks: a category's tasks left undone out of its tasks done or left undone.",
+      "comment" : "Insights Tasks: a category's tasks left undone out of its tasks done or left undone. The values are the category name and two counts.",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -2740,7 +2741,7 @@
       }
     },
     "%lld tasks done" : {
-      "comment" : "Insights, VoiceOver: a count of tasks completed.",
+      "comment" : "History day header, VoiceOver: tasks completed that day.\nInsights, VoiceOver: a count of tasks completed.",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -4049,7 +4050,7 @@
       }
     },
     "Bedtime %@ consistent" : {
-      "comment" : "Insights Sleep, VoiceOver: share of nights that started near the usual bedtime.",
+      "comment" : "Insights Sleep, VoiceOver: share of nights that started near the usual bedtime. The value is a percent.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -4209,7 +4210,7 @@
       }
     },
     "Best streak: %@, %lld days" : {
-      "comment" : "Insights All time, VoiceOver: the habit with the best streak ever and that streak.",
+      "comment" : "Insights All time, VoiceOver: the habit with the best streak ever and that streak in days.",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -5226,6 +5227,7 @@
     },
     "Creative" : {
       "comment" : "Category name: music, art, writing, photos.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6062,6 +6064,7 @@
     },
     "Errands" : {
       "comment" : "Category name: shopping, appointments, paperwork.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6320,7 +6323,7 @@
       }
     },
     "Finished in %@ days on average" : {
-      "comment" : "Insights Tasks: mean days from creating a task to finishing it, with one decimal.",
+      "comment" : "Insights Tasks: mean days from creating a task to finishing it. The value is a number with one decimal.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6337,7 +6340,7 @@
       }
     },
     "Finished the same day on average" : {
-      "comment" : "Insights Tasks: tasks done in the period were finished the day they were created.",
+      "comment" : "Insights Tasks: tasks done in the period were finished the day they were created, on average.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -6384,6 +6387,7 @@
     },
     "Fitness" : {
       "comment" : "Category name: workouts, running, sport.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7151,7 +7155,7 @@
       }
     },
     "Habits" : {
-      "comment" : "Label for the habit-count row in the import confirmation sheet, the Settings section heading above the Archived habits row, and the Today habits header on past and future days.",
+      "comment" : "History filter chip: show habits only.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -7550,6 +7554,7 @@
     },
     "Home" : {
       "comment" : "Category name: chores, cleaning, cooking.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8053,6 +8058,7 @@
     },
     "Last 12 months" : {
       "comment" : "Insights: the span the Year period covers.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8347,7 +8353,7 @@
       }
     },
     "Link to %@" : {
-      "comment" : "Suggestion chip button: links the task or habit to the named goal.",
+      "comment" : "Suggestion chip button: links the task or habit to this goal.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8815,6 +8821,7 @@
     },
     "Mind" : {
       "comment" : "Category name: meditation, journaling, mental health.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8867,6 +8874,7 @@
     },
     "Money" : {
       "comment" : "Category name: budget, bills, savings.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -8968,7 +8976,7 @@
       }
     },
     "Most focus went to %@: %@" : {
-      "comment" : "Insights highlight: the category with the most session time, then that time, such as 6h 20m.",
+      "comment" : "Insights highlight: the category with the most tracked session time. The values are the category name and a duration such as 6h 20m.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -9247,7 +9255,7 @@
       }
     },
     "Night" : {
-      "comment" : "Insights: focus that started between 22:00 and 4:59; also one night of sleep in a chart.",
+      "comment" : "Insights Rhythm: focus that started between 22:00 and 4:59.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10527,6 +10535,7 @@
     },
     "Other" : {
       "comment" : "Category name: anything that fits no other category.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -10649,6 +10658,7 @@
     },
     "People" : {
       "comment" : "Category name: family, friends, calls, messages.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11895,7 +11905,7 @@
       }
     },
     "Set category to %@" : {
-      "comment" : "Suggestion chip button: sets the form's category to the named one.",
+      "comment" : "Suggestion chip button: sets the form's category.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -11993,7 +12003,7 @@
       }
     },
     "Since %@ · %lld days" : {
-      "comment" : "Insights All time: the day of the first record, then days since then.",
+      "comment" : "Insights All time: the day of the first record, then days since then. The values are a date and a count.",
       "localizations" : {
         "en" : {
           "variations" : {
@@ -12450,6 +12460,7 @@
     },
     "Study" : {
       "comment" : "Category name: school, university, courses, reading for class.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14838,6 +14849,7 @@
     },
     "Work" : {
       "comment" : "Category name: jobs, meetings, projects.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14907,6 +14919,7 @@
     },
     "Year" : {
       "comment" : "Insights period picker: the last 12 months.",
+      "extractionState" : "stale",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -14993,7 +15006,7 @@
       }
     },
     "You focus most at night (%@)" : {
-      "comment" : "Insights highlight: most session time starts at night. The value is that share.",
+      "comment" : "Insights highlight: most session time starts at night. The value is that share, as a percent.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15010,7 +15023,7 @@
       }
     },
     "You focus most in the afternoon (%@)" : {
-      "comment" : "Insights highlight: most session time starts in the afternoon. The value is that share.",
+      "comment" : "Insights highlight: most session time starts in the afternoon. The value is that share, as a percent.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15027,7 +15040,7 @@
       }
     },
     "You focus most in the evening (%@)" : {
-      "comment" : "Insights highlight: most session time starts in the evening. The value is that share.",
+      "comment" : "Insights highlight: most session time starts in the evening. The value is that share, as a percent.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -15044,7 +15057,7 @@
       }
     },
     "You focus most in the morning (%@)" : {
-      "comment" : "Insights highlight: most session time starts in the morning. The value is that share.",
+      "comment" : "Insights highlight: most session time starts in the morning. The value is that share, as a percent.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
